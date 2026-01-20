@@ -1,15 +1,32 @@
 export interface Product {
   id: string;
+  slug: string;
   name: string;
   description: string;
   price: number;
+  compare_at_price?: number;
   image_urls: string[];
   category: string;
   stock: number;
-  ingredients?: string[];
-  benefits?: string[];
+  ingredients: string[];
+  benefits: string[];
+  wellness_goals: string[];
+  nutrition_info?: NutritionInfo;
+  usage_guidance?: string;
+  safety_disclaimer?: string;
+  is_featured: boolean;
+  popularity_score: number;
   created_at: string;
-  metadata?: Record<string, any>;
+  updated_at?: string;
+  metadata?: Record<string, unknown>;
+}
+
+export interface NutritionInfo {
+  calories?: number;
+  sugar?: string;
+  fiber?: string;
+  vitamins?: string[];
+  serving_size?: string;
 }
 
 export interface Order {
