@@ -22,7 +22,7 @@ export function IngredientTransparency() {
     return (
         <section
             ref={containerRef}
-            className="relative py-24 lg:py-40 bg-[#FDFBF7] overflow-hidden"
+            className="relative py-16 lg:py-20 bg-[#FDFBF7] overflow-hidden"
             data-scroll-section
         >
             {/* Digital Grain Texture Overlay */}

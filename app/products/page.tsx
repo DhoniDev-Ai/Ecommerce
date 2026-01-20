@@ -11,7 +11,7 @@ import { SlidersHorizontal, X, ArrowDown } from "lucide-react";
 
 
 // Mock data for demonstration
-const mockProducts: Product[] = [
+export const mockProducts: Product[] = [
     {
         id: "1",
         slug: "green-goddess-cleanse",

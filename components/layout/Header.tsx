@@ -87,16 +87,16 @@ export function Header() {
 
                 {/* Desktop Actions */}
                 <div className="hidden lg:flex lg:flex-1 lg:justify-end lg:items-center lg:gap-x-5">
-                    <button className="text-foreground/70 hover:text-primary transition-colors p-2">
+                    <Link href="/search" className="text-[#2D3A3A]/70 hover:text-[#5A7A6A] transition-colors p-2">
                         <Search className="h-5 w-5" />
-                    </button>
-                    <button className="text-foreground/70 hover:text-primary transition-colors relative p-2">
+                    </Link>
+                    <button className="text-[#2D3A3A]/70 hover:text-[#5A7A6A] transition-colors relative p-2">
                         <ShoppingBag className="h-5 w-5" />
-                        <span className="absolute top-0.5 right-0.5 bg-primary text-primary-foreground text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">
+                        <span className="absolute top-0.5 right-0.5 bg-[#5A7A6A] text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">
                             2
                         </span>
                     </button>
-                    <button className="text-foreground/70 hover:text-primary transition-colors p-2">
+                    <button className="text-[#2D3A3A]/70 hover:text-[#5A7A6A] transition-colors p-2">
                         <User className="h-5 w-5" />
                     </button>
                 </div>
@@ -148,13 +148,20 @@ export function Header() {
                                 );
                             })}
                         </div>
-                        <div className="pt-6 flex gap-3">
-                            <Button variant="outline" className="flex-1 justify-center gap-2 rounded-full" size="sm">
-                                <User className="h-4 w-4" /> Account
-                            </Button>
-                            <Button className="flex-1 justify-center gap-2 rounded-full" size="sm">
-                                <ShoppingBag className="h-4 w-4" /> Cart (2)
-                            </Button>
+                        <div className="pt-6 flex flex-col gap-3">
+                            <Link href="/search" onClick={() => setMobileMenuOpen(false)}>
+                                <Button variant="outline" className="w-full justify-center gap-2 rounded-full" size="sm">
+                                    <Search className="h-4 w-4" /> Search Blends
+                                </Button>
+                            </Link>
+                            <div className="flex gap-3">
+                                <Button variant="outline" className="flex-1 justify-center gap-2 rounded-full" size="sm">
+                                    <User className="h-4 w-4" /> Account
+                                </Button>
+                                <Button className="flex-1 justify-center gap-2 rounded-full" size="sm">
+                                    <ShoppingBag className="h-4 w-4" /> Cart (2)
+                                </Button>
+                            </div>
                         </div>
                     </div>
                 </div>
