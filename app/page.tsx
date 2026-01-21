@@ -7,63 +7,36 @@ import { FeaturedProducts } from "@/components/home/FeaturedProducts";
 import { IngredientTransparency } from "@/components/home/IngredientTransparency";
 import { InstagramCommunity } from "@/components/home/InstagramCommunity";
 import { AIAssistantTeaser } from "@/components/home/AIAssistantTeaser";
-import { Product } from "@/types";
+import { createClient } from '@supabase/supabase-js';
 
-const featuredProducts: Product[] = [
-  {
-    id: "1",
-    slug: "green-goddess-cleanse",
-    name: "Green Goddess Cleanse",
-    description:
-      "A powerful detox blend of kale, spinach, apple, and lemon. Restore your natural balance.",
-    price: 12.0,
-    category: "Cleanse",
-    image_urls: [],
-    ingredients: ["Kale", "Spinach", "Apple", "Lemon", "Ginger"],
-    benefits: ["Supports natural detox", "Gentle energy boost"],
-    wellness_goals: ["Detox", "Energy"],
-    stock: 100,
-    is_featured: true,
-    popularity_score: 95,
-    created_at: new Date().toISOString(),
-  },
-  {
-    id: "2",
-    slug: "sunrise-citrus-roots",
-    name: "Sunrise Citrus Roots",
-    description:
-      "Energizing carrot, orange, and ginger blend. The perfect morning companion.",
-    price: 11.0,
-    category: "Juice",
-    image_urls: [],
-    ingredients: ["Carrot", "Orange", "Ginger", "Turmeric"],
-    benefits: ["Supports immunity", "Natural vitamin C"],
-    wellness_goals: ["Immunity", "Energy"],
-    stock: 100,
-    is_featured: true,
-    popularity_score: 88,
-    created_at: new Date().toISOString(),
-  },
-  {
-    id: "3",
-    slug: "sea-buckthorn-elixir",
-    name: "Sea Buckthorn Elixir",
-    description:
-      "Himalayan sea buckthorn with amla and honey. Ancient wisdom, modern wellness.",
-    price: 14.0,
-    category: "Wellness",
-    image_urls: [],
-    ingredients: ["Sea Buckthorn", "Amla", "Raw Honey", "Ginger"],
-    benefits: ["Rich in antioxidants", "Supports overall wellness"],
-    wellness_goals: ["Immunity", "Vitality"],
-    stock: 50,
-    is_featured: true,
-    popularity_score: 92,
-    created_at: new Date().toISOString(),
-  },
-];
+// Server-side Supabase client (no 'use client')
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
-export default function Home() {
+export default async function Home() {
+  // Fetch products on the SERVER before rendering
+  const { data } = await supabase
+    .from('products')
+    .select('*')
+    .limit(3);
+
+  const products = data?.map((p: any) => ({
+    id: p.id,
+    slug: p.slug,
+    name: p.name,
+    description: p.description,
+    price: p.price,
+    image_urls: p.image_urls || [],
+    category: p.category,
+    stock: p.stock_quantity || 0,
+    ingredients: p.ingredients || [],
+    benefits: p.benefits || [],
+    wellness_goals: p.wellness_goals || [],
+    created_at: p.created_at,
+  })) || [];
+
   return (
     <div className="min-h-screen flex flex-col bg-[#FDFBF7]">
       <Header />
@@ -72,7 +45,7 @@ export default function Home() {
         <Hero />
         <TrustSection />
         <WellnessGoals />
-        <FeaturedProducts products={featuredProducts} />
+        <FeaturedProducts products={products} />
         <IngredientTransparency />
         <InstagramCommunity />
         <AIAssistantTeaser />
@@ -82,3 +55,6 @@ export default function Home() {
     </div>
   );
 }
+
+// Revalidate every 60 seconds (ISR)
+export const revalidate = 60;

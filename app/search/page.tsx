@@ -1,7 +1,7 @@
 "use client";
 
 import { Suspense } from "react";
-import { useState, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Header } from "@/components/layout/Header";
@@ -9,19 +9,60 @@ import { Footer } from "@/components/layout/Footer";
 import { ProductCard } from "@/components/product/ProductCard";
 import { Search as SearchIcon, X, Sparkles } from "lucide-react";
 import { Product } from "@/types";
-import { mockProducts } from "@/app/products/page"
+import { supabase } from "@/lib/supabase/client";
 
 function SearchContent() {
     const searchParams = useSearchParams();
     const initialQuery = searchParams.get("q") || "";
     const [query, setQuery] = useState(initialQuery);
+    const [products, setProducts] = useState<Product[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    // Fetch all products from Supabase
+    useEffect(() => {
+        async function fetchProducts() {
+            try {
+                setLoading(true);
+                const { data, error } = await supabase
+                    .from('products')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                // Map DB data to Product type
+                const mappedProducts: Product[] = (data ?? []).map((product: any) => ({
+                    id: product.id,
+                    slug: product.slug || '',
+                    name: product.name,
+                    description: product.description,
+                    price: product.price,
+                    image_urls: product.image_urls || [],
+                    category: product.category,
+                    stock: product.stock_quantity || 0,
+                    ingredients: product.ingredients || [],
+                    benefits: product.benefits || [],
+                    wellness_goals: product.wellness_goals || [],
+                    created_at: product.created_at,
+                }));
+
+                setProducts(mappedProducts);
+            } catch (err) {
+                console.error('Error fetching products:', err);
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        fetchProducts();
+    }, []);
 
     const results = useMemo(() => {
         if (!query.trim()) return [];
 
         const lowerQuery = query.toLowerCase().trim();
 
-        return mockProducts.filter((product) => {
+        return products.filter((product) => {
             return (
                 product.name.toLowerCase().includes(lowerQuery) ||
                 product.category.toLowerCase().includes(lowerQuery) ||
@@ -29,7 +70,7 @@ function SearchContent() {
                 product.description.toLowerCase().includes(lowerQuery)
             );
         });
-    }, [query]);
+    }, [query, products]);
 
     return (
         <main className="grow pt-40 pb-24 relative z-10">
@@ -56,51 +97,60 @@ function SearchContent() {
                         )}
                     </div>
                     <p className="mt-6 text-[10px] uppercase tracking-[0.4em] text-[#7A8B7A] font-bold">
-                        {results.length > 0 ? `Found ${results.length} Rituals` : "Start typing to explore"}
+                        {loading ? "Loading..." : results.length > 0 ? `Found ${results.length} Rituals` : query ? "No results found" : "Start typing to explore"}
                     </p>
                 </div>
 
                 {/* Results Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-8 gap-y-16">
-                    <AnimatePresence mode="popLayout">
-                        {results.map((product) => (
-                            <motion.div
-                                layout
-                                key={product.id}
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, scale: 0.9 }}
-                                transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-                            >
-                                <ProductCard product={product} />
-                            </motion.div>
+                {loading ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-8 gap-y-16">
+                        {[...Array(4)].map((_, i) => (
+                            <div key={i} className="animate-pulse">
+                                <div className="aspect-[4/5] rounded-[2.5rem] bg-[#F3F1ED] mb-8" />
+                                <div className="h-4 bg-[#F3F1ED] rounded mb-4 w-3/4" />
+                                <div className="h-6 bg-[#F3F1ED] rounded w-full" />
+                            </div>
                         ))}
-                    </AnimatePresence>
-                </div>
-
-                {/* Empty/Suggestion State */}
-                {query.length > 0 && results.length === 0 && (
+                    </div>
+                ) : results.length > 0 ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-8 gap-y-16">
+                        <AnimatePresence mode="popLayout">
+                            {results.map((product, index) => (
+                                <motion.div
+                                    layout
+                                    key={product.id}
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, scale: 0.9 }}
+                                    transition={{
+                                        duration: 0.4,
+                                        delay: index * 0.05,
+                                    }}
+                                >
+                                    <ProductCard product={product} />
+                                </motion.div>
+                            ))}
+                        </AnimatePresence>
+                    </div>
+                ) : query && !loading ? (
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
-                        className="py-20 text-center border-t border-[#E8E6E2]"
+                        className="py-20 text-center"
                     >
-                        <h3 className="font-heading text-2xl text-[#2D3A3A] mb-4">No blends found for "{query}"</h3>
-                        <p className="text-sm text-[#7A8A8A] font-light mb-12 italic">Try searching for a goal like "Immunity" or "Energy".</p>
-
-                        <div className="flex flex-wrap justify-center gap-4">
-                            {["She Care", "Pulp", "Energy", "Detox"].map(tag => (
-                                <button
-                                    key={tag}
-                                    onClick={() => setQuery(tag)}
-                                    className="px-6 py-2 rounded-full border border-[#5A7A6A]/20 text-[10px] uppercase tracking-widest text-[#5A7A6A] font-bold hover:bg-[#5A7A6A]/5 transition-all"
-                                >
-                                    {tag}
-                                </button>
-                            ))}
-                        </div>
+                        <Sparkles className="w-16 h-16 mx-auto mb-8 text-[#5A7A6A]/20" />
+                        <h3 className="font-heading text-3xl text-[#2D3A3A] mb-4">Nothing matches that search</h3>
+                        <p className="text-sm text-[#7A8A8A] font-light mb-12">
+                            Try searching for "energy", "immunity", or "detox"
+                        </p>
+                        <button
+                            onClick={() => setQuery("")}
+                            className="px-8 py-3 border border-[#5A7A6A]/20 text-[10px] uppercase tracking-widest text-[#5A7A6A] font-bold hover:bg-[#5A7A6A]/5 transition-all rounded-full"
+                        >
+                            Clear Search
+                        </button>
                     </motion.div>
-                )}
+                ) : null}
             </div>
         </main>
     );
@@ -109,23 +159,16 @@ function SearchContent() {
 export default function SearchPage() {
     return (
         <div className="min-h-screen flex flex-col bg-[#FDFBF7]">
-            {/* Grain Texture */}
-            <div className="absolute inset-0 z-0 opacity-[0.03] pointer-events-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
-
             <Header />
-
             <Suspense fallback={
                 <main className="grow pt-40 pb-24 relative z-10">
                     <div className="mx-auto max-w-7xl px-8 lg:px-12">
-                        <div className="max-w-3xl mb-16">
-                            <div className="w-full h-16 bg-[#F3F1ED] animate-pulse rounded-2xl" />
-                        </div>
+                        <div className="h-20 bg-[#F3F1ED] rounded animate-pulse mb-16 w-full max-w-3xl" />
                     </div>
                 </main>
             }>
                 <SearchContent />
             </Suspense>
-
             <Footer />
         </div>
     );

@@ -14,8 +14,9 @@ export interface Product {
   nutrition_info?: NutritionInfo;
   usage_guidance?: string;
   safety_disclaimer?: string;
-  is_featured: boolean;
-  popularity_score: number;
+  lifestyle_images?: string[];
+  is_featured?: boolean;
+  popularity_score?: number;
   created_at: string;
   updated_at?: string;
   metadata?: Record<string, unknown>;

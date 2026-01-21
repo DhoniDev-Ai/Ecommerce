@@ -1,140 +1,68 @@
 "use client";
 
-
-import { useState, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { ProductCard } from "@/components/product/ProductCard";
 import { Product } from "@/types";
-import { SlidersHorizontal, X, ArrowDown } from "lucide-react";
-
-
-// Mock data for demonstration
-export const mockProducts: Product[] = [
-    {
-        id: "1",
-        slug: "green-goddess-cleanse",
-        name: "Green Goddess Cleanse",
-        description: "A powerful detox blend of kale, spinach, apple, and lemon.",
-        price: 12.0,
-        image_urls: [],
-        category: "Cleanse",
-        stock: 100,
-        ingredients: ["Kale", "Spinach", "Apple", "Lemon", "Ginger"],
-        benefits: ["Supports detox", "Boosts energy"],
-        wellness_goals: ["Detox", "Energy"],
-        is_featured: true,
-        popularity_score: 95,
-        created_at: new Date().toISOString(),
-    },
-    {
-        id: "2",
-        slug: "sunrise-citrus-roots",
-        name: "Sunrise Citrus Roots",
-        description: "Energizing carrot, orange, and ginger blend.",
-        price: 11.0,
-        compare_at_price: 13.0,
-        image_urls: [],
-        category: "Juice",
-        stock: 100,
-        ingredients: ["Carrot", "Orange", "Ginger", "Turmeric"],
-        benefits: ["Supports immunity", "Anti-inflammatory"],
-        wellness_goals: ["Immunity", "Energy"],
-        is_featured: true,
-        popularity_score: 88,
-        created_at: new Date().toISOString(),
-    },
-    {
-        id: "3",
-        slug: "beet-it-up",
-        name: "Beet It Up",
-        description: "Earthy beets mixed with sweet apple and cucumber.",
-        price: 11.0,
-        image_urls: [],
-        category: "Juice",
-        stock: 100,
-        ingredients: ["Beetroot", "Apple", "Cucumber", "Lemon"],
-        benefits: ["Supports stamina", "Heart health"],
-        wellness_goals: ["Stamina", "Heart Health"],
-        is_featured: false,
-        popularity_score: 82,
-        created_at: new Date().toISOString(),
-    },
-    {
-        id: "4",
-        slug: "tropical-immunity-boost",
-        name: "Tropical Immunity Boost",
-        description: "Mango, pineapple, and coconut water with turmeric.",
-        price: 13.0,
-        image_urls: [],
-        category: "Smoothie",
-        stock: 50,
-        ingredients: ["Mango", "Pineapple", "Coconut Water", "Turmeric"],
-        benefits: ["Immune support", "Hydration"],
-        wellness_goals: ["Immunity", "Hydration"],
-        is_featured: true,
-        popularity_score: 91,
-        created_at: new Date().toISOString(),
-    },
-    {
-        id: "5",
-        slug: "calm-lavender-blend",
-        name: "Calm Lavender Blend",
-        description: "Soothing lavender, chamomile, and apple blend.",
-        price: 10.0,
-        image_urls: [],
-        category: "Wellness",
-        stock: 75,
-        ingredients: ["Apple", "Lavender", "Chamomile", "Honey"],
-        benefits: ["Relaxation", "Better sleep"],
-        wellness_goals: ["Relaxation", "Sleep"],
-        is_featured: false,
-        popularity_score: 78,
-        created_at: new Date().toISOString(),
-    },
-    {
-        id: "6",
-        slug: "sea-buckthorn-elixir",
-        name: "Sea Buckthorn Elixir",
-        description: "Himalayan sea buckthorn with amla and honey.",
-        price: 14.0,
-        image_urls: [],
-        category: "Wellness",
-        stock: 60,
-        ingredients: ["Sea Buckthorn", "Amla", "Raw Honey", "Ginger"],
-        benefits: ["Rich in antioxidants", "Supports immunity"],
-        wellness_goals: ["Immunity", "Vitality"],
-        is_featured: true,
-        popularity_score: 92,
-        created_at: new Date().toISOString(),
-    },
-];
-
-const categories = ["All", "Juice", "Cleanse", "Smoothie", "Wellness"];
-const wellnessGoals = [
-    "All Goals",
-    "Detox",
-    "Energy",
-    "Immunity",
-    "Digestion",
-    "Relaxation",
-];
-
-
-// (Keep your mockProducts, categories, and wellnessGoals from the previous step)
+import { supabase } from "@/lib/supabase/client";
+import { SlidersHorizontal, X } from "lucide-react";
 
 export default function ProductsPage() {
-    const [selectedCategory, setSelectedCategory] = useState("All");
-    const [selectedGoal, setSelectedGoal] = useState("All Goals");
+    const [products, setProducts] = useState<Product[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [selectedCategory, setSelectedCategory] = useState<string>("All");
+    const [selectedGoal, setSelectedGoal] = useState<string>("All Goals");
+
+    const categories = ["All", "Pulp", "She Care", "Cleanse", "Immunity", "Heart Health", "Diabetic Care"];
+    const wellnessGoals = ["All Goals", "Energy", "Immunity", "Detox", "Digestion", "Skin Health", "Women's Health", "Heart Health", "Blood Sugar"];
+
+    useEffect(() => {
+        async function fetchProducts() {
+            try {
+                setLoading(true);
+                const { data, error } = await supabase
+                    .from('products')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                const mappedProducts: Product[] = (data ?? []).map((product: any) => ({
+                    id: product.id,
+                    slug: product.slug || '',
+                    name: product.name,
+                    description: product.description,
+                    price: product.price,
+                    image_urls: product.image_urls || [],
+                    category: product.category,
+                    stock: product.stock_quantity || 0,
+                    ingredients: product.ingredients || [],
+                    benefits: product.benefits || [],
+                    wellness_goals: product.wellness_goals || [],
+                    created_at: product.created_at,
+                }));
+
+                setProducts(mappedProducts);
+            } catch (err) {
+                console.error('Error fetching products:', err);
+                setError('Failed to load products');
+            } finally {
+                setLoading(false);
+            }
+        }
+        fetchProducts();
+    }, []);
 
     const filteredProducts = useMemo(() => {
-        return mockProducts.filter((p) => {
-            const categoryMatch = selectedCategory === "All" || p.category === selectedCategory;
-            const goalMatch = selectedGoal === "All Goals" || p.wellness_goals.includes(selectedGoal);
-            return categoryMatch && goalMatch;
+        return products.filter((p) => {
+            const matchesCategory = selectedCategory === "All" || p.category === selectedCategory;
+            const matchesGoal = selectedGoal === "All Goals" || p.wellness_goals.includes(selectedGoal);
+            return matchesCategory && matchesGoal;
         });
-    }, [selectedCategory, selectedGoal]);
+    }, [products, selectedCategory, selectedGoal]);
 
     return (
         <div className="min-h-screen flex flex-col bg-[#FDFBF7] selection:bg-[#5A7A6A]/10">
@@ -154,10 +82,10 @@ export default function ProductsPage() {
                             className="lg:col-span-8"
                         >
                             <p className="text-[10px] uppercase tracking-[0.4em] text-[#7A8B7A] font-bold mb-6">
-                                Curated Collection
+                                Seasonal Collection
                             </p>
                             <h1 className="font-heading text-[clamp(3rem,6vw,5.5rem)] leading-[0.9] text-[#2D3A3A] tracking-tighter">
-                                Pure life, <br />
+                                Pure vitality, <br />
                                 <span className="italic font-serif font-light text-[#5A7A6A]">expertly bottled.</span>
                             </h1>
                         </motion.div>
@@ -168,16 +96,16 @@ export default function ProductsPage() {
                             className="lg:col-span-4 flex lg:justify-end"
                         >
                             <p className="text-sm text-[#6A7A7A] max-w-xs font-light leading-relaxed border-l border-[#E8E6E2] pl-6">
-                                From our Jaipur studio to your morning ritual. Explore our 2025 blends crafted for specific wellness intentions.
+                                From our Jaipur studio to your morning ritual. Each blend is cold-pressed to preserve enzymatic life.
                             </p>
                         </motion.div>
                     </div>
 
-                    {/* Filter Bar - Floating Glass Aesthetic */}
-                    <div className="top-28 z-30 mb-20">
+                    {/* Filter Bar - Minimalist Sticky Ribbon */}
+                    <div className=" z-30 mb-20">
                         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8 py-6 border-y border-[#E8E6E2]/50 backdrop-blur-sm bg-[#FDFBF7]/40">
 
-                            {/* Categories - Minimalist Tabs */}
+                            {/* Categories */}
                             <div className="flex items-center gap-10 overflow-x-auto no-scrollbar">
                                 {categories.map((cat) => (
                                     <button
@@ -195,10 +123,10 @@ export default function ProductsPage() {
                                 ))}
                             </div>
 
-                            {/* Refined Goal Filter */}
+                            {/* Goal Selector */}
                             <div className="flex items-center gap-6">
                                 <div className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-[#9AA09A] font-bold">
-                                    <SlidersHorizontal className="w-3 h-3" /> Filter By Goal:
+                                    <SlidersHorizontal className="w-3 h-3" /> Ritual Goal:
                                 </div>
                                 <select
                                     value={selectedGoal}
@@ -213,39 +141,50 @@ export default function ProductsPage() {
                         </div>
                     </div>
 
-                    {/* Product Grid - Staggered Laptop View */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-12 lg:gap-x-20 gap-y-24">
-                        <AnimatePresence mode="popLayout">
-                            {filteredProducts.map((product, index) => (
-                                <motion.div
-                                    layout
-                                    key={product.id}
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, scale: 0.95 }}
-                                    transition={{
-                                        duration: 0.6,
-                                        delay: index * 0.05,
-                                        ease: [0.22, 1, 0.36, 1]
-                                    }}
-                                    // Stagger effect for laptop view (middle column offset)
-                                    className={index % 3 === 1 ? "lg:translate-y-16" : ""}
-                                >
-                                    <ProductCard product={product} />
-                                </motion.div>
+                    {/* Staggered Grid View */}
+                    {loading ? (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-20 gap-y-24">
+                            {[...Array(6)].map((_, i) => (
+                                <div key={i} className={i % 3 === 1 ? "lg:translate-y-16 animate-pulse" : "animate-pulse"}>
+                                    <div className="aspect-[4/5] rounded-[2.5rem] bg-[#F3F1ED] mb-8" />
+                                    <div className="h-4 bg-[#F3F1ED] rounded mb-4 w-3/4" />
+                                    <div className="h-6 bg-[#F3F1ED] rounded w-full" />
+                                </div>
                             ))}
-                        </AnimatePresence>
-                    </div>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-12 lg:gap-x-20 gap-y-24">
+                            <AnimatePresence mode="popLayout">
+                                {filteredProducts.map((product, index) => (
+                                    <motion.div
+                                        layout
+                                        key={product.id}
+                                        initial={{ opacity: 0, y: 20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0, scale: 0.95 }}
+                                        transition={{
+                                            duration: 0.6,
+                                            delay: index * 0.05,
+                                            ease: [0.22, 1, 0.36, 1]
+                                        }}
+                                        className={index % 3 === 1 ? "lg:translate-y-16" : ""}
+                                    >
+                                        <ProductCard product={product} />
+                                    </motion.div>
+                                ))}
+                            </AnimatePresence>
+                        </div>
+                    )}
 
                     {/* Empty State */}
-                    {filteredProducts.length === 0 && (
+                    {!loading && filteredProducts.length === 0 && (
                         <div className="py-40 text-center border-t border-[#E8E6E2]">
-                            <h3 className="font-heading text-2xl text-[#2D3A3A] mb-4">Finding your balance...</h3>
+                            <h3 className="font-heading text-2xl text-[#2D3A3A] mb-4">No rituals match your journey.</h3>
                             <button
                                 onClick={() => { setSelectedCategory("All"); setSelectedGoal("All Goals") }}
                                 className="text-[10px] uppercase tracking-widest text-[#5A7A6A] font-bold border-b border-[#5A7A6A] pb-1"
                             >
-                                Reset All Filters
+                                Reset Filters
                             </button>
                         </div>
                     )}
