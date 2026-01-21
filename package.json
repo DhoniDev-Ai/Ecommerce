@@ -9,7 +9,6 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "@stripe/stripe-js": "^8.6.1",
     "@supabase/supabase-js": "^2.90.1",
     "clsx": "^2.1.1",
     "locomotive-scroll": "^4.1.4",

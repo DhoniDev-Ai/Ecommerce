@@ -11,7 +11,7 @@ const navigation = [
     { name: "Collection", href: "/products" },
     { name: "The Alchemy", href: "/about" },
     { name: "Contact", href: "/contact" },
-    { name: "Blog", href: "https://github.com/DhoniDev-Ai/Ecommerce" }
+    { name: "Journal", href: "/journal" }
 ];
 
 export function Header() {
@@ -106,7 +106,7 @@ export function Header() {
             <div
                 className={cn(
                     "lg:hidden fixed inset-0 z-50 w-full overflow-y-auto bg-[#FDFBF7] transition-transform duration-300 ease-in-out sm:max-w-sm sm:inset-y-0",
-                    mobileMenuOpen ? "translate-x-0" : "translate-x-full"
+                    mobileMenuOpen ? "translate-x-0" : "translate-x-full hidden"
                 )}
             >
                 <div className="flex min-h-full flex-col px-6 py-6 bg-[#FDFBF7]">
