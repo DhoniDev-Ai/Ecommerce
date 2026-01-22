@@ -109,6 +109,7 @@ export interface Database {
           email: string
           full_name: string | null
           phone: string | null
+          alt_phone: string | null
           role: 'user' | 'admin'
           created_at: string
           updated_at: string
@@ -118,6 +119,7 @@ export interface Database {
           email: string
           full_name?: string | null
           phone?: string | null
+          alt_phone?: string | null
           role?: 'user' | 'admin'
           created_at?: string
           updated_at?: string
@@ -127,6 +129,7 @@ export interface Database {
           email?: string
           full_name?: string | null
           phone?: string | null
+          alt_phone?: string | null
           role?: 'user' | 'admin'
           created_at?: string
           updated_at?: string
@@ -153,25 +156,34 @@ export interface Database {
         }
       }
       cart_items: {
-        Row: {
-          id: string
-          cart_id: string
-          product_id: string
-          quantity: number
-        }
-        Insert: {
-          id?: string
-          cart_id: string
-          product_id: string
-          quantity?: number
-        }
-        Update: {
-          id?: string
-          cart_id?: string
-          product_id?: string
-          quantity?: number
-        }
-      }
+  Row: {
+    id: string
+    cart_id: string
+    product_id: string
+    quantity: number
+    price_at_add: number
+    currency: string
+    updated_at: string // Add this line
+  }
+  Insert: {
+    id?: string
+    cart_id: string
+    product_id: string
+    quantity?: number
+    price_at_add: number
+    currency?: string
+    updated_at?: string // Add this line
+  }
+  Update: {
+    id?: string
+    cart_id?: string
+    product_id?: string
+    quantity?: number
+    price_at_add?: number
+    currency?: string
+    updated_at?: string // Add this line
+  }
+}
       orders: {
         Row: {
           id: string
@@ -181,6 +193,7 @@ export interface Database {
           payment_status: 'pending' | 'paid' | 'failed'
           shipping_address: Json
           stripe_payment_intent_id: string | null
+          cashfree_order_id: string | null
           created_at: string
           updated_at: string
         }
@@ -192,6 +205,7 @@ export interface Database {
           payment_status?: 'pending' | 'paid' | 'failed'
           shipping_address: Json
           stripe_payment_intent_id?: string | null
+          cashfree_order_id?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -203,6 +217,51 @@ export interface Database {
           payment_status?: 'pending' | 'paid' | 'failed'
           shipping_address?: Json
           stripe_payment_intent_id?: string | null
+          cashfree_order_id?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      addresses: {
+        Row: {
+          id: string
+          user_id: string
+          full_name: string
+          phone: string
+          address_line_1: string
+          address_line_2: string | null
+          city: string
+          state: string
+          pincode: string
+          is_default: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          full_name: string
+          phone: string
+          address_line_1: string
+          address_line_2?: string | null
+          city: string
+          state: string
+          pincode: string
+          is_default?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          full_name?: string
+          phone?: string
+          address_line_1?: string
+          address_line_2?: string | null
+          city?: string
+          state?: string
+          pincode?: string
+          is_default?: boolean
           created_at?: string
           updated_at?: string
         }
@@ -235,7 +294,16 @@ export interface Database {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      increment_cart_item: {
+        Args: {
+          p_user_id: string
+          p_product_id: string
+          p_price_at_add: number
+          p_currency: string
+          p_increment_qty: number
+        }
+        Returns: any
+      }
     }
     Enums: {
       [_ in never]: never

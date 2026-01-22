@@ -1,11 +1,15 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { Menu, X, ShoppingBag, Search, User } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { Menu, X, ShoppingBag, Search, User, LogOut } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/Button";
 import { cn } from "@/utils/cn";
+import { supabase } from "@/lib/supabase/client";
+import type { User as SupabaseUser } from "@supabase/supabase-js";
+import { useCartContext } from "@/context/CartContext";
 
 const navigation = [
     { name: "Collection", href: "/products" },
@@ -17,8 +21,31 @@ const navigation = [
 export function Header() {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [isScrolled, setIsScrolled] = useState(false);
+    const [user, setUser] = useState<SupabaseUser | null>(null);
+    const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
     const pathname = usePathname();
+    const router = useRouter();
+    const dropdownRef = useRef<HTMLDivElement>(null);
+    const { openCart, itemCount } = useCartContext();
 
+    // Listen for auth state changes
+    useEffect(() => {
+        // Get initial session
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            setUser(session?.user ?? null);
+        });
+
+        // Listen for changes
+        const {
+            data: { subscription },
+        } = supabase.auth.onAuthStateChange((_event, session) => {
+            setUser(session?.user ?? null);
+        });
+
+        return () => subscription.unsubscribe();
+    }, []);
+
+    // Handle scroll
     useEffect(() => {
         const handleScroll = () => {
             setIsScrolled(window.scrollY > 0);
@@ -26,6 +53,30 @@ export function Header() {
         window.addEventListener("scroll", handleScroll);
         return () => window.removeEventListener("scroll", handleScroll);
     }, []);
+
+    // Close dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                setProfileDropdownOpen(false);
+            }
+        };
+
+        if (profileDropdownOpen) {
+            document.addEventListener("mousedown", handleClickOutside);
+        }
+
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, [profileDropdownOpen]);
+
+    // Handle logout
+    const handleLogout = async () => {
+        await supabase.auth.signOut();
+        setProfileDropdownOpen(false);
+        router.push("/");
+    };
 
     return (
         <header
@@ -52,8 +103,22 @@ export function Header() {
                     </Link>
                 </div>
 
-                {/* Mobile Menu Button */}
-                <div className="flex lg:hidden">
+                {/* Mobile Cart & Menu Buttons */}
+                <div className="flex lg:hidden items-center gap-3">
+                    {/* Cart Button - Mobile */}
+                    <button
+                        onClick={openCart}
+                        className="text-[#2D3A3A]/70 hover:text-[#5A7A6A] transition-colors relative p-2"
+                    >
+                        <ShoppingBag className="h-5 w-5" />
+                        {itemCount > 0 && (
+                            <span className="absolute top-0.5 right-0.5 bg-[#5A7A6A] text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">
+                                {itemCount}
+                            </span>
+                        )}
+                    </button>
+
+                    {/* Menu Button */}
                     <button
                         type="button"
                         className="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-foreground"
@@ -90,15 +155,74 @@ export function Header() {
                     <Link href="/search" className="text-[#2D3A3A]/70 hover:text-[#5A7A6A] transition-colors p-2">
                         <Search className="h-5 w-5" />
                     </Link>
-                    <button className="text-[#2D3A3A]/70 hover:text-[#5A7A6A] transition-colors relative p-2">
+                    <button
+                        onClick={openCart}
+                        className="text-[#2D3A3A]/70 hover:text-[#5A7A6A] cursor-pointer transition-colors relative p-2"
+                    >
                         <ShoppingBag className="h-5 w-5" />
-                        <span className="absolute top-0.5 right-0.5 bg-[#5A7A6A] text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">
-                            2
-                        </span>
+                        {itemCount > 0 && (
+                            <span className="absolute top-0.5 right-0.5 bg-[#5A7A6A] text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">
+                                {itemCount}
+                            </span>
+                        )}
                     </button>
-                    <button className="text-[#2D3A3A]/70 hover:text-[#5A7A6A] transition-colors p-2">
-                        <User className="h-5 w-5" />
-                    </button>
+
+                    {/* Auth Section */}
+                    {!user ? (
+                        <Link
+                            href="/login"
+                            className="text-[9px] uppercase tracking-[0.35em] font-bold text-[#2D3A3A]/70 hover:text-[#5A7A6A] cursor-pointer transition-colors ml-2"
+                        >
+                            Login
+                        </Link>
+                    ) : (
+                        <div className="relative" ref={dropdownRef}>
+                            <button
+                                onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
+                                className="text-[#2D3A3A]/70 cursor-pointer hover:text-[#5A7A6A] transition-colors p-2"
+                            >
+                                <User className="h-5 w-5 stroke-[1.5]" />
+                            </button>
+
+                            {/* Profile Dropdown */}
+                            <AnimatePresence>
+                                {profileDropdownOpen && (
+                                    <motion.div
+                                        initial={{ opacity: 0, y: -10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0, y: -10 }}
+                                        transition={{ duration: 0.2 }}
+                                        className="absolute right-0 mt-2 w-48 bg-white rounded-2xl shadow-2xl shadow-black/10 border border-[#E8E6E2] overflow-hidden z-50"
+                                    >
+                                        <div className="p-3 border-b border-[#E8E6E2]">
+                                            <p className="text-[9px] uppercase tracking-[0.3em] text-[#7A8B7A] font-bold">
+                                                Ritual Member
+                                            </p>
+                                            <p className="text-xs text-[#2D3A3A] mt-1 truncate font-light">
+                                                {user.email}
+                                            </p>
+                                        </div>
+                                        <div className="py-2">
+                                            <Link
+                                                href="/dashboard"
+                                                onClick={() => setProfileDropdownOpen(false)}
+                                                className="block px-4 py-2.5 text-[10px] uppercase tracking-[0.25em] font-bold text-[#2D3A3A]/70 hover:bg-[#5A7A6A]/5 hover:text-[#5A7A6A] transition-colors"
+                                            >
+                                                Dashboard
+                                            </Link>
+                                            <button
+                                                onClick={handleLogout}
+                                                className="w-full text-left px-4 py-2.5 text-[10px] uppercase tracking-[0.25em] font-bold text-[#2D3A3A]/70 hover:bg-red-50 cursor-pointer hover:text-red-600 transition-colors flex items-center gap-2"
+                                            >
+                                                <LogOut className="h-3.5 w-3.5 stroke-2" />
+                                                Log Out
+                                            </button>
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                        </div>
+                    )}
                 </div>
             </nav>
 
@@ -154,14 +278,51 @@ export function Header() {
                                     <Search className="h-4 w-4" /> Search Blends
                                 </Button>
                             </Link>
-                            <div className="flex gap-3">
-                                <Button variant="outline" className="flex-1 justify-center gap-2 rounded-full" size="sm">
-                                    <User className="h-4 w-4" /> Account
-                                </Button>
-                                <Button className="flex-1 justify-center gap-2 rounded-full" size="sm">
-                                    <ShoppingBag className="h-4 w-4" /> Cart (2)
-                                </Button>
-                            </div>
+
+                            {/* Auth Buttons */}
+                            {!user ? (
+                                <div className="flex gap-3">
+                                    <Link href="/login" className="flex-1" onClick={() => setMobileMenuOpen(false)}>
+                                        <Button variant="outline" className="w-full justify-center gap-2 rounded-full" size="sm">
+                                            <User className="h-4 w-4" /> Login
+                                        </Button>
+                                    </Link>
+                                    <Button
+                                        className="flex-1 justify-center gap-2 rounded-full"
+                                        size="sm"
+                                        onClick={() => {
+                                            openCart();
+                                            setMobileMenuOpen(false);
+                                        }}
+                                    >
+                                        <ShoppingBag className="h-4 w-4" /> Cart ({itemCount})
+                                    </Button>
+                                </div>
+                            ) : (
+                                <>
+                                    <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)}>
+                                        <Button variant="outline" className="w-full justify-center gap-2 rounded-full" size="sm">
+                                            <User className="h-4 w-4" /> Dashboard
+                                        </Button>
+                                    </Link>
+                                    <div className="flex gap-3">
+                                        <div className="flex-1">
+                                            <Button
+                                                variant="outline"
+                                                className="w-full justify-center gap-2 rounded-full"
+                                                size="sm"
+                                                onClick={() => {
+                                                    handleLogout();
+                                                    setMobileMenuOpen(false);
+                                                }}
+                                            >
+                                                <LogOut className="h-4 w-4" /> Logout
+                                            </Button>
+                                        </div>
+
+                                    </div>
+                                </>
+                            )}
                         </div>
                     </div>
                 </div>

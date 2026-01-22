@@ -13,6 +13,9 @@ import {
 import { Product } from "@/types";
 import { cn } from "@/utils/cn";
 import { supabase } from "@/lib/supabase/client";
+import { useCart } from "@/hooks/useCart";
+import { ProductSkeleton } from "@/components/products/ProductSkeleton";
+import { PriceDisplay } from "@/components/product/PriceDisplay";
 
 export default function ProductDetailPage() {
     const params = useParams();
@@ -24,6 +27,17 @@ export default function ProductDetailPage() {
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);
     const [quantity, setQuantity] = useState(1);
     const [isPaused, setIsPaused] = useState(false);
+
+    const { addToCart, isAdding, isSuccess } = useCart();
+
+    const handleAddToCart = () => {
+        if (product) {
+            addToCart(product.id, product.price, quantity);
+        }
+    };
+
+    const isProcessing = product ? isAdding(product.id) : false;
+    const showSuccess = product ? isSuccess(product.id) : false;
 
     // Fetch product from Supabase using your exact demo data structure
     useEffect(() => {
@@ -106,11 +120,11 @@ export default function ProductDetailPage() {
 
     if (loading) return (
         <div className="min-h-screen flex flex-col bg-[#FDFBF7]">
-
-            <main className="grow flex h-screen items-center justify-center">
-                <div className="w-8 h-8 border-2 border-[#5A7A6A] border-t-transparent rounded-full animate-spin" />
+            <Header />
+            <main className="grow">
+                <ProductSkeleton />
             </main>
-
+            <Footer />
         </div>
     );
 
@@ -214,12 +228,17 @@ export default function ProductDetailPage() {
                                     </span>
                                 </h1>
 
+
                                 <div className="flex items-center gap-6 mb-14">
-                                    <span className="text-4xl text-[#2D3A3A] font-light tracking-tight font-serif italic">
-                                        ₹{product.price.toLocaleString()}
-                                    </span>
+                                    <PriceDisplay
+                                        price={product.price}
+                                        comparisonPrice={product.compare_at_price}
+                                        priceClassName="text-4xl font-light tracking-tight"
+                                        comparisonClassName="text-lg"
+                                    />
                                     <div className="h-px grow bg-gradient-to-r from-[#E8E6E2] to-transparent" />
                                 </div>
+
 
                                 {/* Large-Text Managed Description */}
                                 <div className="relative mb-14 group">
@@ -249,7 +268,16 @@ export default function ProductDetailPage() {
                                         </div>
 
                                         {/* Primary: Add to Bag */}
-                                        <button className="flex-[2] py-5 bg-[#2D3A3A] text-white rounded-full text-[10px] uppercase tracking-widest font-bold hover:shadow-[0_20px_40px_rgba(45,58,58,0.15)] hover:-translate-y-0.5 transition-all flex items-center justify-center gap-3 active:scale-95">
+                                        <button
+                                            onClick={handleAddToCart}
+                                            disabled={isProcessing}
+                                            className={cn(
+                                                "flex-[2] py-5 rounded-full text-[10px] uppercase tracking-widest font-bold hover:shadow-[0_20px_40px_rgba(45,58,58,0.15)] hover:-translate-y-0.5 transition-all flex items-center justify-center gap-3 active:scale-95 disabled:opacity-70",
+                                                showSuccess
+                                                    ? "bg-[#5A7A6A] text-white scale-105"
+                                                    : "bg-[#2D3A3A] text-white"
+                                            )}
+                                        >
                                             <ShoppingBag className="w-4 h-4" /> Add to Bag
                                         </button>
                                     </div>

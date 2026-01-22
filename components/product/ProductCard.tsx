@@ -5,6 +5,8 @@ import { Product } from "@/types";
 import { cn } from "@/utils/cn";
 import { Plus } from "lucide-react";
 import { useState } from "react";
+import { useCart } from "@/hooks/useCart";
+import { PriceDisplay } from "./PriceDisplay";
 
 interface ProductCardProps {
     product: Product;
@@ -12,6 +14,13 @@ interface ProductCardProps {
 
 export function ProductCard({ product }: ProductCardProps) {
     const [isHovered, setIsHovered] = useState(false);
+    const { addToCart, isAdding, isSuccess } = useCart();
+
+    const handleAddToCart = (e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        addToCart(product.id, product.price);
+    };
 
     // Map product names to available asset images
     const getProductImage = () => {
@@ -28,6 +37,8 @@ export function ProductCard({ product }: ProductCardProps) {
     };
 
     const productImage = getProductImage();
+    const isProcessing = isAdding(product.id);
+    const showSuccess = isSuccess(product.id);
 
     return (
         <article
@@ -51,14 +62,23 @@ export function ProductCard({ product }: ProductCardProps) {
                 </Link>
 
 
-                {/* Floating "Quick Add" Action */}
+                {/* Floating "Quick Add" Action with Success Pulse */}
                 <button
+                    onClick={handleAddToCart}
+                    disabled={isProcessing}
                     className={cn(
-                        "absolute bottom-6 right-6 flex h-12 w-12 items-center justify-center rounded-full bg-white text-[#2D3A3A] shadow-xl transition-all duration-500 hover:bg-[#5A7A6A] hover:text-white",
-                        isHovered ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
+                        "absolute bottom-6 right-6 flex h-12 w-12 items-center justify-center rounded-full shadow-xl cursor-pointer transition-all duration-500",
+                        isHovered ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0",
+                        showSuccess
+                            ? "bg-[#5A7A6A] text-white scale-110"
+                            : "bg-white text-[#2D3A3A] hover:bg-[#5A7A6A] hover:text-white",
+                        isProcessing && "opacity-50"
                     )}
                 >
-                    <Plus className="h-5 w-5" />
+                    <Plus className={cn(
+                        "h-5 w-5 transition-transform",
+                        showSuccess && "rotate-90"
+                    )} />
                 </button>
 
                 {/* Benefit Tag */}
@@ -74,9 +94,15 @@ export function ProductCard({ product }: ProductCardProps) {
                 <h3 className="font-heading text-lg text-[#2D3A3A] transition-colors group-hover:text-[#5A7A6A]">
                     <Link href={`/products/${product.slug}`}>{product.name}</Link>
                 </h3>
-                <p className="mt-1 text-sm font-light text-[#7A8A8A]">
-                    ${product.price.toFixed(2)} — <span className="italic">Cold Pressed</span>
-                </p>
+                <div className="mt-2">
+                    <PriceDisplay
+                        price={product.price}
+                        comparisonPrice={product.compare_at_price}
+                        priceClassName="text-lg"
+                        comparisonClassName="text-xs"
+                    />
+                    <p className="text-xs font-light text-[#7A8A8A] mt-1 italic">Cold Pressed</p>
+                </div>
             </div>
         </article>
     );

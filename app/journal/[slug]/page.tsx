@@ -9,6 +9,7 @@ import Link from "next/link";
 import { ChevronLeft, ShoppingBag, ArrowRight, Share2, Bookmark, Clock } from "lucide-react";
 import { cn } from "@/utils/cn";
 import { supabase } from "@/lib/supabase/client";
+import Image from "next/image";
 
 interface Post {
     id: string;
@@ -166,9 +167,12 @@ export default function DynamicJournalReader() {
                 {/* 2. CINEMATIC HERO (16:9) */}
                 <div className="mx-auto max-w-7xl px-4 sm:px-8 lg:px-46 mb-24">
                     <div className="relative aspect-[16/9] rounded-[2rem] lg:rounded-[3rem] overflow-hidden shadow-2xl shadow-black/[0.05]">
-                        <img
+                        <Image
                             src={post.hero_image_url || post.image_url}
                             alt={post.title}
+                            width={1000}
+                            height={1000}
+
                             className="w-full h-full object-cover"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
@@ -206,7 +210,10 @@ export default function DynamicJournalReader() {
                             {suggestedPosts.map((suggestedPost, i) => (
                                 <Link key={i} href={`/journal/${suggestedPost.slug}`} className="group block">
                                     <div className="aspect-[4/5] rounded-[2.5rem] overflow-hidden mb-8 shadow-xl shadow-black/[0.02] bg-white">
-                                        <img src={suggestedPost.image_url} alt={suggestedPost.title} className="w-full h-full object-cover transition-transform duration-[2s] group-hover:scale-110" />
+                                        <Image
+                                            width={1000}
+                                            height={1000}
+                                            src={suggestedPost.image_url} alt={suggestedPost.title} className="w-full h-full object-cover transition-transform duration-[2s] group-hover:scale-110" />
                                     </div>
                                     <span className="text-[9px] uppercase tracking-[0.3em] text-[#7A8B7A] font-bold">{suggestedPost.category}</span>
                                     <h3 className="font-heading text-2xl text-[#2D3A3A] mt-4 group-hover:text-[#5A7A6A] transition-colors">{suggestedPost.title}</h3>

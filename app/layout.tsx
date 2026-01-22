@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Montserrat, Cormorant_Garamond } from "next/font/google";
 import "./globals.css";
+import { CartProvider } from "@/context/CartContext";
+import { CartSidebar } from "@/components/layout/CartSidebar";
 
 const montserrat = Montserrat({
   variable: "--font-montserrat",
@@ -29,7 +31,10 @@ export default function RootLayout({
       <body
         className={`${montserrat.variable} ${juana.variable} antialiased`}
       >
-        {children}
+        <CartProvider>
+          {children}
+          <CartSidebar />
+        </CartProvider>
       </body>
     </html>
   );
