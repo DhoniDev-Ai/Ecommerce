@@ -377,14 +377,19 @@ export default function ProductDetailPage() {
                             </div>
                             <Link href="/products" className="hidden sm:flex items-center gap-2 text-xs text-[#5A7A6A] hover:underline uppercase tracking-widest font-bold">View Collection <ArrowRight className="w-4 h-4" /></Link>
                         </div>
-                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
+                        <div className="grid grid-cols-2  lg:grid-cols-4 gap-8">
                             {relatedProducts.map((rel) => (
                                 <Link key={rel.id} href={`/products/${rel.slug}`} className="group">
                                     <div className="aspect-square rounded-[2rem] overflow-hidden bg-white mb-6 transition-all duration-500 group-hover:shadow-2xl flex items-center justify-center p-8">
                                         <img src={rel.image_urls[0]} alt="" className="max-h-full w-auto object-contain transition-transform duration-700 group-hover:scale-110" />
                                     </div>
-                                    <h3 className="font-heading text-xl text-[#2D3A3A] mb-1">{rel.name}</h3>
-                                    <p className="text-sm text-[#7A8A8A] font-light italic">₹{parseFloat(rel.price).toFixed(2)}</p>
+                                    <h3 className="font-heading text-center text-xl text-[#2D3A3A]/50 group-hover:text-[#5A7A6A]/90 mb-1">{rel.name}</h3>
+                                    <PriceDisplay
+                                        price={parseFloat(rel.price)}
+                                        comparisonPrice={rel.compare_at_price ? parseFloat(rel.compare_at_price) : undefined}
+                                        priceClassName="text-sm font-light  italic"
+                                        comparisonClassName="text-xs"
+                                    />
                                 </Link>
                             ))}
                         </div>

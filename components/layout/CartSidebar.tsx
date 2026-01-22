@@ -1,15 +1,32 @@
 "use client";
 import { useState, useEffect, useMemo } from "react";
-import { X, Plus, Minus, Trash2, ShoppingBag, Loader2, AlertCircle } from "lucide-react";
+import { X, Plus, Minus, Trash2, ShoppingBag, Info, AlertCircle } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/utils/cn";
 import { supabase } from "@/lib/supabase/client";
 import { useCartContext } from "@/context/CartContext";
 import Link from "next/link";
 
+/**
+ * 1. The Shadow Skeleton Component
+ * Mimics the exact layout of a cart item for a seamless transition.
+ */
+const CartItemSkeleton = () => (
+    <div className="flex gap-6 items-center animate-pulse opacity-60">
+        <div className="w-16 h-16 bg-[#E8E6E2] rounded-2xl shrink-0" />
+        <div className="flex-1 space-y-3">
+            <div className="h-2 w-3/4 bg-[#E8E6E2] rounded-full" />
+            <div className="h-6 w-20 bg-[#E8E6E2] rounded-full" />
+        </div>
+        <div className="w-12 h-3 bg-[#E8E6E2] rounded-full" />
+    </div>
+);
+
 export function CartSidebar() {
     const { isOpen, closeCart, refreshCart } = useCartContext();
     const [items, setItems] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
+    const [showShippingInfo, setShowShippingInfo] = useState(false);
     const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
     const fetchCartItems = async () => {
@@ -17,53 +34,43 @@ export function CartSidebar() {
         if (!user) return;
 
         setLoading(true);
-        const { data } = await supabase
+        const { data, error } = await supabase
             .from('cart_items')
             .select(`
-                id, quantity, price_at_add, currency,
-                products ( name, image_urls, slug )
+                id, quantity, price_at_add,
+                products ( name, image_urls, slug, price )
             `)
             .order('updated_at', { ascending: false });
 
-        if (data) setItems(data);
-        setLoading(false);
+        if (!error && data) setItems(data);
+        // Small delay to make the shadow ritual feel intentional
+        setTimeout(() => setLoading(false), 400);
     };
 
     useEffect(() => {
         if (isOpen) {
             fetchCartItems();
-            setConfirmDeleteId(null); // Reset alerts on open
+            setConfirmDeleteId(null);
         }
     }, [isOpen]);
 
     const handleQuantity = async (itemId: string, currentQty: number, delta: number) => {
         const newQty = currentQty + delta;
-        // Safety Guard: Prevent 0 quantity via minus button
         if (newQty < 1) return;
 
         setItems(prev => prev.map(item =>
             item.id === itemId ? { ...item, quantity: newQty } : item
         ));
 
-        const { error } = await supabase
-            .from('cart_items')
-            .update({ quantity: newQty })
-            .eq('id', itemId);
-
+        const { error } = await supabase.from('cart_items').update({ quantity: newQty }).eq('id', itemId);
         if (error) fetchCartItems();
         refreshCart();
     };
 
     const handleRemove = async (itemId: string) => {
-        // Optimistic UI Removal
         setItems(prev => prev.filter(item => item.id !== itemId));
         setConfirmDeleteId(null);
-
-        const { error } = await supabase
-            .from('cart_items')
-            .delete()
-            .eq('id', itemId);
-
+        const { error } = await supabase.from('cart_items').delete().eq('id', itemId);
         if (error) fetchCartItems();
         refreshCart();
     };
@@ -72,111 +79,129 @@ export function CartSidebar() {
         items.reduce((sum, item) => sum + (item.price_at_add * item.quantity), 0),
         [items]);
 
+    const isFreeShipping = total >= 2500;
+
     return (
         <>
-            <div className={cn("fixed inset-0 bg-[#2D3A3A]/20 backdrop-blur-sm z-[100] transition-opacity duration-500",
-                isOpen ? "opacity-100" : "opacity-0 pointer-events-none")} onClick={closeCart} />
+            <AnimatePresence>
+                {isOpen && (
+                    <motion.div
+                        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                        className="fixed inset-0 bg-[#2D3A3A]/10 backdrop-blur-md z-[100]"
+                        onClick={closeCart}
+                    />
+                )}
+            </AnimatePresence>
 
-            <aside className={cn("fixed top-0 right-0 h-full w-full max-w-lg bg-[#FDFBF7] shadow-2xl z-[101] flex flex-col transition-transform duration-500 ease-out",
-                isOpen ? "translate-x-0" : "translate-x-full")}>
-
-                <header className="flex items-center justify-between p-8 border-b border-[#E8E6E2]">
+            <aside className={cn(
+                "fixed top-0 right-0 h-full w-full max-w-md bg-[#FDFBF7] shadow-[0_0_100px_rgba(45,58,58,0.08)] z-[101] flex flex-col transition-transform duration-700 cubic-bezier(0.19, 1, 0.22, 1)",
+                isOpen ? "translate-x-0" : "translate-x-full"
+            )}>
+                <header className="p-10 flex items-center justify-between border-b border-[#E8E6E2]/40">
                     <div>
-                        <p className="text-[9px] uppercase tracking-[0.4em] text-[#7A8B7A] font-bold mb-2">The Archive</p>
-                        <h2 className="text-2xl font-heading text-[#2D3A3A]">Wellness Bag</h2>
+                        <p className="text-[8px] uppercase tracking-[0.5em] text-[#7A8B7A] font-bold mb-1">Ritual Archive</p>
+                        <h2 className="text-xl font-heading text-[#2D3A3A] tracking-tighter">Wellness Bag</h2>
                     </div>
-                    <button onClick={closeCart} className="p-3 rounded-full hover:bg-[#F3F1ED] cursor-pointer transition-transform active:scale-90">
-                        <X className="w-5 h-5 text-[#2D3A3A]" />
+                    <button onClick={closeCart} className="p-2 hover:bg-[#F3F1ED] rounded-full cursor-pointer transition-colors">
+                        <X className="w-4 h-4 text-[#2D3A3A]" />
                     </button>
                 </header>
 
-                <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
-                    {loading && items.length === 0 ? (
-                        <div className="flex items-center justify-center h-full opacity-20"><Loader2 className="w-8 h-8 animate-spin" /></div>
+                <div className="flex-1 overflow-y-auto px-10 py-6 space-y-10 custom-scrollbar">
+                    {/* 2. THE SHADOW LOADING STATE */}
+                    {loading ? (
+                        <div className="space-y-10 pt-4">
+                            <CartItemSkeleton />
+                            <CartItemSkeleton />
+                            <CartItemSkeleton />
+                        </div>
                     ) : items.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center h-full text-center space-y-4">
-                            <ShoppingBag className="w-12 h-12 text-[#E8E6E2]" />
-                            <p className="font-serif italic text-[#7A8A8A]">Your bag is currently silent.</p>
+                        <div className="h-full flex flex-col items-center justify-center opacity-30 text-center space-y-4">
+                            <ShoppingBag className="w-8 h-8 stroke-[1px]" />
+                            <p className="text-[10px] uppercase tracking-[0.3em] font-medium italic">Bag is Silent</p>
                         </div>
                     ) : (
-                        <div className="space-y-6">
-                            {items.map((item) => (
-                                <div key={item.id} className="relative group">
-                                    {/* Confirmation Overlay */}
+                        items.map((item) => (
+                            <div key={item.id} className="group relative flex gap-6 items-center">
+                                <AnimatePresence>
                                     {confirmDeleteId === item.id && (
-                                        <div className="absolute inset-0 z-10 bg-white/95 backdrop-blur-sm rounded-[2rem] flex items-center justify-between px-8 animate-in fade-in zoom-in duration-300">
-                                            <div className="flex items-center gap-3">
-                                                <AlertCircle className="w-4 h-4 text-red-500" />
-                                                <p className="text-[10px] font-bold uppercase tracking-widest text-[#2D3A3A]">Dissolve this ritual?</p>
+                                        <motion.div
+                                            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                                            className="absolute inset-0 z-10 bg-white/95 backdrop-blur-sm rounded-2xl flex items-center justify-between px-6"
+                                        >
+                                            <div className="flex items-center gap-2">
+                                                <AlertCircle className="w-3 h-3 text-red-500" />
+                                                <p className="text-[8px] uppercase tracking-widest font-bold">Dissolve?</p>
                                             </div>
                                             <div className="flex gap-4">
-                                                <button onClick={() => setConfirmDeleteId(null)} className="text-[9px] uppercase font-bold text-[#7A8A8A] cursor-pointer">Cancel</button>
-                                                <button onClick={() => handleRemove(item.id)} className="text-[9px] uppercase font-bold text-red-500 cursor-pointer">Remove</button>
+                                                <button onClick={() => setConfirmDeleteId(null)} className="text-[8px] uppercase font-bold text-[#7A8A8A] cursor-pointer">Cancel</button>
+                                                <button onClick={() => handleRemove(item.id)} className="text-[8px] uppercase font-bold text-red-500 cursor-pointer">Remove</button>
                                             </div>
-                                        </div>
+                                        </motion.div>
                                     )}
+                                </AnimatePresence>
 
-                                    <div className="flex gap-5 p-5 bg-white rounded-[2rem] border border-[#E8E6E2]/60 hover:shadow-xl transition-all">
-                                        <div className="w-20 h-20 bg-[#F3F1ED] rounded-2xl overflow-hidden p-2 shrink-0">
-                                            <img src={item.products.image_urls[0]} className="w-full h-full object-contain" alt="" />
-                                        </div>
+                                <Link href={`/products/${item.products.slug}`} onClick={closeCart} className="w-16 h-16 bg-[#F3F1ED] rounded-2xl p-2 shrink-0 cursor-pointer hover:scale-105 transition-transform duration-500">
+                                    <img src={item.products.image_urls[0]} className="w-full h-full object-contain" alt="" />
+                                </Link>
 
-                                        <div className="flex-1 space-y-3">
-                                            <h4 className="font-heading text-sm text-[#2D3A3A] line-clamp-1">{item.products.name}</h4>
-                                            <div className="flex items-center justify-between">
-                                                <div className="flex items-center bg-[#FDFBF7] border border-[#E8E6E2] rounded-full p-1">
-                                                    <button
-                                                        onClick={() => handleQuantity(item.id, item.quantity, -1)}
-                                                        disabled={item.quantity <= 1}
-                                                        className={cn(
-                                                            "w-7 h-7 flex items-center justify-center rounded-full transition-colors",
-                                                            item.quantity <= 1 ? "opacity-20 cursor-not-allowed" : "hover:bg-white cursor-pointer"
-                                                        )}
-                                                    >
-                                                        <Minus className="w-3 h-3" />
-                                                    </button>
-                                                    <span className="w-8 text-center text-xs font-bold">{item.quantity}</span>
-                                                    <button onClick={() => handleQuantity(item.id, item.quantity, 1)} className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-white cursor-pointer transition-colors">
-                                                        <Plus className="w-3 h-3" />
-                                                    </button>
-                                                </div>
-                                                <button onClick={() => setConfirmDeleteId(item.id)} className="text-[#9AA09A] hover:text-red-400 cursor-pointer transition-colors">
-                                                    <Trash2 className="w-4 h-4" />
-                                                </button>
-                                            </div>
+                                <div className="flex-1 min-w-0 space-y-1">
+                                    <Link href={`/products/${item.products.slug}`} onClick={closeCart} className="block group-hover:text-[#5A7A6A] transition-colors cursor-pointer">
+                                        <h4 className="text-xs font-heading text-[#2D3A3A] truncate">{item.products.name}</h4>
+                                    </Link>
+                                    <div className="flex items-center gap-4">
+                                        <div className="flex items-center bg-[#FDFBF7] border border-[#E8E6E2]/40 rounded-full px-2">
+                                            <button onClick={() => handleQuantity(item.id, item.quantity, -1)} disabled={item.quantity <= 1} className="p-1 opacity-40 hover:opacity-100 disabled:opacity-10 cursor-pointer"><Minus className="w-2.5 h-2.5" /></button>
+                                            <span className="w-6 text-center text-[10px] font-bold">{item.quantity}</span>
+                                            <button onClick={() => handleQuantity(item.id, item.quantity, 1)} className="p-1 opacity-40 hover:opacity-100 cursor-pointer"><Plus className="w-2.5 h-2.5" /></button>
                                         </div>
-
-                                        <div className="text-right">
-                                            <p className="text-sm font-bold text-[#2D3A3A]">₹{(item.price_at_add * item.quantity).toLocaleString()}</p>
-                                        </div>
+                                        <button onClick={() => setConfirmDeleteId(item.id)} className="text-[#9AA09A] hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all cursor-pointer"><Trash2 className="w-3 h-3" /></button>
                                     </div>
                                 </div>
-                            ))}
-                        </div>
+                                <div className="text-right flex flex-col items-end">
+                                    <p className="text-xs font-bold text-[#2D3A3A]">₹{(item.price_at_add * item.quantity).toLocaleString()}</p>
+                                </div>
+                            </div>
+                        ))
                     )}
                 </div>
 
+                {/* Footer remained consistent with your design */}
                 {items.length > 0 && (
-                    <footer className="p-8 bg-white border-t border-[#E8E6E2] space-y-8">
-                        <div>
-                            <div className="flex justify-between text-[8px] uppercase tracking-[0.4em] font-bold mb-3">
-                                <span className="text-[#7A8A8A]">Shipping Ritual</span>
-                                <span className={total >= 2500 ? "text-[#5A7A6A]" : "text-[#7A8A8A]"}>
-                                    {total >= 2500 ? "Unlocked ✓" : `₹${(2500 - total).toLocaleString()} to go`}
-                                </span>
+                    <footer className="p-10 bg-white border-t border-[#E8E6E2]/40 space-y-8 shadow-[0_-20px_50px_rgba(0,0,0,0.02)]">
+                        <div className="space-y-3 relative">
+                            <div className="flex justify-between items-center">
+                                <div className="flex items-center gap-2">
+                                    <span className="text-[8px] uppercase tracking-[0.4em] font-bold text-[#7A8A8A]">Shipping Ritual</span>
+                                    <button onMouseEnter={() => setShowShippingInfo(true)} onMouseLeave={() => setShowShippingInfo(false)} className="cursor-help opacity-40 hover:opacity-100 transition-opacity"><Info className="w-2.5 h-2.5 text-[#5A7A6A]" /></button>
+                                </div>
+                                <AnimatePresence>
+                                    {!isFreeShipping && (
+                                        <motion.span initial={{ opacity: 0, x: 5 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 5 }} className="text-[8px] uppercase tracking-[0.2em] font-medium text-[#7A8A8A]">₹{(2500 - total).toLocaleString()} to unlock</motion.span>
+                                    )}
+                                </AnimatePresence>
                             </div>
-                            <div className="h-1 bg-[#F3F1ED] rounded-full overflow-hidden">
-                                <div className="h-full bg-[#5A7A6A] transition-all duration-700" style={{ width: `${Math.min((total / 2500) * 100, 100)}%` }} />
+
+                            <AnimatePresence>
+                                {showShippingInfo && (
+                                    <motion.div initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 5 }} className="absolute bottom-full mb-3 left-0 w-full bg-[#2D3A3A] text-white p-4 rounded-2xl text-[9px] tracking-[0.15em] leading-relaxed z-10 shadow-2xl">
+                                        Orders exceeding <span className="text-[#5A7A6A] font-bold">₹2,500</span> qualify for complimentary sanctuary shipping across India.
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+
+                            <div className="h-0.5 bg-[#F3F1ED] rounded-full overflow-hidden">
+                                <motion.div className="h-full bg-[#5A7A6A]" initial={{ width: 0 }} animate={{ width: `${Math.min((total / 2500) * 100, 100)}%` }} transition={{ duration: 1.5, ease: [0.19, 1, 0.22, 1] }} />
                             </div>
                         </div>
 
-                        <div className="flex items-center justify-between">
-                            <span className="text-xs uppercase tracking-[0.3em] font-bold text-[#7A8A8A]">Archive Total</span>
+                        <div className="flex justify-between items-end">
+                            <span className="text-[9px] font-black uppercase tracking-[0.3em] text-[#2D3A3A]">Archive Total</span>
                             <span className="text-3xl font-heading italic text-[#2D3A3A]">₹{total.toLocaleString()}</span>
                         </div>
 
-                        <Link href="/checkout" onClick={closeCart} className="w-full py-6 bg-[#2D3A3A] text-white rounded-full text-[10px] font-bold uppercase tracking-[0.4em] flex items-center justify-center gap-3 hover:shadow-2xl cursor-pointer transition-all active:scale-95">
-                            <ShoppingBag className="w-4 h-4" /> Finalize Ritual
+                        <Link href="/checkout" onClick={closeCart} className="w-full py-6 bg-[#2D3A3A] text-white rounded-full text-[10px] font-bold uppercase tracking-[0.4em] flex items-center justify-center gap-3 hover:shadow-2xl transition-all active:scale-95">
+                            Finalize Ritual <ShoppingBag className="w-3 h-3" />
                         </Link>
                     </footer>
                 )}

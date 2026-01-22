@@ -22,7 +22,6 @@ export function ProductCard({ product }: ProductCardProps) {
         addToCart(product.id, product.price);
     };
 
-    // Map product names to available asset images
     const getProductImage = () => {
         const nameToImage: Record<string, string> = {
             "Green Goddess Cleanse": "/assets/sea_buckthorn_pulp_300ml.png",
@@ -54,20 +53,18 @@ export function ProductCard({ product }: ProductCardProps) {
                             src={productImage}
                             alt={product.name}
                             className={cn(
-                                "h-full w-full object-contain transition-transform duration-1000 ease-out rounded",
+                                "h-full w-full object-contain transition-transform duration-1000 ease-out",
                                 isHovered ? "scale-110" : "scale-100"
                             )}
                         />
                     </div>
                 </Link>
 
-
-                {/* Floating "Quick Add" Action with Success Pulse */}
                 <button
                     onClick={handleAddToCart}
                     disabled={isProcessing}
                     className={cn(
-                        "absolute bottom-6 right-6 flex h-12 w-12 items-center justify-center rounded-full shadow-xl cursor-pointer transition-all duration-500",
+                        "absolute bottom-6 right-6 flex h-12 w-12 items-center justify-center rounded-full shadow-xl cursor-pointer transition-all duration-500 z-10",
                         isHovered ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0",
                         showSuccess
                             ? "bg-[#5A7A6A] text-white scale-110"
@@ -75,34 +72,33 @@ export function ProductCard({ product }: ProductCardProps) {
                         isProcessing && "opacity-50"
                     )}
                 >
-                    <Plus className={cn(
-                        "h-5 w-5 transition-transform",
-                        showSuccess && "rotate-90"
-                    )} />
+                    <Plus className={cn("h-5 w-5 transition-transform", showSuccess && "rotate-90")} />
                 </button>
 
-                {/* Benefit Tag */}
                 <div className="absolute top-6 left-6">
-                    <span className="rounded-full bg-white/80 backdrop-blur-md px-4 py-1 text-[10px] font-medium tracking-widest text-[#5A7A6A] uppercase">
+                    <span className="rounded-full bg-white/80 backdrop-blur-md px-4 py-1 text-[8px] font-bold tracking-[0.2em] text-[#5A7A6A] uppercase">
                         {product.wellness_goals?.[0]}
                     </span>
                 </div>
             </div>
 
-            {/* Text Info - Centered & Refined */}
-            <div className="mt-6 text-center">
-                <h3 className="font-heading text-lg text-[#2D3A3A] transition-colors group-hover:text-[#5A7A6A]">
+            {/* Refined Text Info */}
+            <div className="mt-3 flex flex-col items-center text-center px-2">
+                <h3 className="font-heading text-lg text-[#2D3A3A] leading-tight transition-colors group-hover:text-[#5A7A6A]">
                     <Link href={`/products/${product.slug}`}>{product.name}</Link>
                 </h3>
-                <div className="mt-2">
+
+                {/* Clean Pricing Ritual */}
+                <div className="mt-1 ">
                     <PriceDisplay
                         price={product.price}
                         comparisonPrice={product.compare_at_price}
-                        priceClassName="text-lg"
-                        comparisonClassName="text-xs"
                     />
-                    <p className="text-xs font-light text-[#7A8A8A] mt-1 italic">Cold Pressed</p>
                 </div>
+
+                {/* <p className="text-[10px] uppercase tracking-[0.2em] font-light text-[#7A8A8A] mt-2 opacity-60">
+                    Cold Pressed
+                </p> */}
             </div>
         </article>
     );

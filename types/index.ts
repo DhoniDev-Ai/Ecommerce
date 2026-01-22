@@ -68,3 +68,17 @@ export interface CartItem {
   product: Product;
   quantity: number;
 }
+
+export interface Coupon {
+  id: string;
+  code: string;
+  discount_type: 'percentage' | 'fixed';
+  discount_value: number;
+  min_purchase_amount: number;
+  is_active: boolean;
+  valid_from?: string;
+  valid_until?: string;
+  created_at: string;
+  updated_at?: string;
+}
+
