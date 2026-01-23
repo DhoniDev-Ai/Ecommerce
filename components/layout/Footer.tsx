@@ -31,7 +31,7 @@ export function Footer() {
                     <div className="lg:col-span-4">
                         <Link href="/" className="inline-block mb-6">
                             <img
-                                src="/assets/Logo.png"
+                                src="/assets/logo_1by1.jpg"
                                 alt="Ayuniv"
                                 className="h-12 w-auto brightness-0 invert opacity-90"
                             />

@@ -237,7 +237,7 @@ export function Header() {
                     <div className="flex items-center justify-between">
                         <Link href="/" className="-m-1.5 p-1.5" onClick={() => setMobileMenuOpen(false)}>
                             <img
-                                src="/assets/Logo.png"
+                                src="/assets/logo_1by1.jpg"
                                 alt="Ayuniv"
                                 className="h-8 w-auto"
                             />
