@@ -3,7 +3,7 @@ import { LayoutDashboard, User, MapPin, Package, LogOut, ChevronLeft } from "luc
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/utils/cn";
-import { motion } from "framer-motion";
+import { motion } from "@/lib/framer";
 import Image from "next/image";
 
 const navItems = [

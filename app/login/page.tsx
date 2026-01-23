@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "@/lib/framer";
 import { Header } from "@/components/layout/Header";
 import { Sparkles, Mail, ArrowRight, Loader2 } from "lucide-react";
 

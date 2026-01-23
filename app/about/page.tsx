@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion } from "@/lib/framer";
 import { Header } from "@/components/layout/Header";
 import Link from "next/link";
 import { Footer } from "@/components/layout/Footer";

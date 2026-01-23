@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect, useMemo } from "react";
 import { X, Plus, Minus, Trash2, ShoppingBag, Info, AlertCircle } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "@/lib/framer";
 import { cn } from "@/utils/cn";
 import { supabase } from "@/lib/supabase/client";
 import { useCartContext } from "@/context/CartContext";
@@ -62,7 +62,7 @@ export function CartSidebar() {
             item.id === itemId ? { ...item, quantity: newQty } : item
         ));
 
-        const { error } = await supabase.from('cart_items').update({ quantity: newQty }).eq('id', itemId);
+        const { error } = await (supabase.from('cart_items') as any).update({ quantity: newQty }).eq('id', itemId);
         if (error) fetchCartItems();
         refreshCart();
     };
@@ -70,7 +70,7 @@ export function CartSidebar() {
     const handleRemove = async (itemId: string) => {
         setItems(prev => prev.filter(item => item.id !== itemId));
         setConfirmDeleteId(null);
-        const { error } = await supabase.from('cart_items').delete().eq('id', itemId);
+        const { error } = await (supabase.from('cart_items') as any).delete().eq('id', itemId);
         if (error) fetchCartItems();
         refreshCart();
     };

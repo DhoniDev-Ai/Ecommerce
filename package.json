@@ -11,6 +11,7 @@
   "dependencies": {
     "@cashfreepayments/cashfree-js": "^1.0.5",
     "@supabase/supabase-js": "^2.90.1",
+    "cashfree-pg": "^5.1.0",
     "clsx": "^2.1.1",
     "locomotive-scroll": "^4.1.4",
     "lucide-react": "^0.562.0",

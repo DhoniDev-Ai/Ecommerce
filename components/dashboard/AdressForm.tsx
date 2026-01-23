@@ -44,8 +44,8 @@ export default function AddressForm({ initialData, onClose, onSuccess }: Address
 
             // SENIOR MOVE: If this address is set as default, unset all others for this user first
             if (formData.is_default) {
-                await supabase
-                    .from('addresses')
+                await (supabase
+                    .from('addresses') as any)
                     .update({ is_default: false })
                     .eq('user_id', user.id);
             }

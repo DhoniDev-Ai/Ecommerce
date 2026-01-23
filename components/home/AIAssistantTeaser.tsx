@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion } from "@/lib/framer";
 import { MessageCircle, Sparkles, Send } from "lucide-react";
 
 export function AIAssistantTeaser() {

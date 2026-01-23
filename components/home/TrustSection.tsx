@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion } from "@/lib/framer";
 import { Leaf, Droplets, Sun, ShieldCheck } from "lucide-react";
 
 const trustItems = [

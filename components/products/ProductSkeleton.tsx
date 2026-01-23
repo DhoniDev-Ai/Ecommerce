@@ -1,5 +1,5 @@
 "use client";
-import { motion } from "framer-motion";
+import { motion } from "@/lib/framer";
 
 export function ProductSkeleton() {
     // A subtle shimmer animation for that "Antigravity" feel

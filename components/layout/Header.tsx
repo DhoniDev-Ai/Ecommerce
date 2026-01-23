@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Menu, X, ShoppingBag, Search, User, LogOut } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "@/lib/framer";
 import { Button } from "@/components/ui/Button";
 import { cn } from "@/utils/cn";
 import { supabase } from "@/lib/supabase/client";
