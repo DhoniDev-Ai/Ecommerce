@@ -100,7 +100,7 @@ export function Footer() {
 
                 {/* Newsletter */}
                 <div className="border-t border-white/10 pt-12 mb-12">
-                    <div className="grid lg:grid-cols-2 gap-8 items-center">
+                    <div className="grid  lg:grid-cols-2 gap-8 items-center">
                         <div>
                             <h4 className="font-heading text-xl text-white mb-2">
                                 Join our wellness journey
@@ -109,7 +109,7 @@ export function Footer() {
                                 Thoughtful updates on new products, recipes, and wellness tips.
                             </p>
                         </div>
-                        <div className="flex gap-3">
+                        <div className="flex flex-col md:flex-row gap-3">
                             <input
                                 type="email"
                                 placeholder="Your email"
