@@ -96,7 +96,7 @@ export function Header() {
                     <Link href="/" className="-m-1.5 p-1.5 flex items-center gap-2">
                         <span className="sr-only">Ayuniv</span>
                         <img
-                            src="/assets/Logo.png"
+                            src="/assets/logo.png"
                             alt="Ayuniv"
                             className="h-16 w-auto"
                         />
