@@ -1,126 +1,216 @@
 "use client";
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, ReactNode, useCallback, useMemo, useRef } from "react";
 import { supabase } from "@/lib/supabase/client";
-import type { Database } from "@/types/database";
-
-type CartItem = Database['public']['Tables']['cart_items']['Row'];
 
 interface CartContextType {
     isOpen: boolean;
     openCart: () => void;
     closeCart: () => void;
+    cartItems: any[];
+    addToCart: (product: any, quantity?: number) => void;
+    removeFromCart: (productId: string) => void;
+    updateQuantity: (productId: string, quantity: number) => void;
+    clearCart: () => void;
     itemCount: number;
-    refreshCart: () => void;
+    cartTotal: number;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: ReactNode }) {
     const [isOpen, setIsOpen] = useState(false);
-    const [itemCount, setItemCount] = useState(0);
+    const [cartItems, setCartItems] = useState<any[]>([]);
+    const [isHydrated, setIsHydrated] = useState(false);
+    const [user, setUser] = useState<any>(null);
 
-    const openCart = () => setIsOpen(true);
-    const closeCart = () => setIsOpen(false);
+    // Ref to prevent multiple syncs running at once
+    const isSyncing = useRef(false);
 
-    const refreshCart = async () => {
+    const openCart = useCallback(() => setIsOpen(true), []);
+    const closeCart = useCallback(() => setIsOpen(false), []);
+
+    // 1. PURE HYDRATION: Load local data ONCE on mount
+    useEffect(() => {
+        const saved = localStorage.getItem("ayuniv_cart");
+        if (saved) {
+            try {
+                const parsed = JSON.parse(saved);
+                if (Array.isArray(parsed)) setCartItems(parsed);
+            } catch (e) {
+                console.error("Cart Recovery Error:", e);
+            }
+        }
+        setIsHydrated(true);
+
+        // Setup Auth Listener
+        supabase.auth.getUser().then(({ data: { user } }) => {
+            if (user) setUser(user);
+        });
+
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+            setUser(session?.user ?? null);
+        });
+
+        return () => subscription.unsubscribe();
+    }, []);
+
+    // 2. TRIGGER SYNC: When logged in and hydration is finished
+    useEffect(() => {
+        if (isHydrated && user && !isSyncing.current) {
+            syncCartWithSupabase(user);
+        }
+    }, [isHydrated, user]);
+
+    // 3. PERSISTENCE: Save guest cart ONLY if not logged in
+    useEffect(() => {
+        if (isHydrated && !user) {
+            localStorage.setItem("ayuniv_cart", JSON.stringify(cartItems));
+        }
+    }, [cartItems, isHydrated, user]);
+
+    // --- REFINED SYNC HELPER ---
+    const syncCartWithSupabase = async (currentUser: any) => {
+        if (isSyncing.current) return;
+        isSyncing.current = true;
+
         try {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (!user) {
-                setItemCount(0);
-                return;
-            }
+            const localData = localStorage.getItem("ayuniv_cart");
+            const localItems = localData ? JSON.parse(localData) : [];
 
-            // Get user's cart
-            const { data: cart } = await (supabase
-                .from('carts') as any)
-                .select('id')
-                .eq('user_id', user.id)
-                .single();
-
+            // Get or Create Cart ID
+            let { data: cart } = await (supabase.from('carts') as any).select('id').eq('user_id', currentUser.id).single();
             if (!cart) {
-                setItemCount(0);
-                return;
+                const { data: newCart } = await (supabase.from('carts') as any).insert({ user_id: currentUser.id }).select('id').single();
+                cart = newCart;
             }
 
-            // Count items in cart
-            const { data: items, error } = await (supabase
-                .from('cart_items') as any)
-                .select('quantity')
-                .eq('cart_id', cart.id);
+            // Fetch Remote Items
+            const { data: remoteItems } = await (supabase.from('cart_items') as any).select('*, products(*)').eq('cart_id', cart.id);
 
-            if (error) throw error;
+            // Merge: Remote is baseline, Local overrides or adds
+            const mergedMap = new Map();
+            remoteItems?.forEach((rItem: any) => {
+                mergedMap.set(String(rItem.product_id), {
+                    ...rItem.products,
+                    id: String(rItem.product_id),
+                    quantity: rItem.quantity,
+                    price: rItem.price_at_add
+                });
+            });
 
-            const total = items?.reduce((sum: number, item: any) => sum + item.quantity, 0) || 0;
-            setItemCount(total);
+            localItems.forEach((lItem: any) => {
+                const pid = String(lItem.id);
+                mergedMap.set(pid, { ...lItem, id: pid });
+            });
+
+            const mergedArray = Array.from(mergedMap.values());
+            setCartItems(mergedArray);
+
+            // Sync merged state back to Database
+            for (const item of mergedArray) {
+                await (supabase.from('cart_items') as any).upsert({
+                    cart_id: cart.id,
+                    product_id: item.id,
+                    quantity: item.quantity,
+                    price_at_add: item.price
+                }, { onConflict: 'cart_id,product_id' });
+            }
+
+            // CRITICAL: Clear local storage so this merge doesn't repeat forever
+            localStorage.removeItem("ayuniv_cart");
+
         } catch (error) {
-            console.error("Error refreshing cart:", error);
+            console.error("Sync Error:", error);
+        } finally {
+            isSyncing.current = false;
         }
     };
 
-    // Listen for cart item additions
-    useEffect(() => {
-        const handleItemAdded = () => {
-            refreshCart();
-            openCart();
-        };
+    // --- ACTIONS ---
 
-        window.addEventListener('cart:item-added', handleItemAdded);
-        return () => window.removeEventListener('cart:item-added', handleItemAdded);
-    }, []);
+    const addToCart = useCallback(async (product: any, quantity: number = 1) => {
+        if (!product?.id) return;
+        const productId = String(product.id);
 
-    // Initial cart load and real-time subscription
-    useEffect(() => {
-        refreshCart();
+        setCartItems((prev) => {
+            const existing = prev.find((item) => String(item.id) === productId);
+            if (existing) {
+                return prev.map((item) =>
+                    String(item.id) === productId ? { ...item, quantity: item.quantity + quantity } : item
+                );
+            }
+            return [...prev, { ...product, quantity }];
+        });
+        openCart();
 
-        const setupRealtimeSubscription = async () => {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (!user) return;
+        if (user) {
+            const { data: cart } = await (supabase.from('carts') as any).select('id').eq('user_id', user.id).single();
+            if (cart) {
+                // Fetch current DB quantity to ensure accurate upsert
+                const { data: dbItem } = await (supabase.from('cart_items') as any)
+                    .select('quantity')
+                    .match({ cart_id: cart.id, product_id: productId })
+                    .single();
 
-            // Get user's cart
-            const { data: cart } = await (supabase
-                .from('carts') as any)
-                .select('id')
-                .eq('user_id', user.id)
-                .single();
+                const newQty = (dbItem?.quantity || 0) + quantity;
+                await (supabase.from('cart_items') as any).upsert({
+                    cart_id: cart.id,
+                    product_id: productId,
+                    quantity: newQty,
+                    price_at_add: product.price
+                }, { onConflict: 'cart_id,product_id' });
+            }
+        }
+    }, [openCart, user]);
 
-            if (!cart) return;
+    const removeFromCart = useCallback(async (productId: string) => {
+        setCartItems((prev) => prev.filter((item) => String(item.id) !== String(productId)));
+        if (user) {
+            const { data: cart } = await (supabase.from('carts') as any).select('id').eq('user_id', user.id).single();
+            if (cart) {
+                await (supabase.from('cart_items') as any).delete().match({ cart_id: cart.id, product_id: productId });
+            }
+        }
+    }, [user]);
 
-            // Subscribe to cart_items changes for this cart
-            const channel = supabase
-                .channel('cart-changes')
-                .on(
-                    'postgres_changes',
-                    {
-                        event: '*',
-                        schema: 'public',
-                        table: 'cart_items',
-                        filter: `cart_id=eq.${cart.id}`
-                    },
-                    () => {
-                        refreshCart();
-                    }
-                )
-                .subscribe();
+    const updateQuantity = useCallback(async (productId: string, quantity: number) => {
+        if (quantity < 1) {
+            removeFromCart(productId);
+            return;
+        }
+        setCartItems((prev) =>
+            prev.map((item) => String(item.id) === String(productId) ? { ...item, quantity } : item)
+        );
+        if (user) {
+            const { data: cart } = await (supabase.from('carts') as any).select('id').eq('user_id', user.id).single();
+            if (cart) {
+                await (supabase.from('cart_items') as any).update({ quantity }).match({ cart_id: cart.id, product_id: productId });
+            }
+        }
+    }, [removeFromCart, user]);
 
-            return () => {
-                supabase.removeChannel(channel);
-            };
-        };
+    const clearCart = useCallback(async () => {
+        setCartItems([]);
+        if (user) {
+            const { data: cart } = await (supabase.from('carts') as any).select('id').eq('user_id', user.id).single();
+            if (cart) {
+                await (supabase.from('cart_items') as any).delete().eq('cart_id', cart.id);
+            }
+        }
+    }, [user]);
 
-        setupRealtimeSubscription();
-    }, []);
+    const itemCount = useMemo(() => cartItems.reduce((sum, item) => sum + (item.quantity || 0), 0), [cartItems]);
+    const cartTotal = useMemo(() => cartItems.reduce((sum, item) => sum + (parseFloat(item.price) * (item.quantity || 0)), 0), [cartItems]);
 
     return (
-        <CartContext.Provider value={{ isOpen, openCart, closeCart, itemCount, refreshCart }}>
+        <CartContext.Provider value={{ isOpen, openCart, closeCart, cartItems, addToCart, removeFromCart, updateQuantity, clearCart, itemCount, cartTotal }}>
             {children}
         </CartContext.Provider>
     );
 }
 
-export function useCartContext() {
+export const useCartContext = () => {
     const context = useContext(CartContext);
-    if (context === undefined) {
-        throw new Error("useCartContext must be used within a CartProvider");
-    }
+    if (!context) throw new Error("useCartContext must be used within a CartProvider");
     return context;
-}
+};

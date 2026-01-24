@@ -1,7 +1,6 @@
 "use client";
-
 import { useEffect, useState } from "react";
-import { ShieldCheck, PhoneForwarded, UserCircle, Loader2 } from "lucide-react";
+import { ShieldCheck, PhoneForwarded, UserCircle, Loader2, Sparkles } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
 import { cn } from "@/utils/cn";
 
@@ -12,28 +11,32 @@ export default function ProfilePage() {
         full_name: "",
         email: "",
         phone: "",
-        alt_phone: "",
+        alt_phone: "", // This will handle the Alt_Number field
         created_at: ""
     });
 
-    // Fetch live profile data from the 'users' table
+    // Helper: Derives a dummy name from email prefix if name is empty
+    const getMagicName = (email: string, name: string) => {
+        if (name && name.trim() !== "") return name;
+        return email.split('@')[0].replace(/[._]/g, ' ').toUpperCase();
+    };
+
     useEffect(() => {
         async function fetchProfile() {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) return;
 
-            const { data, error } = await supabase
-                .from('users')
+            const { data, error } = await (supabase.from('users') as any)
                 .select('*')
                 .eq('id', user.id)
-                .single() as { data: { full_name: string | null; email: string; phone: string | null; alt_phone: string | null; created_at: string } | null; error: any };
+                .single();
 
             if (data) {
                 setProfile({
                     full_name: data.full_name || "",
                     email: data.email || "",
                     phone: data.phone || "",
-                    alt_phone: data.alt_phone || "",
+                    alt_phone: data.Alt_Number ? String(data.Alt_Number) : "",
                     created_at: new Date(data.created_at).toLocaleDateString('en-IN', { month: 'long', year: 'numeric' })
                 });
             }
@@ -42,30 +45,28 @@ export default function ProfilePage() {
         fetchProfile();
     }, []);
 
-    // Handle Production Update
     const handleUpdate = async (e: React.FormEvent) => {
         e.preventDefault();
         setUpdating(true);
 
         const { data: { user } } = await supabase.auth.getUser();
-        if (!user) {
-            setUpdating(false);
-            return;
-        }
+        if (!user) return;
 
-        const { error } = await supabase
-            .from('users')
-            // @ts-ignore - Type inference issue with users table
+        // --- SCHEMA SYNC LOGIC ---
+        // phone: text | Alt_Number: numeric
+        const { error } = await (supabase.from('users') as any)
             .update({
                 full_name: profile.full_name,
                 phone: profile.phone,
-                alt_phone: profile.alt_phone,
+                Alt_Number: profile.alt_phone ? parseInt(profile.alt_phone) : null,
                 updated_at: new Date().toISOString()
             })
             .eq('id', user.id);
 
         if (!error) {
-            alert("Identity Synchronized.");
+            alert("Ritual Identity Updated.");
+        } else {
+            console.error("Alchemy Error:", error.message);
         }
         setUpdating(false);
     };
@@ -77,15 +78,23 @@ export default function ProfilePage() {
     );
 
     return (
-        <form onSubmit={handleUpdate} className="max-w-3xl">
+        <form onSubmit={handleUpdate} className="max-w-3xl pb-20 animate-in fade-in duration-700">
             <header className="mb-12">
                 <p className="text-[10px] uppercase tracking-[0.4em] text-[#7A8B7A] font-bold mb-4">Account Ritual</p>
-                <h1 className="font-heading text-5xl text-[#2D3A3A] tracking-tighter">Personal <span className="italic font-serif font-light text-[#5A7A6A]">Identity.</span></h1>
+                <h1 className="font-heading text-5xl text-[#2D3A3A] tracking-tighter leading-none">
+                    Your <span className="italic font-serif font-light text-[#5A7A6A]">Identity.</span>
+                </h1>
+                <div className="mt-6 flex items-center gap-2 px-4 py-2 bg-[#5A7A6A]/5 rounded-full w-fit border border-[#5A7A6A]/10">
+                    <Sparkles className="w-3 h-3 text-[#5A7A6A]" />
+                    <p className="text-[9px] uppercase tracking-widest font-bold text-[#5A7A6A]">
+                        Known as: {getMagicName(profile.email, profile.full_name)}
+                    </p>
+                </div>
             </header>
 
             <div className="grid gap-8">
-                {/* Section 1: Core Identity */}
-                <div className="bg-white p-10 rounded-[3rem] border border-[#E8E6E2]/60 shadow-sm">
+                {/* CORE IDENTITY */}
+                <div className="bg-white p-10 rounded-[3.5rem] border border-[#E8E6E2]/60 shadow-sm relative overflow-hidden">
                     <div className="flex items-center gap-4 mb-10 pb-6 border-b border-[#F3F1ED]">
                         <div className="w-12 h-12 bg-[#FDFBF7] rounded-2xl flex items-center justify-center border border-[#E8E6E2]">
                             <UserCircle className="w-6 h-6 text-[#5A7A6A]" />
@@ -97,78 +106,81 @@ export default function ProfilePage() {
                     </div>
 
                     <div className="grid md:grid-cols-2 gap-8">
-                        <label className="block">
-                            <span className="text-[10px] uppercase tracking-widest text-[#7A8A8A] font-bold block mb-3 ml-2">Full Name</span>
-                            <input
-                                type="text"
-                                value={profile.full_name}
-                                onChange={(e) => setProfile({ ...profile, full_name: e.target.value })}
-                                className="w-full bg-[#FDFBF7] border border-transparent rounded-2xl p-5 text-sm focus:ring-2 focus:ring-[#5A7A6A]/10 focus:border-[#5A7A6A]/20 transition-all outline-none"
-                            />
-                        </label>
-
-                        <label className="block opacity-60">
-                            <div className="flex justify-between items-center mb-3 ml-2">
-                                <span className="text-[10px] uppercase tracking-widest text-[#7A8A8A] font-bold">Email Address</span>
-                                <span className="flex items-center gap-1 text-[8px] uppercase tracking-widest text-[#5A7A6A] font-bold"><ShieldCheck className="w-3 h-3" /> Verified</span>
+                        <InputField
+                            label="Ritual Name"
+                            value={profile.full_name}
+                            placeholder={getMagicName(profile.email, "")}
+                            onChange={(v) => setProfile({ ...profile, full_name: v })}
+                        />
+                        <div className="space-y-3 opacity-60">
+                            <div className="flex justify-between items-center ml-4">
+                                <span className="text-[9px] uppercase tracking-widest text-[#7A8A8A] font-bold">Email Base</span>
+                                <span className="flex items-center gap-1 text-[8px] uppercase tracking-widest text-[#5A7A6A] font-bold">
+                                    <ShieldCheck className="w-3 h-3" /> Verified
+                                </span>
                             </div>
-                            <input type="email" value={profile.email} disabled className="w-full bg-[#F3F1ED]/40 border-none rounded-2xl p-5 text-sm text-[#9AA09A] cursor-not-allowed" />
-                        </label>
+                            <input disabled value={profile.email} className="w-full bg-[#F3F1ED]/40 border-none rounded-full px-8 py-5 text-sm text-[#9AA09A] cursor-not-allowed" />
+                        </div>
                     </div>
                 </div>
 
-                {/* Section 2: Contact Points */}
-                <div className="bg-white p-10 rounded-[3rem] border border-[#E8E6E2]/60 shadow-sm">
+                {/* CONTACT SECTION */}
+                <div className="bg-white p-10 rounded-[3.5rem] border border-[#E8E6E2]/60 shadow-sm">
                     <div className="flex items-center gap-4 mb-10">
                         <div className="w-12 h-12 bg-[#FDFBF7] rounded-2xl flex items-center justify-center border border-[#E8E6E2]">
                             <PhoneForwarded className="w-6 h-6 text-[#5A7A6A]" />
                         </div>
                         <div>
                             <h2 className="text-xl font-heading text-[#2D3A3A]">Contact Points</h2>
-                            <p className="text-[9px] uppercase tracking-widest text-[#7A8A8A] font-bold italic">Ensures your elixirs reach you safely</p>
+                            <p className="text-[9px] uppercase tracking-widest text-[#7A8A8A] font-bold italic leading-none">Ensures your elixirs reach the sanctuary</p>
                         </div>
                     </div>
 
                     <div className="grid md:grid-cols-2 gap-8">
-                        <label className="block">
-                            <span className="text-[10px] uppercase tracking-widest text-[#7A8A8A] font-bold block mb-3 ml-2">Primary Number</span>
-                            <input
-                                type="tel"
-                                value={profile.phone}
-                                onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
-                                className="w-full bg-[#FDFBF7] border border-transparent rounded-2xl p-5 text-sm outline-none"
-                            />
-                        </label>
-
-                        <label className="block">
-                            <span className="text-[10px] uppercase tracking-widest text-[#7A8A8A] font-bold block mb-3 ml-2">Alternative Contact</span>
-                            <input
-                                type="tel"
-                                placeholder="+91 00000 00000"
-                                value={profile.alt_phone}
-                                onChange={(e) => setProfile({ ...profile, alt_phone: e.target.value })}
-                                className="w-full bg-[#FDFBF7] border border-transparent rounded-2xl p-5 text-sm placeholder:text-[#9AA09A]/50 outline-none"
-                            />
-                        </label>
+                        <InputField
+                            label="WhatsApp Number"
+                            value={profile.phone}
+                            placeholder="91XXXXXXXX"
+                            onChange={(v) => setProfile({ ...profile, phone: v })}
+                        />
+                        <InputField
+                            label="Emergency Alt"
+                            value={profile.alt_phone}
+                            placeholder="Alt numeric base"
+                            onChange={(v) => setProfile({ ...profile, alt_phone: v.replace(/\D/g, '') })}
+                        />
                     </div>
                 </div>
 
                 <button
                     disabled={updating}
-                    className="py-6 bg-[#2D3A3A] text-white rounded-full text-[10px] font-bold uppercase tracking-[0.4em] hover:shadow-2xl transition-all active:scale-95 flex items-center justify-center gap-3"
+                    className="group relative py-7 bg-[#2D3A3A] text-white rounded-full text-[11px] font-bold uppercase tracking-[0.5em] hover:shadow-[0_20px_50px_rgba(45,58,58,0.2)] transition-all active:scale-95 flex items-center justify-center gap-4"
                 >
-                    {updating ? "Synchronizing..." : "Synchronize Ritual Changes"}
+                    {updating ? <Loader2 className="w-4 h-4 animate-spin" /> : "Synchronize Ritual Changes"}
                 </button>
             </div>
-
-            <footer className="my-8 pt-5 text-center space-y-2">
-                <p className="text-[9px] text-[#9AA09A] uppercase tracking-widest">
-                    Ritual Archive Reference: {profile.email.split('@')[0].toUpperCase()}-SEC
-                </p>
-                <p className="text-[8px] text-[#5A7A6A] italic font-light">
-                    Logged in securely via Ritual Link • Ayuniv Jaipur Studio
-                </p>
-            </footer>
         </form>
+    );
+}
+
+interface InputFieldProps {
+    label: string;
+    value: string;
+    onChange: (v: string) => void;
+    placeholder?: string;
+}
+
+function InputField({ label, value, onChange, placeholder }: InputFieldProps) {
+    return (
+        <div className="space-y-3">
+            <span className="text-[9px] uppercase tracking-widest text-[#7A8A8A] font-bold block ml-4">{label}</span>
+            <input
+                type="text"
+                value={value}
+                placeholder={placeholder}
+                onChange={(e) => onChange(e.target.value)}
+                className="w-full bg-[#FDFBF7] border border-[#E8E6E2] rounded-full px-8 py-5 text-sm focus:border-[#5A7A6A] focus:bg-white outline-none transition-all placeholder:text-[#D4D2CE]"
+            />
+        </div>
     );
 }

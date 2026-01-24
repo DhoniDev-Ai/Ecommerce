@@ -54,6 +54,7 @@ export async function getProducts(
   const { data, error } = await query;
 
   if (error) {
+    if (error.name === 'AbortError' || error.message?.includes('AbortError')) return []; // Suppress AbortError
     console.error('Error fetching products:', error);
     return [];
   }
@@ -72,6 +73,7 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
     .single();
 
   if (error) {
+    if (error.name === 'AbortError' || error.message?.includes('AbortError')) return null; // Suppress AbortError
     console.error('Error fetching product:', error);
     return null;
   }
@@ -91,6 +93,7 @@ export async function getFeaturedProducts(): Promise<Product[]> {
     .limit(6);
 
   if (error) {
+    if (error.name === 'AbortError' || error.message?.includes('AbortError')) return []; // Suppress AbortError
     console.error('Error fetching featured products:', error);
     return [];
   }

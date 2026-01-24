@@ -46,7 +46,8 @@ export default function ProductsPage() {
                 }));
 
                 setProducts(mappedProducts);
-            } catch (err) {
+            } catch (err: any) {
+                if (err.name === 'AbortError' || err.message?.includes('AbortError')) return;
                 console.error('Error fetching products:', err);
                 setError('Failed to load products');
             } finally {
@@ -117,7 +118,7 @@ export default function ProductsPage() {
                                             {cat}
                                         </span>
                                         {selectedCategory === cat && (
-                                            <motion.div layoutId="activeTab" className="absolute bottom-0 left-0 w-full h-0.5 bg-[#5A7A6A]" />
+                                            <motion.div layoutId="activeTab" className="absolute bottom-0 left-0 hidden md:block w-full h-0.5 bg-[#5A7A6A]" />
                                         )}
                                     </button>
                                 ))}

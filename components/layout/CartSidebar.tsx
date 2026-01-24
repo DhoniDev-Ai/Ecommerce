@@ -3,7 +3,6 @@ import { useState, useEffect, useMemo } from "react";
 import { X, Plus, Minus, Trash2, ShoppingBag, Info, AlertCircle } from "lucide-react";
 import { motion, AnimatePresence } from "@/lib/framer";
 import { cn } from "@/utils/cn";
-import { supabase } from "@/lib/supabase/client";
 import { useCartContext } from "@/context/CartContext";
 import Link from "next/link";
 
@@ -23,62 +22,27 @@ const CartItemSkeleton = () => (
 );
 
 export function CartSidebar() {
-    const { isOpen, closeCart, refreshCart } = useCartContext();
-    const [items, setItems] = useState<any[]>([]);
-    const [loading, setLoading] = useState(false);
+    const { isOpen, closeCart, cartItems, removeFromCart, updateQuantity, cartTotal } = useCartContext();
     const [showShippingInfo, setShowShippingInfo] = useState(false);
     const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
-    const fetchCartItems = async () => {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return;
-
-        setLoading(true);
-        const { data, error } = await supabase
-            .from('cart_items')
-            .select(`
-                id, quantity, price_at_add,
-                products ( name, image_urls, slug, price )
-            `)
-            .order('updated_at', { ascending: false });
-
-        if (!error && data) setItems(data);
-        // Small delay to make the shadow ritual feel intentional
-        setTimeout(() => setLoading(false), 400);
-    };
-
+    // Reset confirm delete when cart closes
     useEffect(() => {
-        if (isOpen) {
-            fetchCartItems();
+        if (!isOpen) {
             setConfirmDeleteId(null);
         }
     }, [isOpen]);
 
-    const handleQuantity = async (itemId: string, currentQty: number, delta: number) => {
-        const newQty = currentQty + delta;
-        if (newQty < 1) return;
-
-        setItems(prev => prev.map(item =>
-            item.id === itemId ? { ...item, quantity: newQty } : item
-        ));
-
-        const { error } = await (supabase.from('cart_items') as any).update({ quantity: newQty }).eq('id', itemId);
-        if (error) fetchCartItems();
-        refreshCart();
+    const handleQuantity = (itemId: string, currentQty: number, delta: number) => {
+        updateQuantity(itemId, currentQty + delta);
     };
 
-    const handleRemove = async (itemId: string) => {
-        setItems(prev => prev.filter(item => item.id !== itemId));
+    const handleRemove = (itemId: string) => {
+        removeFromCart(itemId);
         setConfirmDeleteId(null);
-        const { error } = await (supabase.from('cart_items') as any).delete().eq('id', itemId);
-        if (error) fetchCartItems();
-        refreshCart();
     };
 
-    const total = useMemo(() =>
-        items.reduce((sum, item) => sum + (item.price_at_add * item.quantity), 0),
-        [items]);
-
+    const total = cartTotal;
     const isFreeShipping = total >= 2500;
 
     return (
@@ -108,20 +72,13 @@ export function CartSidebar() {
                 </header>
 
                 <div className="flex-1 overflow-y-auto px-10 py-6 space-y-10 custom-scrollbar">
-                    {/* 2. THE SHADOW LOADING STATE */}
-                    {loading ? (
-                        <div className="space-y-10 pt-4">
-                            <CartItemSkeleton />
-                            <CartItemSkeleton />
-                            <CartItemSkeleton />
-                        </div>
-                    ) : items.length === 0 ? (
+                    {cartItems.length === 0 ? (
                         <div className="h-full flex flex-col items-center justify-center opacity-30 text-center space-y-4">
                             <ShoppingBag className="w-8 h-8 stroke-[1px]" />
                             <p className="text-[10px] uppercase tracking-[0.3em] font-medium italic">Bag is Silent</p>
                         </div>
                     ) : (
-                        items.map((item) => (
+                        cartItems.map((item) => (
                             <div key={item.id} className="group relative flex gap-6 items-center">
                                 <AnimatePresence>
                                     {confirmDeleteId === item.id && (
@@ -141,13 +98,13 @@ export function CartSidebar() {
                                     )}
                                 </AnimatePresence>
 
-                                <Link href={`/products/${item.products.slug}`} onClick={closeCart} className="w-16 h-16 bg-[#F3F1ED] rounded-2xl p-2 shrink-0 cursor-pointer hover:scale-105 transition-transform duration-500">
-                                    <img src={item.products.image_urls[0]} className="w-full h-full object-contain" alt="" />
+                                <Link href={`/products/${item.slug}`} onClick={closeCart} className="w-16 h-16 bg-[#F3F1ED] rounded-2xl p-2 shrink-0 cursor-pointer hover:scale-105 transition-transform duration-500">
+                                    <img src={item.image_urls?.[0]} className="w-full h-full object-contain" alt="" />
                                 </Link>
 
                                 <div className="flex-1 min-w-0 space-y-1">
-                                    <Link href={`/products/${item.products.slug}`} onClick={closeCart} className="block group-hover:text-[#5A7A6A] transition-colors cursor-pointer">
-                                        <h4 className="text-xs font-heading text-[#2D3A3A] truncate">{item.products.name}</h4>
+                                    <Link href={`/products/${item.slug}`} onClick={closeCart} className="block group-hover:text-[#5A7A6A] transition-colors cursor-pointer">
+                                        <h4 className="text-xs font-heading text-[#2D3A3A] truncate">{item.name}</h4>
                                     </Link>
                                     <div className="flex items-center gap-4">
                                         <div className="flex items-center bg-[#FDFBF7] border border-[#E8E6E2]/40 rounded-full px-2">
@@ -159,7 +116,7 @@ export function CartSidebar() {
                                     </div>
                                 </div>
                                 <div className="text-right flex flex-col items-end">
-                                    <p className="text-xs font-bold text-[#2D3A3A]">₹{(item.price_at_add * item.quantity).toLocaleString()}</p>
+                                    <p className="text-xs font-bold text-[#2D3A3A]">₹{(parseFloat(item.price) * item.quantity).toLocaleString()}</p>
                                 </div>
                             </div>
                         ))
@@ -167,7 +124,7 @@ export function CartSidebar() {
                 </div>
 
                 {/* Footer remained consistent with your design */}
-                {items.length > 0 && (
+                {cartItems.length > 0 && (
                     <footer className="p-10 bg-white border-t border-[#E8E6E2]/40 space-y-8 shadow-[0_-20px_50px_rgba(0,0,0,0.02)]">
                         <div className="space-y-3 relative">
                             <div className="flex justify-between items-center">

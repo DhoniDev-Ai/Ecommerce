@@ -84,8 +84,10 @@ function OrderCard({ order, index }: { order: any, index: number }) {
                         <Clock className="w-6 h-6 text-[#5A7A6A]/40" />
                     </div>
                     <div>
-                        <p className="text-[9px] uppercase tracking-[0.3em] text-[#7A8A8A] font-bold mb-1">ID: {order.id}</p>
-                        <p className="text-lg text-[#2D3A3A] font-light">{order.date}</p>
+                        <p className="text-[9px] uppercase tracking-[0.3em] text-[#7A8A8A] font-bold mb-1">ID: {order.id.slice(0, 8)}...</p>
+                        <p className="text-lg text-[#2D3A3A] font-light">
+                            {new Date(order.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                        </p>
                     </div>
                 </div>
 
@@ -104,27 +106,35 @@ function OrderCard({ order, index }: { order: any, index: number }) {
 
             {/* Product Preview Items */}
             <div className="flex flex-wrap gap-4 mb-10">
-                {order.items.map((item: any, i: number) => (
-                    <div key={i} className="flex items-center gap-4 bg-[#FDFBF7] pr-6 rounded-2xl border border-[#E8E6E2]/40">
-                        <div className="w-16 h-16 p-2">
-                            <Image
-                                width={1000}
-                                height={1000}
-                                src={item.img} alt={item.name} className="w-full rounded h-full object-contain grayscale-[0.3] group-hover:grayscale-0 transition-all" />
-                        </div>
-                        <div>
-                            <p className="text-[10px] font-bold text-[#2D3A3A] uppercase tracking-wider">{item.name}</p>
-                            <p className="text-[9px] text-[#7A8A8A]">Qty: {item.qty}</p>
-                        </div>
+                {(!order.order_items || order.order_items.length === 0) ? (
+                    <div className="flex items-center gap-4 bg-[#FDFBF7] p-4 rounded-2xl border border-[#E8E6E2]/40 w-full text-[#7A8A8A] text-xs italic">
+                        <ShoppingBag className="w-4 h-4 opacity-50" />
+                        <span>Legacy Ritual - Details not digitized.</span>
                     </div>
-                ))}
+                ) : (
+                    order.order_items.map((item: any, i: number) => (
+                        <div key={i} className="flex items-center gap-4 bg-[#FDFBF7] pr-6 rounded-2xl border border-[#E8E6E2]/40">
+                            <div className="w-16 h-16 p-2">
+                                <img
+                                    src={item.products?.image_urls?.[0] || '/placeholder.png'}
+                                    alt={item.products?.name || 'Product'}
+                                    className="w-full rounded-xl h-full object-contain grayscale-[0.3] group-hover:grayscale-0 transition-all"
+                                />
+                            </div>
+                            <div>
+                                <p className="text-[10px] font-bold text-[#2D3A3A] uppercase tracking-wider">{item.products?.name}</p>
+                                <p className="text-[9px] text-[#7A8A8A]">Qty: {item.quantity}</p>
+                            </div>
+                        </div>
+                    ))
+                )}
             </div>
 
             {/* Total & Action */}
             <div className="flex justify-between items-center">
                 <div>
                     <p className="text-[9px] uppercase tracking-[0.3em] text-[#7A8A8A] font-bold mb-1">Ritual Total</p>
-                    <p className="text-2xl text-[#2D3A3A] font-heading tracking-tighter">₹{order.total.toLocaleString()}</p>
+                    <p className="text-2xl text-[#2D3A3A] font-heading tracking-tighter">₹{(order.total_amount || 0).toLocaleString()}</p>
                 </div>
                 <Link
                     href={`/dashboard/orders/${order.id}`}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useParams, notFound } from "next/navigation";
+import { useParams, notFound, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "@/lib/framer";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
@@ -19,6 +19,7 @@ import { PriceDisplay } from "@/components/product/PriceDisplay";
 
 export default function ProductDetailPage() {
     const params = useParams();
+    const router = useRouter();
     const slug = params?.slug as string;
 
     const [product, setProduct] = useState<any | null>(null);
@@ -32,7 +33,14 @@ export default function ProductDetailPage() {
 
     const handleAddToCart = () => {
         if (product) {
-            addToCart(product.id, product.price, quantity);
+            addToCart(product, quantity);
+        }
+    };
+
+    const handleQuickBuy = () => {
+        if (product) {
+            addToCart(product, quantity);
+            router.push('/checkout');
         }
     };
 
@@ -157,7 +165,7 @@ export default function ProductDetailPage() {
                             className="lg:col-span-7 lg:sticky lg:top-32 h-fit flex justify-center items-center flex-col"
                         >
                             {/* Main Image Container - Focused & Minimal */}
-                            <div className="relative w-full max-md:max-w-[80%] max-w-[75%] aspect-square rounded-[4rem] overflow-hidden bg-white/80 shadow-[0_40px_100px_rgba(0,0,0,0.02)] flex items-center justify-center p-12 lg:p-20 mb-10">
+                            <div className="relative w-full max-md:max-w-[80%] max-w-[75%] aspect-square rounded-[4rem] overflow-hidden bg-white/80 shadow-[0_40px_100px_rgba(0,0,0,0.02)] flex items-center justify-center p-3 lg:p-14 mb-10">
                                 <AnimatePresence mode="wait">
                                     <motion.img
                                         key={selectedImageIndex}
@@ -173,7 +181,7 @@ export default function ProductDetailPage() {
                                             duration: 0.9, // Longer duration for luxury feel
                                             ease: [0.22, 1, 0.36, 1] // Custom cubic-bezier for "liquid" motion
                                         }}
-                                        className="max-h-[65%] w-auto object-contain rounded drop-shadow-[0_50px_60px_rgba(0,0,0,0.08)]"
+                                        className="max-h-[75%] w-auto object-contain rounded drop-shadow-[0_50px_60px_rgba(0,0,0,0.08)]"
                                     />
                                 </AnimatePresence>
 
@@ -283,7 +291,9 @@ export default function ProductDetailPage() {
                                     </div>
 
                                     {/* Quick Buy: Performance checkout */}
-                                    <button className="w-full py-5 bg-[#5A7A6A] text-white rounded-full text-[10px] uppercase tracking-widest font-bold hover:bg-[#4A6A5A] hover:shadow-[0_20px_40px_rgba(90,122,106,0.15)] hover:-translate-y-0.5 transition-all flex items-center justify-center gap-3 active:scale-95">
+                                    <button
+                                        onClick={handleQuickBuy}
+                                        className="w-full py-5 bg-[#5A7A6A] text-white rounded-full text-[10px] uppercase tracking-widest font-bold hover:bg-[#4A6A5A] hover:shadow-[0_20px_40px_rgba(90,122,106,0.15)] hover:-translate-y-0.5 transition-all flex items-center justify-center gap-3 active:scale-95">
                                         <Zap className="w-4 h-4 fill-white" /> Quick Buy — Direct Checkout
                                     </button>
 
@@ -356,7 +366,7 @@ export default function ProductDetailPage() {
                     </motion.div>
 
                     {/* SECTION: Lifestyle Editorial Stack (Dynamic 16:9 from demo data) */}
-                    <div className="mt-32 space-y-0 -mx-8 lg:-mx-12">
+                    <div className="mt-20 space-y-0 -mx-6 lg:-mx-10">
                         {product.lifestyle_images?.map((src: string, index: number) => (
                             <motion.div key={index} initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} transition={{ duration: 1.5 }} viewport={{ once: true }} className="w-full container mx-auto overflow-hidden group relative">
                                 <img src={src} alt="" className="w-full h-full object-cover " />

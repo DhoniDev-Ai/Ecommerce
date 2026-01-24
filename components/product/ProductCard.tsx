@@ -19,7 +19,7 @@ export function ProductCard({ product }: ProductCardProps) {
     const handleAddToCart = (e: React.MouseEvent) => {
         e.preventDefault();
         e.stopPropagation();
-        addToCart(product.id, product.price);
+        addToCart(product);
     };
 
     const getProductImage = () => {
@@ -59,16 +59,29 @@ export function ProductCard({ product }: ProductCardProps) {
                         />
                     </div>
                 </Link>
-
                 <button
                     onClick={handleAddToCart}
                     disabled={isProcessing}
                     className={cn(
                         "absolute bottom-6 right-6 flex h-12 w-12 items-center justify-center rounded-full shadow-xl cursor-pointer transition-all duration-500 z-10",
-                        isHovered ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0",
+
+                        // 1. BASE STATE (Mobile & Tablet): Always Visible & In Position
+                        "opacity-100 translate-y-0",
+
+                        // 2. DESKTOP STATE (Large Screens): Hidden by default
+                        "lg:opacity-0 lg:translate-y-4",
+
+                        // 3. HOVER STATE (Desktop Only): Slide up when the card (group) is hovered
+                        "lg:group-hover:opacity-100 lg:group-hover:translate-y-0",
+
+                        // 4. ACTIVE STATES: Force visibility if added successfully or processing
+                        (showSuccess || isProcessing) && "opacity-100 translate-y-0 lg:opacity-100 lg:translate-y-0",
+
+                        // 5. COLORS
                         showSuccess
                             ? "bg-[#5A7A6A] text-white scale-110"
                             : "bg-white text-[#2D3A3A] hover:bg-[#5A7A6A] hover:text-white",
+
                         isProcessing && "opacity-50"
                     )}
                 >

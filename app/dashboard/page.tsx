@@ -31,6 +31,7 @@ export default function DashboardOverview() {
                 .select('*')
                 .eq('user_id', user.id)
                 .neq('status', 'delivered')
+                .neq('status', 'cancelled')
                 .order('created_at', { ascending: false })
                 .limit(1)
                 .single();

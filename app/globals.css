@@ -85,6 +85,12 @@ html {
   }
 }
 
+.max-sm\:justify-start {
+    @media (width < 40rem /* 640px */) {
+        justify-content: flex-end;
+    }
+}
+
 .animate-float {
   animation: float 6s ease-in-out infinite;
 }
