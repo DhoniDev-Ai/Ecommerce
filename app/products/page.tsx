@@ -11,7 +11,9 @@ import { SlidersHorizontal, X } from "lucide-react";
 
 import { useSearchParams } from "next/navigation";
 
-export default function ProductsPage() {
+import { Suspense } from "react";
+
+function ProductsContent() {
     const searchParams = useSearchParams();
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
@@ -210,5 +212,13 @@ export default function ProductsPage() {
 
             <Footer />
         </div>
+    );
+}
+
+export default function ProductsPage() {
+    return (
+        <Suspense fallback={<div className="min-h-screen bg-[#FDFBF7]" />}>
+            <ProductsContent />
+        </Suspense>
     );
 }
