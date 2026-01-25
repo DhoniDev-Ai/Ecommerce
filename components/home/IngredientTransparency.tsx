@@ -94,7 +94,7 @@ export function IngredientTransparency() {
                                     style={{
                                         y: useTransform(scrollYProgress, [0, 1], [0, -200 * ingredient.speed])
                                     }}
-                                    className="group relative bg-white/80 backdrop-blur-sm rounded-[2rem] p-8 border border-[#E8E6E2]/50 shadow-2xl shadow-black/[0.02] transition-colors duration-500 hover:border-[#5A7A6A]/20"
+                                    className="group relative bg-white/80 backdrop-blur-sm rounded-4xl p-8 border border-[#E8E6E2]/50 shadow-2xl shadow-black/2 transition-colors duration-500 hover:border-[#5A7A6A]/20"
                                 >
                                     <div className="relative z-10">
                                         <span className="text-4xl mb-6 block transform transition-transform duration-700 group-hover:scale-110 group-hover:-rotate-6">

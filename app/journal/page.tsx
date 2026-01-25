@@ -7,6 +7,7 @@ import { Footer } from "@/components/layout/Footer";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
+import Image from "next/image";
 
 const categories = ["All", "Health", "Wellness", "Blood Purifiers", "Diabetic Wellness", "Rituals"];
 
@@ -102,7 +103,7 @@ export default function JournalPage() {
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-12 gap-y-20">
                             {[...Array(6)].map((_, i) => (
                                 <div key={i} className="animate-pulse">
-                                    <div className="aspect-[4/5] rounded-[2.5rem] bg-[#F3F1ED] mb-8" />
+                                    <div className="aspect-4/5 rounded-[2.5rem] bg-[#F3F1ED] mb-8" />
                                     <div className="h-4 bg-[#F3F1ED] rounded mb-4 w-3/4" />
                                     <div className="h-6 bg-[#F3F1ED] rounded w-full" />
                                 </div>
@@ -124,8 +125,10 @@ export default function JournalPage() {
                                             className="group cursor-pointer"
                                         >
                                             <Link href={`/journal/${post.slug}`}>
-                                                <div className="aspect-[4/5] rounded-[2.5rem] overflow-hidden bg-[#F3F1ED] mb-8 shadow-2xl shadow-black/[0.02]">
-                                                    <img src={post.image_url} alt="" className="w-full h-full object-cover grayscale-[20%] group-hover:grayscale-0 group-hover:scale-105 transition-all duration-1000" />
+                                                <div className="aspect-4/5 rounded-[2.5rem] overflow-hidden bg-[#F3F1ED] mb-8 shadow-2xl shadow-black/2">
+                                                    <Image
+                                                        width={1000}
+                                                        height={1000} src={post.image_url} alt="" className="w-full h-full object-cover grayscale-20 group-hover:grayscale-0 group-hover:scale-105 transition-all duration-1000" />
                                                 </div>
                                                 <div className="space-y-4">
                                                     <div className="flex justify-between items-center text-[9px] uppercase tracking-widest font-bold text-[#7A8B7A]">

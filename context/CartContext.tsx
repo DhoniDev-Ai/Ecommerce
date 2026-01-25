@@ -68,6 +68,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
         }
     }, [cartItems, isHydrated, user]);
 
+    // Cache for Cart ID to avoid repeated lookups
+    const cartIdCache = useRef<string | null>(null);
+
     // --- REFINED SYNC HELPER ---
     const syncCartWithSupabase = async (currentUser: any) => {
         if (isSyncing.current) return;
@@ -77,15 +80,20 @@ export function CartProvider({ children }: { children: ReactNode }) {
             const localData = localStorage.getItem("ayuniv_cart");
             const localItems = localData ? JSON.parse(localData) : [];
 
-            // Get or Create Cart ID
-            let { data: cart } = await (supabase.from('carts') as any).select('id').eq('user_id', currentUser.id).single();
-            if (!cart) {
-                const { data: newCart } = await (supabase.from('carts') as any).insert({ user_id: currentUser.id }).select('id').single();
-                cart = newCart;
+            // Get or Create Cart ID (Optimized)
+            let cartId = cartIdCache.current;
+            if (!cartId) {
+                let { data: cart } = await (supabase.from('carts') as any).select('id').eq('user_id', currentUser.id).single();
+                if (!cart) {
+                    const { data: newCart } = await (supabase.from('carts') as any).insert({ user_id: currentUser.id }).select('id').single();
+                    cart = newCart;
+                }
+                cartId = cart.id;
+                cartIdCache.current = cart.id;
             }
 
             // Fetch Remote Items
-            const { data: remoteItems } = await (supabase.from('cart_items') as any).select('*, products(*)').eq('cart_id', cart.id);
+            const { data: remoteItems } = await (supabase.from('cart_items') as any).select('*, products(*)').eq('cart_id', cartId);
 
             // Merge: Remote is baseline, Local overrides or adds
             const mergedMap = new Map();
@@ -109,7 +117,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
             // Sync merged state back to Database
             for (const item of mergedArray) {
                 await (supabase.from('cart_items') as any).upsert({
-                    cart_id: cart.id,
+                    cart_id: cartId,
                     product_id: item.id,
                     quantity: item.quantity,
                     price_at_add: item.price
@@ -128,6 +136,17 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
     // --- ACTIONS ---
 
+    const getCartId = async (userId: string) => {
+        if (cartIdCache.current) return cartIdCache.current;
+
+        const { data: cart } = await (supabase.from('carts') as any).select('id').eq('user_id', userId).single();
+        if (cart) {
+            cartIdCache.current = cart.id;
+            return cart.id;
+        }
+        return null;
+    };
+
     const addToCart = useCallback(async (product: any, quantity: number = 1) => {
         if (!product?.id) return;
         const productId = String(product.id);
@@ -144,17 +163,17 @@ export function CartProvider({ children }: { children: ReactNode }) {
         openCart();
 
         if (user) {
-            const { data: cart } = await (supabase.from('carts') as any).select('id').eq('user_id', user.id).single();
-            if (cart) {
+            const cartId = await getCartId(user.id);
+            if (cartId) {
                 // Fetch current DB quantity to ensure accurate upsert
                 const { data: dbItem } = await (supabase.from('cart_items') as any)
                     .select('quantity')
-                    .match({ cart_id: cart.id, product_id: productId })
+                    .match({ cart_id: cartId, product_id: productId })
                     .single();
 
                 const newQty = (dbItem?.quantity || 0) + quantity;
                 await (supabase.from('cart_items') as any).upsert({
-                    cart_id: cart.id,
+                    cart_id: cartId,
                     product_id: productId,
                     quantity: newQty,
                     price_at_add: product.price
@@ -166,9 +185,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
     const removeFromCart = useCallback(async (productId: string) => {
         setCartItems((prev) => prev.filter((item) => String(item.id) !== String(productId)));
         if (user) {
-            const { data: cart } = await (supabase.from('carts') as any).select('id').eq('user_id', user.id).single();
-            if (cart) {
-                await (supabase.from('cart_items') as any).delete().match({ cart_id: cart.id, product_id: productId });
+            const cartId = await getCartId(user.id);
+            if (cartId) {
+                await (supabase.from('cart_items') as any).delete().match({ cart_id: cartId, product_id: productId });
             }
         }
     }, [user]);
@@ -182,9 +201,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
             prev.map((item) => String(item.id) === String(productId) ? { ...item, quantity } : item)
         );
         if (user) {
-            const { data: cart } = await (supabase.from('carts') as any).select('id').eq('user_id', user.id).single();
-            if (cart) {
-                await (supabase.from('cart_items') as any).update({ quantity }).match({ cart_id: cart.id, product_id: productId });
+            const cartId = await getCartId(user.id);
+            if (cartId) {
+                await (supabase.from('cart_items') as any).update({ quantity }).match({ cart_id: cartId, product_id: productId });
             }
         }
     }, [removeFromCart, user]);
@@ -192,9 +211,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
     const clearCart = useCallback(async () => {
         setCartItems([]);
         if (user) {
-            const { data: cart } = await (supabase.from('carts') as any).select('id').eq('user_id', user.id).single();
-            if (cart) {
-                await (supabase.from('cart_items') as any).delete().eq('cart_id', cart.id);
+            const cartId = await getCartId(user.id);
+            if (cartId) {
+                await (supabase.from('cart_items') as any).delete().eq('cart_id', cartId);
             }
         }
     }, [user]);

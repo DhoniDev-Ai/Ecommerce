@@ -30,6 +30,7 @@
   --color-accent-foreground: var(--color-accent-foreground);
 
   --font-heading: var(--font-heading);
+  --font-juana: var(--font-juana);
   --font-body: var(--font-body);
   
   --font-sans: var(--font-body);
@@ -42,6 +43,11 @@ body {
   font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+.textiwant{
+  font-family: var(--font-juana);
+  font-weight: 900;
+  font-size:xx-large;
 }
 
 /* Smooth scrolling */
@@ -89,6 +95,10 @@ html {
     @media (width < 40rem /* 640px */) {
         justify-content: flex-end;
     }
+}
+
+.max-h-\[85\%\] {
+    max-height: 85%;
 }
 
 .animate-float {

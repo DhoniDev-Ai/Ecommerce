@@ -1,27 +1,27 @@
 import { NextResponse } from 'next/server';
-import { cashfree } from '@/lib/cashfree';
+import { verifyWebhookSignature } from '@/lib/cashfree';
 import { supabaseAdmin } from '@/lib/supabase/admin';
+import { sendOrderEmails } from '@/lib/email';
 
 export async function POST(req: Request) {
     try {
         const signature = req.headers.get('x-webhook-signature');
         const timestamp = req.headers.get('x-webhook-timestamp');
-        const body = await req.json();
+        const rawBody = await req.text(); // Need raw body for signature verification
 
         if (!signature || !timestamp) {
             return NextResponse.json({ error: "Missing signature or timestamp" }, { status: 400 });
         }
 
         // Verify Signature
-        // Cashfree SDK provides a method or we do it manually. 
-        // For now, relying on the 'PGVerifyWebhookSignature' if available, or manual check.
-        // Since we are using the 'cashfree-pg' SDK, checking usually involves:
         try {
-             cashfree.PGVerifyWebhookSignature(signature, JSON.stringify(body), timestamp);
+            verifyWebhookSignature(signature, rawBody, timestamp);
         } catch (err) {
              console.error("Webhook Signature Verification Failed", err);
              return NextResponse.json({ error: "Invalid signature" }, { status: 403 });
         }
+        
+        const body = JSON.parse(rawBody);
 
         const event = body.type;
 
@@ -45,6 +45,9 @@ export async function POST(req: Request) {
                      console.error("Webhook: Database update failed", error);
                      return NextResponse.json({ error: "Database update failed" }, { status: 500 });
                  }
+
+                 // Send Emails
+                 await sendOrderEmails(orderId);
             }
         }
 

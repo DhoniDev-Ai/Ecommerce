@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase/admin';
-import { cashfree } from '@/lib/cashfree';
+import { fetchPayments } from '@/lib/cashfree';
+import { sendOrderEmails } from '@/lib/email';
 
 export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
@@ -12,14 +13,12 @@ export async function GET(req: Request) {
 
     try {
         // 1. Ask Cashfree for the truth
-        const cfResponse = await cashfree.PGOrderFetchPayments(orderId);
+        const payments = await fetchPayments(orderId);
         
-        // 2. If paid, update your Supabase Sanctuary
-        // Note: fetchPayments returns a list. we check the latest or success one.
         // 2. Determine Payment Status
         // Cashfree generic statuses: SUCCESS, FLAGGED, PENDING, FAILED, USER_DROPPED, VOID, CANCELLED
-        const payment = cfResponse.data.find((p: any) => ["SUCCESS", "FAILED", "USER_DROPPED", "CANCELLED"].includes(p.payment_status)) 
-                        || cfResponse.data[0];
+        const payment = payments.find((p: any) => ["SUCCESS", "FAILED", "USER_DROPPED", "CANCELLED"].includes(p.payment_status)) 
+                        || payments[0];
 
         const cfStatus = payment?.payment_status || "PENDING";
         let dbPaymentStatus = "pending";
@@ -35,18 +34,31 @@ export async function GET(req: Request) {
 
         // 3. Update Supabase if final status
         if (dbPaymentStatus !== "pending") {
-            const { error } = await (supabaseAdmin.from('orders') as any)
-                .update({ 
-                    status: dbOrderStatus, 
-                    payment_status: dbPaymentStatus,
-                    updated_at: new Date().toISOString()
-                })
-                .eq('id', orderId);
-            
-            if (error) {
-                console.error(`Supabase update failed for status ${dbPaymentStatus}:`, error);
-                // Fallback: If 'succeeded' fails, maybe try 'paid'? (User said paid failed too)
-                // We'll trust the logs if this fails.
+            // Check current status to avoid duplicate emails on refresh
+            const { data: currentOrder } = await supabaseAdmin
+                .from('orders')
+                .select('payment_status')
+                .eq('id', orderId)
+                .single();
+
+            // Cast payment_status to string/any to avoid strict enum mismatch during comparison
+            const currentStatus = currentOrder?.payment_status as string;
+
+            if (currentStatus !== 'succeeded' && currentStatus !== 'paid') {
+                const { error } = await (supabaseAdmin.from('orders') as any)
+                    .update({ 
+                        status: dbOrderStatus, 
+                        payment_status: dbPaymentStatus,
+                        updated_at: new Date().toISOString()
+                    })
+                    .eq('id', orderId);
+                
+                if (error) {
+                    console.error(`Supabase update failed for status ${dbPaymentStatus}:`, error);
+                } else if (dbPaymentStatus === 'succeeded') {
+                    // Send Emails only on fresh success
+                    await sendOrderEmails(orderId);
+                }
             }
         }
 

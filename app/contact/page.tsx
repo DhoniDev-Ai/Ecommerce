@@ -26,7 +26,7 @@ export default function ContactPage() {
                         <span className="inline-block px-4 py-1 rounded-full border border-[#5A7A6A]/20 text-[10px] uppercase tracking-[0.3em] text-[#7A8B7A] font-bold mb-8">
                             Get in Touch
                         </span>
-                        <h1 className="font-heading text-[clamp(2.5rem,6vw,5rem)] leading-[1] text-[#2D3A3A] tracking-tighter">
+                        <h1 className="font-heading text-[clamp(2.5rem,6vw,5rem)] leading-none text-[#2D3A3A] tracking-tighter">
                             Let’s begin a <br />
                             <span className="italic font-serif font-light text-[#5A7A6A]">conversation.</span>
                         </h1>
@@ -86,7 +86,7 @@ export default function ContactPage() {
                             initial={{ opacity: 0, y: 30 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 1, delay: 0.4 }}
-                            className="lg:col-span-7 bg-white rounded-[3rem] p-10 lg:p-16 shadow-2xl shadow-black/[0.02] border border-[#E8E6E2]/50"
+                            className="lg:col-span-7 bg-white rounded-[3rem] p-10 lg:p-16 shadow-2xl shadow-black/2 border border-[#E8E6E2]/50"
                         >
                             <form className="space-y-8">
                                 <div className="grid md:grid-cols-2 gap-8">
@@ -113,7 +113,7 @@ export default function ContactPage() {
                                     <textarea
                                         rows={5}
                                         placeholder="How can we help you on your wellness journey?"
-                                        className="w-full bg-[#FDFBF7] border-none rounded-[2rem] px-6 py-4 text-sm focus:ring-1 focus:ring-[#5A7A6A]/30 transition-all placeholder:text-[#9AA09A] resize-none"
+                                        className="w-full bg-[#FDFBF7] border-none rounded-4xl px-6 py-4 text-sm focus:ring-1 focus:ring-[#5A7A6A]/30 transition-all placeholder:text-[#9AA09A] resize-none"
                                     />
                                 </div>
 

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase/admin'; // Service Role client
-import { cashfree } from '@/lib/cashfree';
+import { createOrder } from '@/lib/cashfree';
 
 export async function POST(req: Request) {
     try {
@@ -68,10 +68,10 @@ export async function POST(req: Request) {
         };
 
         // 3. Create Session with Cashfree
-        const response = await cashfree.PGCreateOrder(request as any);
+        const cashfreeResponse = await createOrder(request);
         
         return NextResponse.json({
-            paymentSessionId: response.data.payment_session_id,
+            paymentSessionId: cashfreeResponse.payment_session_id,
             orderId: order.id
         });
 

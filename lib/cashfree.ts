@@ -1,20 +1,116 @@
-import { Cashfree } from "cashfree-pg";
+import crypto from "crypto";
+import { Agent, setGlobalDispatcher } from 'undici';
 
-if (!process.env.CASHFREE_APP_ID || !process.env.CASHFREE_SECRET_KEY) {
-    throw new Error("Cashfree keys are missing in environment variables");
+// Configure global dispatcher with longer timeouts and forced IPv4 preferences if needed
+const agent = new Agent({
+  connect: {
+    timeout: 30000, // 30 seconds
+  },
+  bodyTimeout: 30000,
+});
+
+setGlobalDispatcher(agent);
+
+interface OrderData {
+    order_amount: number;
+    order_currency: string;
+    order_id: string;
+    customer_details: {
+        customer_id: string;
+        customer_phone: string;
+        customer_email: string;
+        customer_name: string;
+    };
+    order_meta: {
+        return_url: string;
+    };
 }
 
-// Correct instantiation using the Enum value directly implies we can pass "SANDBOX" ONLY IF the types allow it.
-// The lint error said: Argument of type '"SANDBOX"' is not assignable to parameter of type 'CFEnvironment'.
-// CFEnvironment is an enum: SANDBOX = 1.
-// So we should pass CFEnvironment.SANDBOX.
-// Verify if CFEnvironment is exported from "cashfree-pg". index.d.ts says export * from "./configuration".
-// So we can import it.
+export const createOrder = async (orderData: OrderData) => {
+const isProd = process.env.CASHFREE_ENV === "PRODUCTION";
+    const BASE_URL = isProd ? "https://api.cashfree.com/pg" : "https://sandbox.cashfree.com/pg";
+    const url = `${BASE_URL}/orders`;
+    
+    if (!process.env.CASHFREE_APP_ID || !process.env.CASHFREE_SECRET_KEY) {
+        throw new Error("Cashfree keys are missing in environment variables");
+    }
 
-import { CFEnvironment } from "cashfree-pg";
+    const headers = {
+        "Content-Type": "application/json",
+        "x-api-version": "2023-08-01",
+        "x-client-id": process.env.CASHFREE_APP_ID,
+        "x-client-secret": process.env.CASHFREE_SECRET_KEY
+    };
 
-export const cashfree = new Cashfree(
-    CFEnvironment.SANDBOX, 
-    process.env.CASHFREE_APP_ID, 
-    process.env.CASHFREE_SECRET_KEY
-);
+    try {
+        const response = await fetch(url, {
+            method: "POST",
+            headers: headers,
+            body: JSON.stringify(orderData)
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Cashfree API Error: ${response.status} ${response.statusText} - ${errorText}`);
+        }
+
+        const data = await response.json();
+        return data; // This should contain payment_session_id directly
+    } catch (error) {
+        console.error("Cashfree Create Order Error:", error);
+        throw error;
+    }
+};
+
+export const fetchPayments = async (orderId: string) => {
+    const isProd = process.env.CASHFREE_ENV === "PRODUCTION";
+    const BASE_URL = isProd ? "https://api.cashfree.com/pg" : "https://sandbox.cashfree.com/pg";
+    const url = `${BASE_URL}/orders/${orderId}/payments`;
+
+    if (!process.env.CASHFREE_APP_ID || !process.env.CASHFREE_SECRET_KEY) {
+        throw new Error("Cashfree keys are missing in environment variables");
+    }
+
+    const headers = {
+        "Content-Type": "application/json",
+        "x-api-version": "2023-08-01",
+        "x-client-id": process.env.CASHFREE_APP_ID,
+        "x-client-secret": process.env.CASHFREE_SECRET_KEY
+    };
+
+    try {
+        const response = await fetch(url, {
+            method: "GET",
+            headers: headers
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Cashfree Verification Error: ${response.status} ${response.statusText} - ${errorText}`);
+        }
+
+        const data = await response.json();
+        return data; // Returns array of payments
+    } catch (error) {
+        console.error("Cashfree Fetch Payments Error:", error);
+        throw error;
+    }
+};
+
+export const verifyWebhookSignature = (signature: string, rawBody: string, timestamp: string) => {
+    if (!process.env.CASHFREE_SECRET_KEY) {
+        throw new Error("Cashfree secret key is missing");
+    }
+
+    const data = timestamp + rawBody;
+    const generatedSignature = crypto
+        .createHmac("sha256", process.env.CASHFREE_SECRET_KEY)
+        .update(data)
+        .digest("base64");
+
+    if (generatedSignature !== signature) {
+        throw new Error("Invalid Webhook Signature");
+    }
+    
+    return true;
+};

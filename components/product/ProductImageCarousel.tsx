@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "@/lib/framer";
+import Image from "next/image";
 
 const carouselImages = [
     {
@@ -32,7 +33,7 @@ export function ProductImageCarousel() {
     return (
         <section className="py-16 bg-[#FDFBF7]">
             <div className="mx-auto max-w-7xl px-8 lg:px-12">
-                <div className="relative w-full overflow-hidden rounded-[2rem] bg-[#F3F1ED]">
+                <div className="relative w-full overflow-hidden rounded-4xl bg-[#F3F1ED]">
                     <AnimatePresence mode="wait">
                         <motion.div
                             key={currentIndex}
@@ -43,7 +44,9 @@ export function ProductImageCarousel() {
                             className="relative w-full"
                             style={{ aspectRatio: currentImage.ratio }}
                         >
-                            <img
+                            <Image
+                                width={1000}
+                                height={1000}
                                 src={currentImage.src}
                                 alt={currentImage.alt}
                                 className="w-full h-full object-cover"

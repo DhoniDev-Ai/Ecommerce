@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { ArrowRight } from "lucide-react";
+import Image from "next/image";
 
 export function FreshTasteSection() {
     return (
-        <section className="py-20 bg-gradient-to-r from-rose-100 via-pink-50 to-amber-50 overflow-hidden">
+        <section className="py-20 bg-linear-to-r from-rose-100 via-pink-50 to-amber-50 overflow-hidden">
             <div className="mx-auto max-w-7xl px-6 lg:px-8">
                 <div className="grid lg:grid-cols-2 gap-12 items-center">
                     {/* Content */}
@@ -29,7 +30,9 @@ export function FreshTasteSection() {
                     <div className="relative">
                         <div className="flex items-end gap-6">
                             <div className="w-48 lg:w-64">
-                                <img
+                                <Image
+                                    width={1000}
+                                    height={1000}
                                     src="/assets/sea_buckthorn_pulp_500ml.png"
                                     alt="Sea Buckthorn Pulp"
                                     className="w-full h-auto"

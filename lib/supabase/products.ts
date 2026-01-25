@@ -59,7 +59,7 @@ export async function getProducts(
     return [];
   }
 
-  return data as Product[];
+  return data.map(mapProduct);
 }
 
 /**
@@ -78,7 +78,7 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
     return null;
   }
 
-  return data as Product;
+  return mapProduct(data);
 }
 
 /**
@@ -98,7 +98,7 @@ export async function getFeaturedProducts(): Promise<Product[]> {
     return [];
   }
 
-  return data as Product[];
+  return data.map(mapProduct);
 }
 
 /**
@@ -114,7 +114,7 @@ export async function getWellnessGoals(): Promise<string[]> {
     return [];
   }
 
-  const allGoals = data.flatMap((p: { wellness_goals: string[] }) => p.wellness_goals || []);
+  const allGoals = data.flatMap((p: { wellness_goals: string[] | null | undefined }) => p.wellness_goals || []);
   return [...new Set(allGoals)];
 }
 
@@ -133,4 +133,18 @@ export async function getCategories(): Promise<string[]> {
 
   const allCategories = data.map((p: { category: string }) => p.category);
   return [...new Set(allCategories)];
+}
+
+function mapProduct(data: any): Product {
+  return {
+    ...data,
+    stock_quantity: data.stock_quantity || 0,
+    image_urls: Array.isArray(data.image_urls)
+      ? data.image_urls
+      : (typeof data.image_urls === 'string' ? [data.image_urls] : []),
+    slug: data.slug || '',
+    wellness_goals: data.wellness_goals || [],
+    ingredients: data.ingredients || [],
+    benefits: data.benefits || [],
+  } as Product;
 }

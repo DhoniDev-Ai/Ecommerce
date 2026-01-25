@@ -51,9 +51,9 @@ export default function AboutPage() {
                                 alt="Jaipur Wellness Roots"
                                 width={10000}
                                 height={10000}
-                                className="w-full h-full object-cover grayscale-[20%] hover:grayscale-0 transition-all duration-1000"
+                                className="w-full h-full object-cover grayscale-20 hover:grayscale-0 transition-all duration-1000"
                             />
-                            <div className="absolute inset-0 bg-gradient-to-t from-[#2D3A3A]/20 to-transparent" />
+                            <div className="absolute inset-0 bg-linear-to-t from-[#2D3A3A]/20 to-transparent" />
                         </motion.div>
 
                         <motion.div

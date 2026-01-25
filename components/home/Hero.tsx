@@ -4,6 +4,7 @@ import { motion, AnimatePresence, useInView } from "framer-motion";
 import { ArrowRight, ChevronLeft, ChevronRight, Sparkles, MapPin } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/utils/cn";
+import Image from "next/image";
 
 // --- CONTENT CONFIGURATION ---
 const SLIDES = [
@@ -87,9 +88,12 @@ export function Hero() {
                     exit="exit"
                     className="absolute  inset-0 z-0"
                 >
-                    <img
+                    <Image
+                        width={1000}
+                        height={1000}
                         src={slide.bgImage}
                         alt={slide.title}
+                        loading="eager"
                         // Mobile: Center | Desktop: Center
                         className="w-full  h-full object-[45%_center] object-cover md:object-center"
                     />
@@ -106,7 +110,7 @@ export function Hero() {
                     </div>
 
                     {/* 2. Desktop-Only Side Anchor */}
-                    {/* <div className="hidden md:block absolute inset-0 bg-gradient-to-r from-[#FDFBF7]/40 via-transparent to-transparent pointer-events-none z-10" /> */}
+                    {/* <div className="hidden md:block absolute inset-0 bg-linear-to-r from-[#FDFBF7]/40 via-transparent to-transparent pointer-events-none z-10" /> */}
                 </motion.div>
             </AnimatePresence>
 
@@ -139,7 +143,7 @@ export function Hero() {
                                     initial="initial"
                                     animate="animate"
                                     exit="exit"
-                                    className={cn("font-heading text-4xl md:text-6xl lg:text-[5rem] xl:text-[6rem] leading-[0.9] tracking-tighter", slide.color)}
+                                    className={cn("font-heading text-4xl md:text-5xl lg:text-[4.5rem] xl:text-[5rem] leading-[0.9] tracking-tighter", slide.color)}
                                 >
                                     {slide.title}
                                 </motion.h1>

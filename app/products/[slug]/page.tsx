@@ -16,6 +16,8 @@ import { supabase } from "@/lib/supabase/client";
 import { useCart } from "@/hooks/useCart";
 import { ProductSkeleton } from "@/components/products/ProductSkeleton";
 import { PriceDisplay } from "@/components/product/PriceDisplay";
+import Image from "next/image";
+// import { ProductReviews } from "@/components/product/ProductReviews";
 
 export default function ProductDetailPage() {
     const params = useParams();
@@ -165,7 +167,7 @@ export default function ProductDetailPage() {
                             className="lg:col-span-7 lg:sticky lg:top-32 h-fit flex justify-center items-center flex-col"
                         >
                             {/* Main Image Container - Focused & Minimal */}
-                            <div className="relative w-full max-md:max-w-[80%] max-w-[75%] aspect-square rounded-[4rem] overflow-hidden bg-white/80 shadow-[0_40px_100px_rgba(0,0,0,0.02)] flex items-center justify-center p-3 lg:p-14 mb-10">
+                            <div className="relative w-full max-md:max-w-[95%] max-w-[75%] aspect-square rounded-[4rem] overflow-hidden bg-white/80 shadow-[0_40px_100px_rgba(0,0,0,0.02)] flex items-center justify-center p-3 lg:p-8 mb-10">
                                 <AnimatePresence mode="wait">
                                     <motion.img
                                         key={selectedImageIndex}
@@ -181,12 +183,12 @@ export default function ProductDetailPage() {
                                             duration: 0.9, // Longer duration for luxury feel
                                             ease: [0.22, 1, 0.36, 1] // Custom cubic-bezier for "liquid" motion
                                         }}
-                                        className="max-h-[75%] w-auto object-contain rounded drop-shadow-[0_50px_60px_rgba(0,0,0,0.08)]"
+                                        className="max-h-[90%] w-auto object-contain rounded-4xl drop-shadow-[0_50px_60px_rgba(0,0,0,0.08)]"
                                     />
                                 </AnimatePresence>
 
                                 {/* Float Badge - Subtle Glassmorphism */}
-                                <div className="absolute top-10 left-10 h-20 w-20 rounded-full border border-[#5A7A6A]/10 flex items-center justify-center text-center text-[7px] uppercase tracking-[0.25em] text-[#5A7A6A] leading-tight backdrop-blur-xl bg-white/30 select-none">
+                                <div className="absolute top-10 left-10 h-10 w-10 md:h-20 md:w-20 rounded-full border border-[#5A7A6A]/10 flex items-center justify-center text-center text-[4px] md:text-[7px] uppercase tracking-[0.25em] text-[#5A7A6A] leading-tight backdrop-blur-xl bg-white/30 select-none">
                                     Cold <br /> Pressed
                                 </div>
                             </div>
@@ -204,7 +206,9 @@ export default function ProductDetailPage() {
                                                 : "border-transparent opacity-40 hover:opacity-100 hover:scale-105"
                                         )}
                                     >
-                                        <img src={img} alt="" className="w-full h-full object-contain p-2" />
+                                        <Image
+                                            width={1000}
+                                            height={1000} src={img} alt="" className="w-full h-full object-contain p-2" />
                                         {selectedImageIndex === index && (
                                             <motion.div
                                                 layoutId="thumb-glow"
@@ -217,7 +221,7 @@ export default function ProductDetailPage() {
                         </motion.div>
 
                         {/* RIGHT: Product Narrative & Action Suite */}
-                        <div className="lg:col-span-5 pt-8 flex justify-start items-start">
+                        <div className="lg:col-span-5 pt-8 flex justify-center items-start">
                             <motion.div
                                 initial={{ opacity: 0, x: 20 }}
                                 animate={{ opacity: 1, x: 0 }}
@@ -244,16 +248,16 @@ export default function ProductDetailPage() {
                                         priceClassName="text-4xl font-light tracking-tight"
                                         comparisonClassName="text-lg"
                                     />
-                                    <div className="h-px grow bg-gradient-to-r from-[#E8E6E2] to-transparent" />
+                                    <div className="h-px grow bg-linear-to-r from-[#E8E6E2] to-transparent" />
                                 </div>
 
 
                                 {/* Large-Text Managed Description */}
                                 <div className="relative mb-14 group">
-                                    <p className="text-xl text-[#6A7A7A] leading-relaxed font-light italic opacity-90 border-l-[1px] border-[#5A7A6A]/20 pl-8 transition-colors group-hover:border-[#5A7A6A]">
+                                    <p className="text-xl text-[#6A7A7A] leading-relaxed font-light italic opacity-90 border-l border-[#5A7A6A]/20 pl-8 transition-colors group-hover:border-[#5A7A6A]">
                                         "{product.description}"
                                     </p>
-                                    <div className="absolute -left-[1px] top-0 bottom-0 w-[2px] bg-[#5A7A6A] scale-y-0 group-hover:scale-y-100 transition-transform duration-1000 ease-in-out origin-top" />
+                                    <div className="absolute -left-px top-0 bottom-0 w-[2px] bg-[#5A7A6A] scale-y-0 group-hover:scale-y-100 transition-transform duration-1000 ease-in-out origin-top" />
                                 </div>
 
                                 {/* Wellness Objectives */}
@@ -280,7 +284,7 @@ export default function ProductDetailPage() {
                                             onClick={handleAddToCart}
                                             disabled={isProcessing}
                                             className={cn(
-                                                "flex-[2] py-5 rounded-full text-[10px] uppercase tracking-widest font-bold hover:shadow-[0_20px_40px_rgba(45,58,58,0.15)] hover:-translate-y-0.5 transition-all flex items-center justify-center gap-3 active:scale-95 disabled:opacity-70",
+                                                "flex-2 py-5 rounded-full text-[10px] uppercase tracking-widest font-bold hover:shadow-[0_20px_40px_rgba(45,58,58,0.15)] hover:-translate-y-0.5 transition-all flex items-center justify-center gap-3 active:scale-95 disabled:opacity-70",
                                                 showSuccess
                                                     ? "bg-[#5A7A6A] text-white scale-105"
                                                     : "bg-[#2D3A3A] text-white"
@@ -305,7 +309,7 @@ export default function ProductDetailPage() {
                                 </div>
 
                                 {/* Trust Infrastructure - Fine Print Style */}
-                                <div className="mt-20 grid grid-cols-3 gap-10 border-t border-[#E8E6E2] pt-12 opacity-50 hover:opacity-100 transition-opacity duration-700">
+                                <div className="mt-20 grid grid-cols-3 gap-10 border-t border-[#E8E6E2] pt-12 lg:opacity-50 hover:opacity-100 transition-opacity duration-700">
                                     {[
                                         { icon: Leaf, text: "Himalayan Sourced" },
                                         { icon: Droplets, text: "Bio-Active Pure" },
@@ -333,8 +337,8 @@ export default function ProductDetailPage() {
                                 <div className="space-y-5">
                                     {product.ingredient_details?.map((item: any, i: number) => (
                                         <div key={i} className="flex justify-between items-end border-b border-[#E8E6E2] pb-4 group">
-                                            <span className="text-[#5A6A6A] font-light text-xl group-hover:text-[#5A7A6A] transition-colors">{item.name}</span>
-                                            <span className="text-[10px] uppercase tracking-widest text-[#9AA09A] font-bold">{item.certification}</span>
+                                            <span className="text-[#5A6A6A] font-light md:text-xl  text-lg group-hover:text-[#5A7A6A] transition-colors">{item.name}</span>
+                                            <span className="md:text-[10px] text-[8px] uppercase tracking-widest text-[#9AA09A] font-bold">{item.certification}</span>
                                         </div>
                                     ))}
                                 </div>
@@ -350,8 +354,8 @@ export default function ProductDetailPage() {
                                         { label: 'Serving', val: product.nutrition_info?.serving_size, unit: '' }
                                     ].map((stat, i) => (
                                         <div key={i} className="p-6 bg-white rounded-3xl text-center shadow-sm">
-                                            <p className="text-[10px] text-[#9AA09A] uppercase font-bold mb-2 tracking-widest">{stat.label}</p>
-                                            <p className="text-3xl font-light text-[#2D3A3A]">{stat.val}<span className="text-xs ml-1 text-[#9AA09A]">{stat.unit}</span></p>
+                                            <p className="md:text-[10px] text-[8px] text-[#9AA09A] uppercase font-bold mb-2 tracking-widest">{stat.label}</p>
+                                            <p className="md:text-3xl text-xl font-light text-[#2D3A3A]">{stat.val}<span className="text-xs ml-1 text-[#9AA09A]">{stat.unit}</span></p>
                                         </div>
                                     ))}
                                 </div>
@@ -369,7 +373,9 @@ export default function ProductDetailPage() {
                     <div className="mt-20 space-y-0 -mx-6 lg:-mx-10">
                         {product.lifestyle_images?.map((src: string, index: number) => (
                             <motion.div key={index} initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} transition={{ duration: 1.5 }} viewport={{ once: true }} className="w-full container mx-auto overflow-hidden group relative">
-                                <img src={src} alt="" className="w-full h-full object-cover " />
+                                <Image
+                                    width={1000}
+                                    height={1000} src={src} alt="" className="w-full h-full object-cover " />
                                 <div className="absolute inset-0 bg-black/5" />
                                 {/* <div className="absolute bottom-10 left-10 lg:left-20 text-white">
                                     <p className="text-[10px] uppercase tracking-[0.4em] font-bold drop-shadow-md">Ritual Reflection 0{index + 1}</p>
@@ -390,8 +396,10 @@ export default function ProductDetailPage() {
                         <div className="grid grid-cols-2  lg:grid-cols-4 gap-8">
                             {relatedProducts.map((rel) => (
                                 <Link key={rel.id} href={`/products/${rel.slug}`} className="group">
-                                    <div className="aspect-square rounded-[2rem] overflow-hidden bg-white mb-6 transition-all duration-500 group-hover:shadow-2xl flex items-center justify-center p-8">
-                                        <img src={rel.image_urls[0]} alt="" className="max-h-full w-auto object-contain transition-transform duration-700 group-hover:scale-110" />
+                                    <div className="aspect-square rounded-4xl  overflow-hidden bg-white mb-6 transition-all duration-500 group-hover:shadow-2xl flex items-center justify-center p-8">
+                                        <Image
+                                            width={1000}
+                                            height={1000} src={rel.image_urls[0]} alt="" className="max-h-full w-auto object-contain transition-transform duration-700 group-hover:scale-110" />
                                     </div>
                                     <h3 className="font-heading text-center text-xl text-[#2D3A3A]/50 group-hover:text-[#5A7A6A]/90 mb-1">{rel.name}</h3>
                                     <PriceDisplay
@@ -405,6 +413,10 @@ export default function ProductDetailPage() {
                         </div>
                     </section>
                 </div>
+
+                {/* Reviews Section */}
+                {/* <ProductReviews productId={product.id} /> */}
+
             </main>
 
             <Footer />

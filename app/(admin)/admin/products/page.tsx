@@ -1,6 +1,7 @@
 "use client";
 import { Plus, Edit3, Trash2, ExternalLink } from "lucide-react";
 import { PriceDisplay } from "@/components/product/PriceDisplay";
+import Image from "next/image";
 
 export default function AdminProducts() {
     // Logic to fetch all products from Supabase would go here...
@@ -35,7 +36,10 @@ export default function AdminProducts() {
                             <td className="px-10 py-8">
                                 <div className="flex items-center gap-4">
                                     <div className="w-12 h-12 bg-[#F3F1ED] rounded-xl p-2 shrink-0">
-                                        <img src="/assets/sea_buckthorn_pulp_300ml.png" className="object-contain w-full h-full" alt="" />
+                                        <Image
+                                            width={1000}
+                                            height={1000}
+                                            src="/assets/sea_buckthorn_pulp_300ml.png" className="object-contain w-full h-full" alt="" />
                                     </div>
                                     <div>
                                         <p className="font-heading text-sm text-[#2D3A3A]">Sea Buckthorn Elixir</p>

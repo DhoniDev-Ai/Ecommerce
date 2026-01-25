@@ -14,6 +14,7 @@ import { load } from '@cashfreepayments/cashfree-js';
 
 
 import { Database } from "@/types/database";
+import Image from "next/image";
 
 type Address = Database['public']['Tables']['addresses']['Row'];
 
@@ -29,8 +30,8 @@ export default function CheckoutPage() {
     const { cartItems, cartTotal, updateQuantity, removeFromCart } = useCartContext();
 
     // 2. State Management
+    const [otp, setOtp] = useState("");
     const [otpSent, setOtpSent] = useState(false);
-    const [otpCode, setOtpCode] = useState("");
     const [authLoading, setAuthLoading] = useState(false);
     const [user, setUser] = useState<any>(null);
     const [savedAddresses, setSavedAddresses] = useState<Address[]>([]);
@@ -60,83 +61,109 @@ export default function CheckoutPage() {
     const [appliedCoupon, setAppliedCoupon] = useState<any>(null);
     const [couponError, setCouponError] = useState("");
 
-    const handleSendOtp = async () => {
-        if (!validateEmail(formData.email)) return;
-        setAuthLoading(true);
-        try {
-            const { error } = await supabase.auth.signInWithOtp({
-                email: formData.email,
-                options: {
-                    shouldCreateUser: true,
-                    emailRedirectTo: `${window.location.origin}/auth/callback`, // Ensure we use Magic Link
-                }
-            });
-            if (error) throw error;
-            setOtpSent(true);
-            setToast({ message: "Login link sent! Please check your email.", type: 'success' });
 
-            // Start polling/listening loop is handled by useEffect
-        } catch (err: any) {
-            setToast({ message: err.message, type: 'error' });
-            setOtpSent(false);
-        } finally {
-            setAuthLoading(false);
-        }
-    };
 
-    // --- INITIALIZATION & AUTH LISTENER ---
-    useEffect(() => {
-        // 1. Initial Load
-        const initCheckout = async () => {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (user) loadUserData(user);
-        };
-        initCheckout();
-
-        // 2. Real-time Auth Listener (Handles Magic Link login in new tab/window)
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-            if (event === 'SIGNED_IN' && session?.user) {
-                setOtpSent(false);
-                setToast({ message: "Identity Verified.", type: 'success' });
-                await loadUserData(session.user);
-            }
-            if (event === 'SIGNED_OUT') {
-                setUser(null);
-                setFormData(prev => ({ ...prev, email: "", fullName: "" }));
-                setSavedAddresses([]);
-            }
-        });
-
-        return () => {
-            subscription.unsubscribe();
-        };
-    }, []);
-
+    // --- HELPERS ---
     const loadUserData = async (currentUser: any) => {
         setUser(currentUser);
-        setFormData(prev => ({
-            ...prev,
-            email: currentUser.email || "",
-            fullName: currentUser.user_metadata?.full_name || prev.fullName
-        }));
 
-        const { data: addresses } = await supabase
+        // Parallel data fetching: Prefill form and fetch addresses simultaneously
+        const formPrefillPromise = Promise.resolve().then(() => {
+            setFormData(prev => ({
+                ...prev,
+                email: currentUser.email || "",
+                fullName: currentUser.user_metadata?.full_name || prev.fullName
+            }));
+        });
+
+        const addressesPromise = supabase
             .from('addresses')
             .select('*')
             .eq('user_id', currentUser.id)
             .order('is_default', { ascending: false })
             .returns<Address[]>();
 
+        const [_, { data: addresses }] = await Promise.all([formPrefillPromise, addressesPromise]);
+
         if (addresses && addresses.length > 0) {
             setSavedAddresses(addresses);
-            // Only auto-fill if we haven't manually selected one? 
-            // Simplified: Just default to first if loading fresh
             if (selectedAddressId === "new") {
                 setSelectedAddressId(addresses[0].id);
                 fillFormWithAddress(addresses[0]);
             }
         }
     };
+
+    // --- OTP HANDLERS ---
+    const handleSendOtp = async () => {
+        if (!validateEmail(formData.email)) return;
+        setAuthLoading(true);
+        try {
+            const { error } = await supabase.auth.signInWithOtp({
+                email: formData.email,
+                options: { shouldCreateUser: true }
+            });
+            if (error) throw error;
+            setOtpSent(true);
+            setToast({ message: "OTP sent to your email.", type: 'success' });
+        } catch (err: any) {
+            console.error("OTP Error:", err);
+            const errorMessage = err.message || "Something went wrong";
+
+            if (errorMessage.includes("expired") || errorMessage.includes("invalid")) {
+                setToast({ message: "Code expired or invalid. Please request a new one.", type: 'error' });
+            } else {
+                setToast({ message: errorMessage, type: 'error' });
+            }
+            // Ensure we don't reset 'otpSent' blindly so they can retry or click change email
+            // But if it's a critical error maybe we should? For now keeping it simple.
+        } finally {
+            setAuthLoading(false);
+        }
+    };
+
+    const handleVerifyOtp = async () => {
+        if (!otp || otp.length < 6) {
+            setToast({ message: "Please enter a valid code.", type: 'error' });
+            return;
+        }
+        setAuthLoading(true);
+        try {
+            const { data: { session, user }, error } = await supabase.auth.verifyOtp({
+                email: formData.email,
+                token: otp,
+                type: 'email'
+            });
+
+            if (error) throw error;
+
+            if (user) {
+                setToast({ message: "Identity Verified.", type: 'success' });
+                // Parallel Rituals: Update user state and fetch addresses concurrently
+                await loadUserData(user);
+            }
+        } catch (err: any) {
+            console.error("Verify Error:", err);
+            const errorMessage = err.message || "Invalid OTP";
+
+            if (errorMessage.includes("expired") || errorMessage.includes("invalid")) {
+                setToast({ message: "This code has expired. Please send a new one.", type: 'error' });
+            } else {
+                setToast({ message: errorMessage, type: 'error' });
+            }
+        } finally {
+            setAuthLoading(false);
+        }
+    };
+
+    // --- INITIALIZATION ---
+    useEffect(() => {
+        const initCheckout = async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) loadUserData(user);
+        };
+        initCheckout();
+    }, []);
 
     // --- HELPERS ---
     const fillFormWithAddress = (addr: any) => {
@@ -278,6 +305,71 @@ export default function CheckoutPage() {
             return;
         }
 
+        // --- AUTO-SAVE ADDRESS & SYNC NAME ---
+        if (selectedAddressId === "new") {
+            try {
+                const { data: newAddr } = await (supabase.from('addresses') as any)
+                    .insert({
+                        user_id: user.id,
+                        full_name: formData.fullName,
+                        phone: formData.whatsapp,
+                        address_line_1: formData.addressLine,
+                        address_line_2: formData.landmark,
+                        city: formData.city,
+                        state: formData.state,
+                        pincode: formData.pincode,
+                        is_default: savedAddresses.length === 0 // Default if it's the first one
+                    })
+                    .select()
+                    .single();
+
+                if (newAddr) {
+                    setSavedAddresses([newAddr, ...savedAddresses]);
+                    setSelectedAddressId(newAddr.id);
+                }
+
+                // Sync Name & Phone to Profile if empty
+                // Explicitly cast the query to avoid 'never' type inference issues
+                const { data } = await supabase.from('users').select('full_name, phone').eq('id', user.id).single();
+                const profileData = data as { full_name: string | null; phone: string | null } | null;
+
+                const updates: any = {};
+                // Use optional chaining carefully
+                if (!profileData?.full_name || profileData.full_name === "Guest User" || profileData.full_name === user.email?.split('@')[0]) {
+                    updates.full_name = formData.fullName;
+                }
+                if (!profileData?.phone) {
+                    updates.phone = formData.whatsapp;
+                }
+
+                if (Object.keys(updates).length > 0) {
+                    await (supabase.from('users') as any).update(updates).eq('id', user.id);
+                }
+
+            } catch (err) {
+                console.error("Auto-save address failed", err);
+            }
+        } else {
+            // Even for existing address, check if we should sync name/phone to profile
+            try {
+                const { data } = await supabase.from('users').select('full_name, phone').eq('id', user.id).single();
+                const profileData = data as { full_name: string | null; phone: string | null } | null;
+
+                const updates: any = {};
+                if (!profileData?.full_name) {
+                    updates.full_name = formData.fullName;
+                }
+                if (!profileData?.phone) {
+                    updates.phone = formData.whatsapp;
+                }
+
+                if (Object.keys(updates).length > 0) {
+                    await (supabase.from('users') as any).update(updates).eq('id', user.id);
+                }
+            } catch (err) { console.error("Profile sync failed", err); }
+        }
+        // -------------------------------------
+
         // 2. Validate Terms
         // Alert removed as per user request, button is now disabled until agreed.
         if (!agreedToTerms) {
@@ -316,7 +408,7 @@ export default function CheckoutPage() {
 
             // B. Initialize Cashfree
             const cashfree = await load({
-                mode: "sandbox" // Change to "production" when live
+                mode: process.env.NEXT_PUBLIC_CASHFREE_ENV === 'PRODUCTION' ? "production" : "sandbox"
             });
 
             // C. Redirect to Payment Sanctuary
@@ -355,12 +447,14 @@ export default function CheckoutPage() {
                         ) : (
                             <div className="space-y-4">
                                 {cartItems.map((item: any) => (
-                                    <div key={item.id} className="group bg-white rounded-[2rem] p-4  pr-6 border border-[#E8E6E2] flex flex-col justify-between sm:flex-row items-center gap-6 hover:shadow-[0_20px_40px_rgba(0,0,0,0.03)] transition-all duration-500">
-                                        <div className="w-20 h-20 bg-[#F3F1ED] rounded-xl p-2 flex-shrink-0">
-                                            <img src={item.image_urls?.[0]} alt={item.name} className="w-full rounded h-full object-contain mix-blend-multiply group-hover:scale-105 transition-transform" />
+                                    <div key={item.id} className="group bg-white rounded-4xl p-4  pr-6 border border-[#E8E6E2] flex flex-col justify-between sm:flex-row items-center gap-6 hover:shadow-[0_20px_40px_rgba(0,0,0,0.03)] transition-all duration-500">
+                                        <div className="w-20 h-20 bg-[#F3F1ED] rounded-xl p-2 shrink-0">
+                                            <Image
+                                                width={1000}
+                                                height={1000} src={item.image_urls?.[0]} alt={item.name} className="w-full rounded h-full object-contain mix-blend-multiply group-hover:scale-105 transition-transform" />
                                         </div>
 
-                                        <div className="flex-grow text-center sm:text-left">
+                                        <div className="grow text-center sm:text-left">
                                             <h3 className="font-heading text-lg text-[#2D3A3A]">{item.name}</h3>
                                             <p className="text-[11px] font-bold text-[#5A7A6A] mt-1">₹{item.price}</p>
                                         </div>
@@ -426,7 +520,7 @@ export default function CheckoutPage() {
                                         setIsEditing(true); // New address is always editing
                                     }}
                                     className={cn(
-                                        "p-6 rounded-[2rem] border border-dashed flex items-center justify-center gap-3 transition-all",
+                                        "p-6 rounded-4xl border border-dashed flex items-center justify-center gap-3 transition-all",
                                         selectedAddressId === "new" ? "border-[#5A7A6A] bg-[#5A7A6A]/5 text-[#5A7A6A]" : "border-[#E8E6E2] text-[#7A8A8A] hover:bg-white"
                                     )}
                                 >
@@ -476,42 +570,55 @@ export default function CheckoutPage() {
                                     disabled={!!user || otpSent}
                                 />
 
-                                {/* AUTHENTICATION UI - MAGIC LINK FLOW */}
+                                {/* AUTHENTICATION UI - OTP FLOW */}
                                 {!user && validateEmail(formData.email) && (
                                     <div className="bg-[#5A7A6A]/5 p-6 rounded-3xl border border-[#5A7A6A]/10 animate-in fade-in slide-in-from-top-4">
                                         {!otpSent ? (
                                             <div className="flex items-center justify-between gap-4">
                                                 <p className="text-[10px] text-[#5A7A6A] font-medium leading-relaxed">
                                                     <span className="font-bold block mb-1">Ritual Identity Required</span>
-                                                    We'll send a secure login link to your email.
+                                                    We'll send a secret code to your email.
                                                 </p>
                                                 <button
                                                     onClick={handleSendOtp}
                                                     disabled={authLoading}
-                                                    className="bg-[#5A7A6A] text-white px-5 py-3 rounded-full text-[9px] uppercase font-bold tracking-widest hover:shadow-lg transition-all disabled:opacity-50 whitespace-nowrap"
+                                                    className="bg-[#5A7A6A] text-white px-5 py-3 rounded-full cursor-pointer text-[9px] uppercase font-bold tracking-widest hover:shadow-lg transition-all disabled:opacity-50 whitespace-nowrap"
                                                 >
-                                                    {authLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Send Login Link"}
+                                                    {authLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Send Code"}
                                                 </button>
                                             </div>
                                         ) : (
-                                            <div className="flex items-center gap-4 py-2">
-                                                <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-sm">
-                                                    <Loader2 className="w-5 h-5 text-[#5A7A6A] animate-spin" />
-                                                </div>
-                                                <div className="flex-1">
-                                                    <p className="text-[10px] text-[#2D3A3A] font-bold uppercase tracking-widest mb-1">
-                                                        Waiting for confirmation...
+                                            <div className="space-y-4">
+                                                <div className="flex items-center justify-between">
+                                                    <p className="text-[10px] text-[#5A7A6A] font-medium">
+                                                        Enter the code sent to <span className="font-bold text-[#2D3A3A]">{formData.email}</span>
                                                     </p>
-                                                    <p className="text-[10px] text-[#7A8A8A]">
-                                                        Please click the link sent to <span className="font-bold">{formData.email}</span>
-                                                    </p>
+                                                    <button
+                                                        onClick={() => setOtpSent(false)}
+                                                        className="text-[9px] text-[#7A8A8A] hover:text-[#5A7A6A] underline decoration-dotted underline-offset-2"
+                                                    >
+                                                        Change Email
+                                                    </button>
                                                 </div>
-                                                <button
-                                                    onClick={() => setOtpSent(false)}
-                                                    className="text-[9px] text-[#7A8A8A] hover:text-[#5A7A6A] underline whitespace-nowrap"
-                                                >
-                                                    Retry
-                                                </button>
+
+                                                <div className="flex gap-2 items-center ">
+                                                    <CheckoutInput
+                                                        label=""
+                                                        name="otp"
+                                                        value={otp}
+                                                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setOtp(e.target.value)}
+                                                        placeholder="Enter 6-8 digit code"
+                                                        // icon={<Sparkles className="w-3 h-3 text-[#C68DFF]" />}
+                                                        className="tracking-[0.5em]  text-center font-mono"
+                                                    />
+                                                    <button
+                                                        onClick={handleVerifyOtp}
+                                                        disabled={authLoading || otp.length < 6}
+                                                        className="bg-[#2D3A3A] text-white px-6 h-10 mt-3 rounded-2xl text-[9px] uppercase font-bold tracking-widest hover:bg-black  transition-all disabled:opacity-50"
+                                                    >
+                                                        {authLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Verify"}
+                                                    </button>
+                                                </div>
                                             </div>
                                         )}
                                     </div>
@@ -647,7 +754,7 @@ export default function CheckoutPage() {
                             <button
                                 onClick={() => setAgreedToTerms(!agreedToTerms)}
                                 className={cn(
-                                    " h-5 aspect-square rounded-md border flex items-center justify-center flex-shrink-0 transition-all mt-0.5",
+                                    " h-5 aspect-square rounded-md border flex items-center justify-center shrink-0 transition-all mt-0.5",
                                     agreedToTerms ? "bg-[#2D3A3A] border-[#2D3A3A]" : "bg-white border-[#D4D2CE]"
                                 )}
                             >
@@ -670,8 +777,8 @@ export default function CheckoutPage() {
                         </button>
                     </div>
                 </div>
-            </main>
-        </div>
+            </main >
+        </div >
     );
 }
 

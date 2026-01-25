@@ -3,6 +3,7 @@
 import { motion } from "@/lib/framer";
 import { Instagram, ArrowUpRight, Play } from "lucide-react";
 import { cn } from "@/utils/cn";
+import Image from "next/image";
 
 // Premium placeholder data - Replace with your actual post images
 const communityPosts = [
@@ -11,7 +12,7 @@ const communityPosts = [
         url: "https://www.instagram.com/reel/DTvGSxiExlW/",
         image: "/assets/post3.png",
         type: "image",
-        size: "square", // 1:1
+        size: "tall", // 1:1
     },
     {
         id: 2,
@@ -25,7 +26,7 @@ const communityPosts = [
         url: "https://www.instagram.com/p/DSrGFUgkicg/",
         image: "/assets/post1.png",
         type: "video",
-        size: "square", // 1:1
+        size: "tall", // 1:1
     },
 
     {
@@ -89,13 +90,15 @@ export function InstagramCommunity() {
                             target="_blank"
                             rel="noopener noreferrer"
                             className={cn(
-                                "group relative block overflow-hidden rounded-[2rem] bg-[#F3F1ED] transition-all duration-700 hover:shadow-2xl",
-                                post.size === "tall" ? "aspect-[4/5]" : "aspect-square",
+                                "group relative block overflow-hidden rounded-4xl bg-[#F3F1ED] transition-all duration-700 hover:shadow-2xl",
+                                post.size === "tall" ? "aspect-4/5" : "aspect-square",
                                 index % 2 === 1 ? "lg:mt-12" : "" // Staggered laptop rhythm
                             )}
                         >
                             {/* Post Image with Hover Zoom */}
-                            <img
+                            <Image
+                                width={1000}
+                                height={1000}
                                 src={post.image}
                                 alt="Community Moment"
                                 className="h-full w-full object-cover transition-transform duration-[1.5s] ease-out group-hover:scale-110"
@@ -109,7 +112,7 @@ export function InstagramCommunity() {
                             )}
 
                             {/* Minimal Overlay on Hover */}
-                            <div className="absolute inset-0 bg-black/10 opacity-0 transition-opacity duration-500 group-hover:opacity-100 flex items-center justify-center">
+                            <div className="absolute inset-0 bg-black/10 md:opacity-0 transition-opacity duration-500 group-hover:opacity-100 flex items-center justify-center">
                                 <Instagram className="text-white w-8 h-8 opacity-60" />
                             </div>
                         </motion.a>

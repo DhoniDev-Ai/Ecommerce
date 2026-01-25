@@ -9,7 +9,10 @@ import { Product } from "@/types";
 import { supabase } from "@/lib/supabase/client";
 import { SlidersHorizontal, X } from "lucide-react";
 
+import { useSearchParams } from "next/navigation";
+
 export default function ProductsPage() {
+    const searchParams = useSearchParams();
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -18,6 +21,18 @@ export default function ProductsPage() {
 
     const categories = ["All", "Pulp", "She Care", "Cleanse", "Immunity", "Heart Health", "Diabetic Care"];
     const wellnessGoals = ["All Goals", "Energy", "Immunity", "Detox", "Digestion", "Skin Health", "Women's Health", "Heart Health", "Blood Sugar"];
+
+    // Handle URL query params for auto-filtering
+    useEffect(() => {
+        const goalParam = searchParams.get('goal');
+        if (goalParam) {
+            // Find the matching goal case-insensitively
+            const matchingGoal = wellnessGoals.find(g => g.toLowerCase() === goalParam.toLowerCase());
+            if (matchingGoal) {
+                setSelectedGoal(matchingGoal);
+            }
+        }
+    }, [searchParams]);
 
     useEffect(() => {
         async function fetchProducts() {
@@ -29,6 +44,7 @@ export default function ProductsPage() {
                     .order('created_at', { ascending: false });
 
                 if (error) throw error;
+                // ... rest of fetch
 
                 const mappedProducts: Product[] = (data ?? []).map((product: any) => ({
                     id: product.id,
@@ -38,7 +54,7 @@ export default function ProductsPage() {
                     price: product.price,
                     image_urls: product.image_urls || [],
                     category: product.category,
-                    stock: product.stock_quantity || 0,
+                    stock_quantity: product.stock_quantity || 0,
                     ingredients: product.ingredients || [],
                     benefits: product.benefits || [],
                     wellness_goals: product.wellness_goals || [],
@@ -144,17 +160,17 @@ export default function ProductsPage() {
 
                     {/* Staggered Grid View */}
                     {loading ? (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-20 gap-y-24">
+                        <div className="grid grid-cols-2 md:grid-cols-3  gap-x-20 gap-y-24">
                             {[...Array(6)].map((_, i) => (
                                 <div key={i} className={i % 3 === 1 ? "lg:translate-y-16 animate-pulse" : "animate-pulse"}>
-                                    <div className="aspect-[4/5] rounded-[2.5rem] bg-[#F3F1ED] mb-8" />
+                                    <div className="aspect-4/5 rounded-[2.5rem] bg-[#F3F1ED] mb-8" />
                                     <div className="h-4 bg-[#F3F1ED] rounded mb-4 w-3/4" />
                                     <div className="h-6 bg-[#F3F1ED] rounded w-full" />
                                 </div>
                             ))}
                         </div>
                     ) : (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-12 lg:gap-x-20 gap-y-24">
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-x-12 lg:gap-x-20 gap-y-24 max-sm:gap-y-16 ">
                             <AnimatePresence mode="popLayout">
                                 {filteredProducts.map((product, index) => (
                                     <motion.div

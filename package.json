@@ -10,21 +10,26 @@
   },
   "dependencies": {
     "@cashfreepayments/cashfree-js": "^1.0.5",
+    "@react-email/components": "^1.0.6",
+    "@react-email/render": "^2.0.4",
+    "@react-email/tailwind": "^2.0.3",
     "@supabase/supabase-js": "^2.90.1",
-    "cashfree-pg": "^5.1.0",
     "clsx": "^2.1.1",
     "locomotive-scroll": "^4.1.4",
     "lucide-react": "^0.562.0",
     "motion": "^12.27.1",
     "next": "16.1.1",
+    "nodemailer": "^7.0.12",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "stripe": "^20.1.2",
-    "tailwind-merge": "^3.4.0"
+    "tailwind-merge": "^3.4.0",
+    "undici": "^7.19.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
+    "@types/nodemailer": "^7.0.5",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",

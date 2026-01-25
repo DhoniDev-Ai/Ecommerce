@@ -7,6 +7,7 @@ import { ChevronLeft, MapPin, CreditCard, Package, Truck, CheckCircle2, Loader2,
 import Link from "next/link";
 import { cn } from "@/utils/cn";
 import { supabase } from "@/lib/supabase/client";
+import Image from "next/image";
 
 export default function OrderDetailPage() {
     const params = useParams();
@@ -15,7 +16,10 @@ export default function OrderDetailPage() {
 
     useEffect(() => {
         const fetchOrder = async () => {
-            if (!params.id) return;
+            const idParam = params.id;
+            const orderId = Array.isArray(idParam) ? idParam[0] : idParam;
+
+            if (!orderId) return;
 
             const { data, error } = await supabase
                 .from('orders')
@@ -31,7 +35,7 @@ export default function OrderDetailPage() {
                         )
                     )
                 `)
-                .eq('id', params.id)
+                .eq('id', orderId)
                 .single();
 
             if (data) {
@@ -162,7 +166,7 @@ export default function OrderDetailPage() {
 
                                     return (
                                         <div key={i} className="flex gap-6 relative items-start">
-                                            <div className="relative z-10 flex-shrink-0">
+                                            <div className="relative z-10 shrink-0">
                                                 <div className={cn(
                                                     "w-6 h-6 rounded-full border-[] border-white flex items-center justify-center  transition-all duration-500",
                                                     isCompleted
@@ -200,7 +204,11 @@ export default function OrderDetailPage() {
                             <Link href={`/products/${item.slug || '#'}`} key={i} className="group block bg-white rounded-[2.5rem] p-6 flex items-center justify-between border border-[#E8E6E2]/40 hover:border-[#5A7A6A]/30 transition-all">
                                 <div className="flex items-center gap-6">
                                     <div className="w-20 h-20 bg-[#FDFBF7] rounded-2xl border border-[#E8E6E2] p-2 flex items-center justify-center group-hover:scale-105 transition-transform">
-                                        <img src={item.img} className="max-h-full object-contain mix-blend-multiply" />
+                                        <Image
+                                            width={1000}
+                                            height={1000}
+                                            alt={item.img}
+                                            src={item.img} className="max-h-full object-contain mix-blend-multiply" />
                                     </div>
                                     <div>
                                         <h4 className="text-sm font-bold text-[#2D3A3A] uppercase tracking-wider group-hover:text-[#5A7A6A] transition-colors">{item.name}</h4>

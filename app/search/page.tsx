@@ -39,7 +39,7 @@ function SearchContent() {
                     price: product.price,
                     image_urls: product.image_urls || [],
                     category: product.category,
-                    stock: product.stock_quantity || 0,
+                    stock_quantity: product.stock_quantity || 0,
                     ingredients: product.ingredients || [],
                     benefits: product.benefits || [],
                     wellness_goals: product.wellness_goals || [],
@@ -106,7 +106,7 @@ function SearchContent() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-8 gap-y-16">
                         {[...Array(4)].map((_, i) => (
                             <div key={i} className="animate-pulse">
-                                <div className="aspect-[4/5] rounded-[2.5rem] bg-[#F3F1ED] mb-8" />
+                                <div className="aspect-4/5 rounded-[2.5rem] bg-[#F3F1ED] mb-8" />
                                 <div className="h-4 bg-[#F3F1ED] rounded mb-4 w-3/4" />
                                 <div className="h-6 bg-[#F3F1ED] rounded w-full" />
                             </div>

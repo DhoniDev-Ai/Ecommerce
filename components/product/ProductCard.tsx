@@ -7,6 +7,7 @@ import { Plus } from "lucide-react";
 import { useState } from "react";
 import { useCart } from "@/hooks/useCart";
 import { PriceDisplay } from "./PriceDisplay";
+import Image from "next/image";
 
 interface ProductCardProps {
     product: Product;
@@ -48,12 +49,14 @@ export function ProductCard({ product }: ProductCardProps) {
             {/* Visual Container */}
             <div className="relative aspect-square overflow-hidden rounded-[2.5rem] bg-[#F3F1ED]">
                 <Link href={`/products/${product.slug}`} className="block h-full w-full">
-                    <div className="absolute inset-0 flex items-center justify-center p-10">
-                        <img
+                    <div className="absolute inset-0 flex items-center justify-center p-10 max-sm:p-3">
+                        <Image
+                            width={1000}
+                            height={1000}
                             src={productImage}
                             alt={product.name}
                             className={cn(
-                                "h-full w-full object-contain transition-transform duration-1000 ease-out",
+                                "h-full w-full object-contain transition-transform duration-1000 ease-out rounded max-sm:rounded-4xl",
                                 isHovered ? "scale-110" : "scale-100"
                             )}
                         />
@@ -63,10 +66,10 @@ export function ProductCard({ product }: ProductCardProps) {
                     onClick={handleAddToCart}
                     disabled={isProcessing}
                     className={cn(
-                        "absolute bottom-6 right-6 flex h-12 w-12 items-center justify-center rounded-full shadow-xl cursor-pointer transition-all duration-500 z-10",
+                        "absolute bottom-6 right-6 flex h-6 w-6 md:h-12 md:w-12 items-center justify-center rounded-full shadow-xl cursor-pointer transition-all duration-500 z-10",
 
                         // 1. BASE STATE (Mobile & Tablet): Always Visible & In Position
-                        "opacity-100 translate-y-0",
+                        "opacity-100 border-[0.5px] border-[#5A7A6A] translate-y-0",
 
                         // 2. DESKTOP STATE (Large Screens): Hidden by default
                         "lg:opacity-0 lg:translate-y-4",
@@ -85,10 +88,10 @@ export function ProductCard({ product }: ProductCardProps) {
                         isProcessing && "opacity-50"
                     )}
                 >
-                    <Plus className={cn("h-5 w-5 transition-transform", showSuccess && "rotate-90")} />
+                    <Plus className={cn("h-3 w-3 md:h-6 md:w-6 transition-transform", showSuccess && "rotate-90")} />
                 </button>
 
-                <div className="absolute top-6 left-6">
+                <div className="absolute top-6 left-6 max-sm:hidden ">
                     <span className="rounded-full bg-white/80 backdrop-blur-md px-4 py-1 text-[8px] font-bold tracking-[0.2em] text-[#5A7A6A] uppercase">
                         {product.wellness_goals?.[0]}
                     </span>
@@ -96,8 +99,8 @@ export function ProductCard({ product }: ProductCardProps) {
             </div>
 
             {/* Refined Text Info */}
-            <div className="mt-3 flex flex-col items-center text-center px-2">
-                <h3 className="font-heading text-lg text-[#2D3A3A] leading-tight transition-colors group-hover:text-[#5A7A6A]">
+            <div className="mt-3 max-sm:mt-2 flex flex-col items-center text-center px-2">
+                <h3 className="font-heading sm:text-lg  text-[#2D3A3A] leading-tight transition-colors group-hover:text-[#5A7A6A]">
                     <Link href={`/products/${product.slug}`}>{product.name}</Link>
                 </h3>
 

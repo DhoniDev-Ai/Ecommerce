@@ -32,6 +32,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                                 <Image
                                     width={1000}
                                     height={1000}
+                                    loading="eager"
                                     src="/assets/Logo.png" alt="Ayuniv" className="h-20 w-auto" />
                             </Link>
                             <Link
@@ -63,7 +64,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
                         {/* Minimal Logout */}
                         <div className="mt-auto pl-2">
-                            <button className="flex items-center cursor-pointer gap-4 px-4 py-6 text-[10px] uppercase tracking-[0.3em] font-bold text-red-400/50 hover:text-red-500 transition-all">
+                            <button className="flex items-center cursor-pointer gap-4 px-4 py-6 text-[10px] uppercase tracking-[0.3em] text-red-500 font-bold lg:text-red-400/50 hover:text-red-500 transition-all">
                                 <LogOut className="w-4 h-4 stroke-[1.5]" /> Logout
                             </button>
                         </div>
@@ -83,12 +84,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </div>
 
             {/* Mobile Navigation */}
-            <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-2xl border-t border-[#E8E6E2] z-[100] px-6 py-5 rounded-t-[2.5rem] shadow-[0_-10px_40px_rgba(0,0,0,0.03)]">
+            <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-2xl border-t border-[#E8E6E2] z-100 px-6 py-5 rounded-t-[2.5rem] shadow-[0_-10px_40px_rgba(0,0,0,0.03)]">
                 <div className="flex justify-around items-center max-w-md mx-auto">
                     {navItems.map((item) => (
                         <Link key={item.href} href={item.href} className="flex flex-col items-center gap-1.5 group">
                             <item.icon className={cn(
-                                "w-5 h-5 stroke-[2] transition-colors",
+                                "w-5 h-5 stroke-2 transition-colors",
                                 pathname === item.href ? "text-[#5A7A6A]" : "text-[#2D3A3A]/20"
                             )} />
                             <span className={cn(

@@ -82,7 +82,7 @@ export default function DynamicJournalReader() {
                 <main className="grow pt-32 pb-24 relative z-10">
                     <div className="mx-auto max-w-4xl px-8 lg:px-12">
                         <div className="h-16 bg-[#F3F1ED] rounded animate-pulse mb-8 w-3/4" />
-                        <div className="aspect-[16/9] rounded-[3rem] bg-[#F3F1ED] animate-pulse mb-20" />
+                        <div className="aspect-video rounded-[3rem] bg-[#F3F1ED] animate-pulse mb-20" />
                         <div className="space-y-4">
                             <div className="h-4 bg-[#F3F1ED] rounded animate-pulse" />
                             <div className="h-4 bg-[#F3F1ED] rounded animate-pulse w-5/6" />
@@ -131,7 +131,7 @@ export default function DynamicJournalReader() {
         <div className="min-h-screen flex flex-col bg-[#FDFBF7] selection:bg-[#5A7A6A]/10">
             {/* Reading Progress Bar */}
             <motion.div
-                className="fixed top-0 left-0 right-0 h-1 bg-[#5A7A6A] z-[110] origin-left"
+                className="fixed top-0 left-0 right-0 h-1 bg-[#5A7A6A] z-110 origin-left"
                 style={{ scaleX }}
             />
 
@@ -166,7 +166,7 @@ export default function DynamicJournalReader() {
 
                 {/* 2. CINEMATIC HERO (16:9) */}
                 <div className="mx-auto max-w-7xl px-4 sm:px-8 lg:px-46 mb-24">
-                    <div className="relative aspect-[16/9] rounded-[2rem] lg:rounded-[3rem] overflow-hidden shadow-2xl shadow-black/[0.05]">
+                    <div className="relative aspect-video rounded-4xl lg:rounded-[3rem] overflow-hidden shadow-2xl shadow-black/5">
                         <Image
                             src={post.hero_image_url || post.image_url}
                             alt={post.title}
@@ -175,7 +175,7 @@ export default function DynamicJournalReader() {
 
                             className="w-full h-full object-cover"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+                        <div className="absolute inset-0 bg-linear-to-t from-black/20 to-transparent" />
                     </div>
                 </div>
 
@@ -209,7 +209,7 @@ export default function DynamicJournalReader() {
                         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-10">
                             {suggestedPosts.map((suggestedPost, i) => (
                                 <Link key={i} href={`/journal/${suggestedPost.slug}`} className="group block">
-                                    <div className="aspect-[4/5] rounded-[2.5rem] overflow-hidden mb-8 shadow-xl shadow-black/[0.02] bg-white">
+                                    <div className="aspect-4/5 rounded-[2.5rem] overflow-hidden mb-8 shadow-xl shadow-black/2 bg-white">
                                         <Image
                                             width={1000}
                                             height={1000}

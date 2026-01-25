@@ -113,7 +113,7 @@ export default function AddressForm({ initialData, onClose, onSuccess }: any) {
     };
 
     return (
-        <div className="fixed inset-0 z-[150] flex items-center justify-end selection:bg-[#5A7A6A]/10">
+        <div className="fixed inset-0 z-150 flex items-center justify-end selection:bg-[#5A7A6A]/10">
             <div className="absolute inset-0 bg-[#2D3A3A]/40 backdrop-blur-md transition-opacity" onClick={onClose} />
 
             <div className="relative w-full max-w-xl h-full bg-[#FDFBF7] shadow-2xl p-8 lg:p-12 overflow-y-auto custom-scrollbar">
@@ -208,7 +208,7 @@ export default function AddressForm({ initialData, onClose, onSuccess }: any) {
                     </div>
 
                     {/* REFINED TOGGLE: Single Primary Sanctuary Anchor */}
-                    <div className="flex items-center justify-between p-8 bg-white rounded-[2rem] border border-[#E8E6E2] shadow-sm">
+                    <div className="flex items-center justify-between p-8 bg-white rounded-4xl border border-[#E8E6E2] shadow-sm">
                         <div className="flex items-center gap-5">
                             <div className={cn(
                                 "w-12 h-12 rounded-full border flex items-center justify-center transition-all duration-500",

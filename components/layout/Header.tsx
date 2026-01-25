@@ -10,12 +10,14 @@ import { cn } from "@/utils/cn";
 import { supabase } from "@/lib/supabase/client";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 import { useCartContext } from "@/context/CartContext";
+import Image from "next/image";
 
 const navigation = [
     { name: "Collection", href: "/products" },
     { name: "The Alchemy", href: "/about" },
     { name: "Contact", href: "/contact" },
-    { name: "Journal", href: "/journal" }
+    { name: "Journal", href: "/journal" },
+    { name: "Orders", href: "/dashboard/orders" }
 ];
 
 export function Header() {
@@ -95,7 +97,10 @@ export function Header() {
                 <div className="flex lg:flex-1">
                     <Link href="/" className="-m-1.5 p-1.5 flex items-center gap-2">
                         <span className="sr-only">Ayuniv</span>
-                        <img
+                        <Image
+                            width={1000}
+                            height={1000}
+                            loading="eager"
                             src="/assets/logo.png"
                             alt="Ayuniv"
                             className="h-16 w-auto"
@@ -141,7 +146,8 @@ export function Header() {
                                     "text-[10px] uppercase tracking-[0.25em] font-bold transition-colors",
                                     isActive
                                         ? "text-[#5A7A6A]"
-                                        : "text-[#2D3A3A]/70 hover:text-[#5A7A6A]"
+                                        : "text-[#2D3A3A]/70 hover:text-[#5A7A6A]",
+                                    item.name === "Orders" && "hidden"
                                 )}
                             >
                                 {item.name}
@@ -236,7 +242,10 @@ export function Header() {
                 <div className="flex min-h-full flex-col px-6 py-6 bg-[#FDFBF7]">
                     <div className="flex items-center justify-between">
                         <Link href="/" className="-m-1.5 p-1.5" onClick={() => setMobileMenuOpen(false)}>
-                            <img
+                            <Image
+                                width={1000}
+                                height={1000}
+                                loading="eager"
                                 src="/assets/logo.png"
                                 alt="Ayuniv"
                                 className="h-8 w-auto"

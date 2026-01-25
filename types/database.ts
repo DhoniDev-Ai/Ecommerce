@@ -67,6 +67,7 @@ export interface Database {
           slug?: string
           wellness_goals?: string[]
         }
+        Relationships: []
       }
       posts: {
         Row: {
@@ -102,6 +103,7 @@ export interface Database {
           published_at?: string
           author_id?: string
         }
+        Relationships: []
       }
       users: {
         Row: {
@@ -134,6 +136,7 @@ export interface Database {
           created_at?: string
           updated_at?: string
         }
+        Relationships: []
       }
      carts: {
         Row: {
@@ -154,6 +157,7 @@ export interface Database {
           created_at?: string
           updated_at?: string
         }
+        Relationships: []
       }
       cart_items: {
   Row: {
@@ -183,6 +187,7 @@ export interface Database {
     currency?: string
     updated_at?: string // Add this line
   }
+  Relationships: []
 }
       orders: {
         Row: {
@@ -221,6 +226,34 @@ export interface Database {
           created_at?: string
           updated_at?: string
         }
+        Relationships: []
+      }
+      reviews: {
+        Row: {
+          id: string
+          user_id: string
+          product_id: string
+          rating: number
+          comment: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          product_id: string
+          rating: number
+          comment?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          product_id?: string
+          rating?: number
+          comment?: string | null
+          created_at?: string
+        }
+        Relationships: []
       }
       addresses: {
         Row: {
@@ -265,6 +298,7 @@ export interface Database {
           created_at?: string
           updated_at?: string
         }
+        Relationships: []
       }
       order_items: {
         Row: {
@@ -288,6 +322,34 @@ export interface Database {
           quantity?: number
           price_at_purchase?: number
         }
+        Relationships: []
+      }
+      coupons: {
+        Row: {
+          id: string
+          code: string
+          type: 'percentage' | 'fixed'
+          value: number
+          is_active: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          code: string
+          type: 'percentage' | 'fixed'
+          value: number
+          is_active?: boolean
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          code?: string
+          type?: 'percentage' | 'fixed'
+          value?: number
+          is_active?: boolean
+          created_at?: string
+        }
+        Relationships: []
       }
     }
     Views: {

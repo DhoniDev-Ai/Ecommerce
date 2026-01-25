@@ -7,7 +7,7 @@ export interface Product {
   compare_at_price?: number;
   image_urls: string[];
   category: string;
-  stock: number;
+  stock_quantity: number;
   ingredients: string[];
   benefits: string[];
   wellness_goals: string[];

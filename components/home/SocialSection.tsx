@@ -1,4 +1,5 @@
 import { Instagram } from "lucide-react";
+import Image from "next/image";
 
 const socialPosts = [
     { image: "/assets/shecare.png", handle: "@healthyliving" },
@@ -43,7 +44,10 @@ export function SocialSection() {
                             href="#"
                             className="group relative aspect-square bg-secondary/30 rounded-2xl overflow-hidden"
                         >
-                            <img
+                            <Image
+                                width={1000}
+                                height={1000}
+
                                 src={post.image}
                                 alt={`Social post by ${post.handle}`}
                                 className="w-full h-full object-contain p-4 transition-transform duration-300 group-hover:scale-110"

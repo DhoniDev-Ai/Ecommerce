@@ -115,7 +115,9 @@ function OrderCard({ order, index }: { order: any, index: number }) {
                     order.order_items.map((item: any, i: number) => (
                         <div key={i} className="flex items-center gap-4 bg-[#FDFBF7] pr-6 rounded-2xl border border-[#E8E6E2]/40">
                             <div className="w-16 h-16 p-2">
-                                <img
+                                <Image
+                                    width={1000}
+                                    height={1000}
                                     src={item.products?.image_urls?.[0] || '/placeholder.png'}
                                     alt={item.products?.name || 'Product'}
                                     className="w-full rounded-xl h-full object-contain grayscale-[0.3] group-hover:grayscale-0 transition-all"

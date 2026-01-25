@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "@/lib/framer";
 import { cn } from "@/utils/cn";
 import { useCartContext } from "@/context/CartContext";
 import Link from "next/link";
+import Image from "next/image";
 
 /**
  * 1. The Shadow Skeleton Component
@@ -51,14 +52,14 @@ export function CartSidebar() {
                 {isOpen && (
                     <motion.div
                         initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                        className="fixed inset-0 bg-[#2D3A3A]/10 backdrop-blur-md z-[100]"
+                        className="fixed inset-0 bg-[#2D3A3A]/10 backdrop-blur-md z-100"
                         onClick={closeCart}
                     />
                 )}
             </AnimatePresence>
 
             <aside className={cn(
-                "fixed top-0 right-0 h-full w-full max-w-md bg-[#FDFBF7] shadow-[0_0_100px_rgba(45,58,58,0.08)] z-[101] flex flex-col transition-transform duration-700 cubic-bezier(0.19, 1, 0.22, 1)",
+                "fixed top-0 right-0 h-full w-full max-w-md bg-[#FDFBF7] shadow-[0_0_100px_rgba(45,58,58,0.08)] z-101 flex flex-col transition-transform duration-700 cubic-bezier(0.19, 1, 0.22, 1)",
                 isOpen ? "translate-x-0" : "translate-x-full"
             )}>
                 <header className="p-10 flex items-center justify-between border-b border-[#E8E6E2]/40">
@@ -99,7 +100,9 @@ export function CartSidebar() {
                                 </AnimatePresence>
 
                                 <Link href={`/products/${item.slug}`} onClick={closeCart} className="w-16 h-16 bg-[#F3F1ED] rounded-2xl p-2 shrink-0 cursor-pointer hover:scale-105 transition-transform duration-500">
-                                    <img src={item.image_urls?.[0]} className="w-full h-full object-contain" alt="" />
+                                    <Image
+                                        width={1000}
+                                        height={1000} src={item.image_urls?.[0]} className="w-full h-full object-contain" alt="" />
                                 </Link>
 
                                 <div className="flex-1 min-w-0 space-y-1">
@@ -112,7 +115,7 @@ export function CartSidebar() {
                                             <span className="w-6 text-center text-[10px] font-bold">{item.quantity}</span>
                                             <button onClick={() => handleQuantity(item.id, item.quantity, 1)} className="p-1 opacity-40 hover:opacity-100 cursor-pointer"><Plus className="w-2.5 h-2.5" /></button>
                                         </div>
-                                        <button onClick={() => setConfirmDeleteId(item.id)} className="text-[#9AA09A] hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all cursor-pointer"><Trash2 className="w-3 h-3" /></button>
+                                        <button onClick={() => setConfirmDeleteId(item.id)} className="text-[#9AA09A] hover:text-red-400 ld:opacity-0 group-hover:opacity-100 transition-all cursor-pointer"><Trash2 className="w-3 h-3" /></button>
                                     </div>
                                 </div>
                                 <div className="text-right flex flex-col items-end">

@@ -33,7 +33,7 @@ const goals = [
 
 export function WellnessGoals() {
     return (
-        <section className="py-20 bg-gradient-to-b from-[#FDFBF7] to-[#F8F6F2]">
+        <section className="py-20 bg-linear-to-b from-[#FDFBF7] to-[#F8F6F2]">
             <div className="mx-auto max-w-7xl px-8 lg:px-12">
                 {/* Section Header - Asymmetric */}
                 <div className="grid lg:grid-cols-2 gap-8 mb-20">
@@ -64,7 +64,7 @@ export function WellnessGoals() {
                             className="group relative"
                         >
                             <div
-                                className={`relative p-8 rounded-[2rem] bg-gradient-to-br ${goal.color} transition-all duration-500 hover:shadow-2xl hover:shadow-black/5 hover:-translate-y-2 overflow-hidden`}
+                                className={`relative p-8 rounded-4xl bg-linear-to-br ${goal.color} transition-all duration-500 hover:shadow-2xl hover:shadow-black/5 hover:-translate-y-2 overflow-hidden`}
                             >
                                 {/* Decorative circle */}
                                 <div

@@ -24,7 +24,7 @@ export function Toast({ message, type, onClose }: ToastProps) {
                     initial={{ opacity: 0, y: -20, scale: 0.9 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: -20, scale: 0.9 }}
-                    className="fixed top-6 right-6 z-[100] flex items-center gap-3 bg-white/80 backdrop-blur-md border border-[#E8E6E2] px-6 py-4 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)]"
+                    className="fixed top-6 right-6 z-100 flex items-center gap-3 bg-white/80 backdrop-blur-md border border-[#E8E6E2] px-6 py-4 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)]"
                 >
                     {type === 'success' ? (
                         <CheckCircle2 className="w-5 h-5 text-[#5A7A6A]" />
