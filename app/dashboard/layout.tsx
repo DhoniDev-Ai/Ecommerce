@@ -1,10 +1,12 @@
 "use client";
+import { useEffect, useState } from "react";
 import { LayoutDashboard, User, MapPin, Package, LogOut, ChevronLeft } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { cn } from "@/utils/cn";
 import { motion } from "@/lib/framer";
 import Image from "next/image";
+import { supabase } from "@/lib/supabase/client";
 
 const navItems = [
     { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
@@ -15,6 +17,24 @@ const navItems = [
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
+    const router = useRouter();
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        const checkUser = async () => {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) {
+                router.push("/login");
+            } else {
+                setIsLoading(false);
+            }
+        };
+        checkUser();
+    }, [router]);
+
+    if (isLoading) {
+        return null; // Or a spinner
+    }
 
     return (
         <div className="min-h-screen bg-[#FDFBF7] pt-12 max-lg:pb-24 lg:pt-16 selection:bg-[#5A7A6A]/10">

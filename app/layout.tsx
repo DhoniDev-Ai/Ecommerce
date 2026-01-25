@@ -17,6 +17,7 @@ const juana = Cormorant_Garamond({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || "https://ayuniv.com"),
   title: {
     default: "Ayuniv | Natural Juice & Wellness",
     template: "%s | Ayuniv"
