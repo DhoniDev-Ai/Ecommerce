@@ -66,7 +66,7 @@ export default function ProfilePage() {
         if (!error) {
             alert("Ritual Identity Updated.");
         } else {
-            console.error("Alchemy Error:", error.message);
+            //console.error("Alchemy Error:", error.message);
         }
         setUpdating(false);
     };

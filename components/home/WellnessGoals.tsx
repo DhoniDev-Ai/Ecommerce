@@ -33,7 +33,7 @@ const goals = [
 
 export function WellnessGoals() {
     return (
-        <section className="py-20 bg-linear-to-b from-[#FDFBF7] to-[#F8F6F2]">
+        <section id="WellnessGoals" className="py-20 bg-linear-to-b from-[#FDFBF7] to-[#F8F6F2]">
             <div className="mx-auto max-w-7xl px-8 lg:px-12">
                 {/* Section Header - Asymmetric */}
                 <div className="grid lg:grid-cols-2 gap-8 mb-20">

@@ -3,9 +3,17 @@
 import { motion } from "@/lib/framer";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
-import { Send, MapPin, Mail, Phone, Instagram } from "lucide-react";
+import { Send, MapPin, Mail, Phone, Instagram, ArrowRight, MessageCircle } from "lucide-react";
+import { useState } from "react";
 
 export default function ContactPage() {
+    const [message, setMessage] = useState("");
+
+    const handleWhatsAppRedirect = () => {
+        const encodedMessage = encodeURIComponent(message || "Hi Ayuniv, I would like to know more about...");
+        window.open(`https://wa.me/917737350325?text=${encodedMessage}`, '_blank');
+    };
+
     return (
         <div className="min-h-screen flex flex-col bg-[#FDFBF7] selection:bg-[#5A7A6A]/10">
             {/* Grain Texture Overlay for consistent 2026 premium feel */}
@@ -17,114 +25,120 @@ export default function ContactPage() {
                 <div className="mx-auto max-w-7xl px-8 lg:px-12">
 
                     {/* Header Section */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-                        className="max-w-3xl mb-24"
-                    >
-                        <span className="inline-block px-4 py-1 rounded-full border border-[#5A7A6A]/20 text-[10px] uppercase tracking-[0.3em] text-[#7A8B7A] font-bold mb-8">
-                            Get in Touch
-                        </span>
-                        <h1 className="font-heading text-[clamp(2.5rem,6vw,5rem)] leading-none text-[#2D3A3A] tracking-tighter">
-                            Let’s begin a <br />
-                            <span className="italic font-serif font-light text-[#5A7A6A]">conversation.</span>
-                        </h1>
-                    </motion.div>
-
-                    <div className="grid lg:grid-cols-12 gap-16 lg:gap-24 items-start">
-
-                        {/* LEFT: Contact Information */}
+                    <div className="grid lg:grid-cols-2 gap-16 mb-24">
                         <motion.div
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ duration: 1, delay: 0.2 }}
-                            className="lg:col-span-5 space-y-16"
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
                         >
-                            {/* Jaipur HQ */}
-                            <div>
-                                <h3 className="text-[10px] uppercase tracking-[0.3em] text-[#7A8B7A] font-bold mb-6 flex items-center gap-3">
-                                    <MapPin className="w-3 h-3" /> The Studio
-                                </h3>
-                                <p className="text-xl text-[#2D3A3A] font-light leading-relaxed">
+                            <span className="inline-block px-4 py-1 rounded-full border border-[#5A7A6A]/20 text-[10px] uppercase tracking-[0.3em] text-[#7A8B7A] font-bold mb-8">
+                                Connect With Us
+                            </span>
+                            <h1 className="font-heading text-[clamp(2.5rem,5vw,4.5rem)] leading-none text-[#2D3A3A] tracking-tighter mb-8">
+                                We are here to <br />
+                                <span className="italic font-serif font-light text-[#5A7A6A]">listen.</span>
+                            </h1>
+                            <p className="text-[#5A6A6A] font-light text-lg max-w-md leading-relaxed">
+                                Whether you have a question about our rituals, need guidance on a blend, or just want to say hello — reach out directly.
+                            </p>
+                        </motion.div>
+                    </div>
+
+                    <div className="grid lg:grid-cols-12 gap-8 lg:gap-16 items-start">
+
+                        {/* LEFT: Quick Direct Links Card */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 1, delay: 0.2 }}
+                            className="lg:col-span-5 space-y-4"
+                        >
+                            {/* Phone Card */}
+                            {/* <a href="tel:+917737350325" className="block group bg-white rounded-4xl p-8 border border-[#E8E6E2] hover:border-[#5A7A6A]/30 transition-all hover:shadow-[0_8px_30px_rgba(0,0,0,0.04)]">
+                                <div className="flex justify-between items-start mb-6">
+                                    <div className="w-10 h-10 rounded-full bg-[#F3F1ED] flex items-center justify-center group-hover:bg-[#5A7A6A] transition-colors">
+                                        <Phone className="w-4 h-4 text-[#2D3A3A] group-hover:text-white transition-colors" />
+                                    </div>
+                                    <ArrowRight className="w-4 h-4 text-[#9AA09A] -rotate-45 group-hover:rotate-0 transition-transform" />
+                                </div>
+                                <h3 className="text-sm font-bold text-[#2D3A3A] uppercase tracking-widest mb-1">Call Us</h3>
+                                <p className="text-xl text-[#5A6A6A] font-light">+91 77373 50325</p>
+                            </a> */}
+
+                            {/* Email Card */}
+                            <a href="mailto:info@ayuniv.com" className="block group bg-white rounded-4xl p-8 border border-[#E8E6E2] hover:border-[#5A7A6A]/30 transition-all hover:shadow-[0_8px_30px_rgba(0,0,0,0.04)]">
+                                <div className="flex justify-between items-start mb-6">
+                                    <div className="w-10 h-10 rounded-full bg-[#F3F1ED] flex items-center justify-center group-hover:bg-[#5A7A6A] transition-colors">
+                                        <Mail className="w-4 h-4 text-[#2D3A3A] group-hover:text-white transition-colors" />
+                                    </div>
+                                    <ArrowRight className="w-4 h-4 text-[#9AA09A] -rotate-45 group-hover:rotate-0 transition-transform" />
+                                </div>
+                                <h3 className="text-sm font-bold text-[#2D3A3A] uppercase tracking-widest mb-1">Email Us</h3>
+                                <p className="text-xl text-[#5A6A6A] font-light">info@ayuniv.com</p>
+                            </a>
+
+                            {/* Instagram Card - Moved Here */}
+                            <a href="https://www.instagram.com/ayuniv_official/" target="_blank" className="block group bg-white rounded-4xl p-8 border border-[#E8E6E2] hover:border-[#5A7A6A]/30 transition-all hover:shadow-[0_8px_30px_rgba(0,0,0,0.04)]">
+                                <div className="flex justify-between items-start mb-6">
+                                    <div className="w-10 h-10 rounded-full bg-[#F3F1ED] flex items-center justify-center group-hover:bg-[#5A7A6A] transition-colors">
+                                        <Instagram className="w-4 h-4 text-[#2D3A3A] group-hover:text-white transition-colors" />
+                                    </div>
+                                    <ArrowRight className="w-4 h-4 text-[#9AA09A] -rotate-45 group-hover:rotate-0 transition-transform" />
+                                </div>
+                                <h3 className="text-sm font-bold text-[#2D3A3A] uppercase tracking-widest mb-1">Follow Us</h3>
+                                <p className="text-xl text-[#5A6A6A] font-light">@ayuniv_official</p>
+                            </a>
+
+                            {/* Address Card */}
+                            <div className="bg-[#FDFBF7] rounded-4xl p-8 border border-[#E8E6E2]">
+                                <div className="flex items-center gap-3 mb-4 opacity-50">
+                                    <MapPin className="w-4 h-4" />
+                                    <span className="text-[10px] uppercase tracking-widest font-bold">The Studio</span>
+                                </div>
+                                <p className="text-[#2D3A3A] font-light leading-relaxed">
                                     C-Scheme, Jaipur <br />
                                     Rajasthan, India 302001
                                 </p>
                             </div>
-
-                            {/* Digital Channels */}
-                            <div className="space-y-8">
-                                <div>
-                                    <h3 className="text-[10px] uppercase tracking-[0.3em] text-[#7A8B7A] font-bold mb-4 flex items-center gap-3">
-                                        <Mail className="w-3 h-3" /> Inquiries
-                                    </h3>
-                                    <a href="mailto:hello@ayuniv.com" className="text-xl text-[#2D3A3A] hover:text-[#5A7A6A] transition-colors font-light">
-                                        hello@ayuniv.com
-                                    </a>
-                                </div>
-                                <div>
-                                    <h3 className="text-[10px] uppercase tracking-[0.3em] text-[#7A8B7A] font-bold mb-4 flex items-center gap-3">
-                                        <Instagram className="w-3 h-3" /> Community
-                                    </h3>
-                                    <a href="#" className="text-xl text-[#2D3A3A] hover:text-[#5A7A6A] transition-colors font-light">
-                                        @ayuniv_wellness
-                                    </a>
-                                </div>
-                            </div>
-
-                            {/* Operating Hours */}
-                            <div className="pt-12 border-t border-[#E8E6E2]">
-                                <p className="text-[10px] uppercase tracking-[0.2em] text-[#9AA09A] leading-relaxed">
-                                    Our Jaipur studio is open for consultations <br />
-                                    Monday — Friday, 10am to 6pm.
-                                </p>
-                            </div>
                         </motion.div>
 
-                        {/* RIGHT: Minimalist Contact Form */}
+                        {/* RIGHT: Interactive Message Box (WhatsApp Only) */}
                         <motion.div
-                            initial={{ opacity: 0, y: 30 }}
-                            animate={{ opacity: 1, y: 0 }}
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
                             transition={{ duration: 1, delay: 0.4 }}
-                            className="lg:col-span-7 bg-white rounded-[3rem] p-10 lg:p-16 shadow-2xl shadow-black/2 border border-[#E8E6E2]/50"
+                            className="lg:col-span-7 bg-[#2D3A3A] rounded-[3rem] p-8 lg:p-12 text-white shadow-2xl relative overflow-hidden"
                         >
-                            <form className="space-y-8">
-                                <div className="grid md:grid-cols-2 gap-8">
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] uppercase tracking-widest text-[#7A8B7A] font-bold ml-1">Full Name</label>
-                                        <input
-                                            type="text"
-                                            placeholder="Your name"
-                                            className="w-full bg-[#FDFBF7] border-none rounded-2xl px-6 py-4 text-sm focus:ring-1 focus:ring-[#5A7A6A]/30 transition-all placeholder:text-[#9AA09A]"
-                                        />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] uppercase tracking-widest text-[#7A8B7A] font-bold ml-1">Email Address</label>
-                                        <input
-                                            type="email"
-                                            placeholder="email@example.com"
-                                            className="w-full bg-[#FDFBF7] border-none rounded-2xl px-6 py-4 text-sm focus:ring-1 focus:ring-[#5A7A6A]/30 transition-all placeholder:text-[#9AA09A]"
-                                        />
-                                    </div>
-                                </div>
+                            {/* Decorative Blur */}
+                            <div className="absolute top-0 right-0 w-64 h-64 bg-[#5A7A6A] rounded-full blur-[100px] opacity-20 pointer-events-none" />
 
-                                <div className="space-y-2">
-                                    <label className="text-[10px] uppercase tracking-widest text-[#7A8B7A] font-bold ml-1">Your Ritual Inquiry</label>
-                                    <textarea
-                                        rows={5}
-                                        placeholder="How can we help you on your wellness journey?"
-                                        className="w-full bg-[#FDFBF7] border-none rounded-4xl px-6 py-4 text-sm focus:ring-1 focus:ring-[#5A7A6A]/30 transition-all placeholder:text-[#9AA09A] resize-none"
-                                    />
-                                </div>
+                            <h3 className="text-2xl font-serif italic font-light mb-8 relative z-10">Quick Chat</h3>
 
-                                <button className="group relative w-full py-5 bg-[#2D3A3A] text-white rounded-full overflow-hidden transition-all duration-500 hover:shadow-2xl">
-                                    <span className="relative z-10 flex items-center justify-center gap-3 font-medium text-xs tracking-widest uppercase">
-                                        Send Message <Send className="w-3.5 h-3.5 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
-                                    </span>
-                                    <div className="absolute inset-0 bg-[#5A7A6A] translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
-                                </button>
-                            </form>
+                            <div className="space-y-6 relative z-10">
+                                <textarea
+                                    value={message}
+                                    onChange={(e) => setMessage(e.target.value)}
+                                    placeholder="Type your message here... (e.g., I want to know about the detox plan)"
+                                    rows={8}
+                                    className="w-full bg-white/5 border border-white/10 rounded-3xl p-6 text-lg font-light text-white placeholder:text-white/30 focus:outline-none focus:bg-white/10 transition-colors resize-none mb-4"
+                                />
+
+                                <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
+                                    <p className="text-white/30 text-[10px] uppercase tracking-widest order-2 sm:order-1">
+                                        Typically replies within 1 hour
+                                    </p>
+
+                                    <button
+                                        onClick={handleWhatsAppRedirect}
+                                        className="w-full sm:w-auto order-1 sm:order-2 py-4 px-8 bg-[#25D366] hover:bg-[#20bd5a] text-white rounded-full flex items-center justify-center gap-3 transition-transform active:scale-95 group shadow-lg shadow-[#25D366]/20"
+                                    >
+                                        <MessageCircle className="w-5 h-5 fill-current" />
+                                        <span className="text-xs font-bold uppercase tracking-widest">Send on WhatsApp</span>
+                                    </button>
+                                </div>
+                            </div>
                         </motion.div>
+
                     </div>
                 </div>
             </main>

@@ -110,7 +110,7 @@ export function ProductReviews({ productId }: { productId: string }) {
             }
 
         } catch (err) {
-            console.error("Failed to load ritual data", err);
+            //console.error("Failed to load ritual data", err);
         } finally {
             setLoading(false);
         }
@@ -142,7 +142,7 @@ export function ProductReviews({ productId }: { productId: string }) {
             resetForm();
             setIsFormOpen(false); // Close form after submit
         } catch (err: any) {
-            console.error("Ritual Sync Failed", err);
+            //console.error("Ritual Sync Failed", err);
             alert(`Failed to save ritual: ${err.message}`);
         } finally {
             setSubmitting(false);
@@ -160,7 +160,7 @@ export function ProductReviews({ productId }: { productId: string }) {
             // Also refresh to be sure
             await fetchRitualData();
         } catch (err: any) {
-            console.error("Delete failed", err);
+            //console.error("Delete failed", err);
             alert(`Failed to delete ritual: ${err.message}`);
             // Re-fetch to restore state if delete failed
             await fetchRitualData();

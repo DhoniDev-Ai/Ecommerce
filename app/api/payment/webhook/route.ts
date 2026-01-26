@@ -17,7 +17,7 @@ export async function POST(req: Request) {
         try {
             verifyWebhookSignature(signature, rawBody, timestamp);
         } catch (err) {
-             console.error("Webhook Signature Verification Failed", err);
+             //console.error("Webhook Signature Verification Failed", err);
              return NextResponse.json({ error: "Invalid signature" }, { status: 403 });
         }
         
@@ -30,7 +30,7 @@ export async function POST(req: Request) {
             const paymentStatus = body.data.payment.payment_status; // Should be SUCCESS
 
             if (paymentStatus === "SUCCESS") {
-                 console.log(`Webhook: Payment Success for Order ${orderId}`);
+                 //console.log(`Webhook: Payment Success for Order ${orderId}`);
                  
                  // Update Supabase
                  const { error } = await (supabaseAdmin.from('orders') as any)
@@ -42,7 +42,7 @@ export async function POST(req: Request) {
                     .eq('id', orderId);
 
                  if (error) {
-                     console.error("Webhook: Database update failed", error);
+                     //console.error("Webhook: Database update failed", error);
                      return NextResponse.json({ error: "Database update failed" }, { status: 500 });
                  }
 
@@ -54,7 +54,7 @@ export async function POST(req: Request) {
         return NextResponse.json({ status: "ok" });
 
     } catch (err: any) {
-        console.error("Webhook Error:", err);
+        //console.error("Webhook Error:", err);
         return NextResponse.json({ error: err.message }, { status: 500 });
     }
 }

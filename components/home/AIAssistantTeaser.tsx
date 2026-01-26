@@ -3,7 +3,10 @@
 import { motion } from "@/lib/framer";
 import { MessageCircle, Sparkles, Send } from "lucide-react";
 
+import { useAI } from "@/context/AIContext";
+
 export function AIAssistantTeaser() {
+    const { setIsOpen } = useAI();
     return (
         <section className="relative py-24 lg:py-32 bg-[#FDFBF7] overflow-hidden">
             {/* Texture Overlay */}
@@ -41,7 +44,7 @@ export function AIAssistantTeaser() {
                                 Think of it as a knowledgeable friend who truly understands the science of nature.
                             </p>
 
-                            <button className="group relative inline-flex items-center justify-center px-10 py-5 bg-[#2D3A3A] text-white text-sm font-medium rounded-full overflow-hidden transition-all duration-500 hover:shadow-2xl">
+                            <button onClick={() => setIsOpen(true)} className="group relative inline-flex items-center justify-center px-10 py-5 bg-[#2D3A3A] text-white text-sm font-medium rounded-full overflow-hidden transition-all duration-500 hover:shadow-2xl cursor-pointer">
                                 <span className="relative z-10 flex items-center gap-3">
                                     Chat with Wellness Guide <MessageCircle className="w-4 h-4" />
                                 </span>
@@ -84,7 +87,7 @@ export function AIAssistantTeaser() {
                                     <div className="pt-4 border-t border-black/5 flex items-center justify-between">
                                         <span className="text-[10px] text-[#9AA09A] uppercase tracking-widest">Type your goal...</span>
                                         <div className="w-8 h-8 rounded-full bg-[#5A7A6A] flex items-center justify-center text-white">
-                                            <Send className="w-3 h-3 translate-x-[1px]" />
+                                            <Send className="w-3 h-3 translate-x-px" />
                                         </div>
                                     </div>
                                 </div>

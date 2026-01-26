@@ -54,7 +54,7 @@ export async function GET(req: Request) {
                     .eq('id', orderId);
                 
                 if (error) {
-                    console.error(`Supabase update failed for status ${dbPaymentStatus}:`, error);
+                    //console.error(`Supabase update failed for status ${dbPaymentStatus}:`, error);
                 } else if (dbPaymentStatus === 'succeeded') {
                     // Send Emails only on fresh success
                     await sendOrderEmails(orderId);
@@ -64,7 +64,7 @@ export async function GET(req: Request) {
 
         return NextResponse.json({ status: cfStatus });
     } catch (err: any) {
-        console.error("Payment Verification Failed:", err);
+        //console.error("Payment Verification Failed:", err);
         return NextResponse.json({ error: err.message }, { status: 500 });
     }
 }

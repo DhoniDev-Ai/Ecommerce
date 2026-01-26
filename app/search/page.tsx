@@ -48,7 +48,7 @@ function SearchContent() {
 
                 setProducts(mappedProducts);
             } catch (err) {
-                console.error('Error fetching products:', err);
+                //console.error('Error fetching products:', err);
             } finally {
                 setLoading(false);
             }
@@ -85,7 +85,7 @@ function SearchContent() {
                             onChange={(e) => setQuery(e.target.value)}
                             placeholder="Search for a blend or a feeling..."
                             autoFocus
-                            className="w-full bg-transparent border-b-2 border-[#2D3A3A]/10 py-6 text-4xl lg:text-6xl font-heading text-[#2D3A3A] placeholder:text-[#2D3A3A]/10 focus:outline-none focus:border-[#5A7A6A] transition-colors"
+                            className="w-full bg-transparent rounded-2xl border-b-2 border-[#2D3A3A]/10 py-6 text-4xl lg:text-6xl font-heading text-[#2D3A3A] placeholder:text-[#2D3A3A]/10 focus:outline-none focus:border-[#5A7A6A] transition-colors"
                         />
                         {query && (
                             <button

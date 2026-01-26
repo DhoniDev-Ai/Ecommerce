@@ -80,6 +80,7 @@ export function Hero() {
 
             {/* 1. BACKGROUND LAYER */}
             <AnimatePresence mode="popLayout" initial={false}>
+
                 <motion.div
                     key={slide.id}
                     variants={bgVariants}
@@ -112,6 +113,7 @@ export function Hero() {
                     {/* 2. Desktop-Only Side Anchor */}
                     {/* <div className="hidden md:block absolute inset-0 bg-linear-to-r from-[#FDFBF7]/40 via-transparent to-transparent pointer-events-none z-10" /> */}
                 </motion.div>
+
             </AnimatePresence>
 
             {/* 2. MAIN CONTENT LAYER */}
@@ -208,13 +210,13 @@ export function Hero() {
                 <div className="flex gap-3">
                     <button
                         onClick={prev}
-                        className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-white/40 backdrop-blur-md flex items-center justify-center hover:bg-white transition-all shadow-sm"
+                        className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-white/40 backdrop-blur-md flex items-center cursor-pointer justify-center hover:bg-white transition-all shadow-sm"
                     >
                         <ChevronLeft className="w-4 h-4 md:w-5 md:h-5 text-[#2D3A3A]" />
                     </button>
                     <button
                         onClick={next}
-                        className="w-10 h-10 md:w-12 md:h-12 rounded-full text-white flex items-center justify-center hover:scale-105 transition-all shadow-md"
+                        className="w-10 cursor-pointer h-10 md:w-12 md:h-12 rounded-full text-white flex items-center justify-center hover:scale-105 transition-all shadow-md"
                         style={{ backgroundColor: slide.accentColor }}
                     >
                         <ChevronRight className="w-4 h-4 md:w-5 md:h-5" />
@@ -234,5 +236,5 @@ export function Hero() {
                 />
             </div>
         </section>
-    );
+    )
 }

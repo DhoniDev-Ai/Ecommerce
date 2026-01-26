@@ -105,7 +105,7 @@ export default function AddressForm({ initialData, onClose, onSuccess }: any) {
             onSuccess();
             onClose();
         } catch (error: any) {
-            console.error("Ritual Sync Error:", error.message);
+            //console.error("Ritual Sync Error:", error.message);
             alert("The sanctuary base could not be established. Please check your details.");
         } finally {
             setLoading(false);

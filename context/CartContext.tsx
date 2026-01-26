@@ -37,7 +37,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
                 const parsed = JSON.parse(saved);
                 if (Array.isArray(parsed)) setCartItems(parsed);
             } catch (e) {
-                console.error("Cart Recovery Error:", e);
+                //console.error("Cart Recovery Error:", e);
             }
         }
         setIsHydrated(true);
@@ -128,7 +128,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
             localStorage.removeItem("ayuniv_cart");
 
         } catch (error) {
-            console.error("Sync Error:", error);
+            //console.error("Sync Error:", error);
         } finally {
             isSyncing.current = false;
         }

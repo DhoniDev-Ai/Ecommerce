@@ -55,7 +55,7 @@ export async function getProducts(
 
   if (error) {
     if (error.name === 'AbortError' || error.message?.includes('AbortError')) return []; // Suppress AbortError
-    console.error('Error fetching products:', error);
+    //console.error('Error fetching products:', error);
     return [];
   }
 
@@ -74,7 +74,7 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
 
   if (error) {
     if (error.name === 'AbortError' || error.message?.includes('AbortError')) return null; // Suppress AbortError
-    console.error('Error fetching product:', error);
+    //console.error('Error fetching product:', error);
     return null;
   }
 
@@ -94,7 +94,7 @@ export async function getFeaturedProducts(): Promise<Product[]> {
 
   if (error) {
     if (error.name === 'AbortError' || error.message?.includes('AbortError')) return []; // Suppress AbortError
-    console.error('Error fetching featured products:', error);
+    //console.error('Error fetching featured products:', error);
     return [];
   }
 
@@ -110,7 +110,7 @@ export async function getWellnessGoals(): Promise<string[]> {
     .select('wellness_goals');
 
   if (error) {
-    console.error('Error fetching wellness goals:', error);
+    //console.error('Error fetching wellness goals:', error);
     return [];
   }
 
@@ -127,7 +127,7 @@ export async function getCategories(): Promise<string[]> {
     .select('category');
 
   if (error) {
-    console.error('Error fetching categories:', error);
+    //console.error('Error fetching categories:', error);
     return [];
   }
 

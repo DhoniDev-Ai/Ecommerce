@@ -41,7 +41,7 @@ export default function AddressesPage() {
             // Immediate local update for a seamless, jitter-free experience
             setAddresses(prev => prev.filter(addr => addr.id !== id));
         } else {
-            console.error("Dissolution Error:", error.message);
+            //console.error("Dissolution Error:", error.message);
         }
         setIsDeleting(null);
     };

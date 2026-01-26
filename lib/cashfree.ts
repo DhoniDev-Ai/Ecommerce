@@ -57,7 +57,7 @@ const isProd = process.env.CASHFREE_ENV === "PRODUCTION";
         const data = await response.json();
         return data; // This should contain payment_session_id directly
     } catch (error) {
-        console.error("Cashfree Create Order Error:", error);
+        //console.error("Cashfree Create Order Error:", error);
         throw error;
     }
 };
@@ -92,7 +92,7 @@ export const fetchPayments = async (orderId: string) => {
         const data = await response.json();
         return data; // Returns array of payments
     } catch (error) {
-        console.error("Cashfree Fetch Payments Error:", error);
+        //console.error("Cashfree Fetch Payments Error:", error);
         throw error;
     }
 };

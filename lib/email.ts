@@ -18,7 +18,7 @@ export const EMAIL_SENDER = `"Ayuniv Orders" <${process.env.SMTP_USER}>`;
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "onlyego1043@@gmail.com"; 
 
 export async function sendOrderEmails(orderId: string) {
-    console.log(`Attempting to send emails for Order ${orderId}`);
+    //console.log(`Attempting to send emails for Order ${orderId}`);
     
     // 1. Fetch Order Details with Products
     const { data: orderStart, error } = await supabaseAdmin
@@ -39,7 +39,7 @@ export async function sendOrderEmails(orderId: string) {
     const order = orderStart as any;
 
     if (error || !order) {
-        console.error("Email Error: Could not fetch order", error);
+        //console.error("Email Error: Could not fetch order", error);
         return;
     }
 
@@ -77,9 +77,9 @@ export async function sendOrderEmails(orderId: string) {
                 subject: `Order Confirmed #${order.id.slice(0, 8)} - Ayuniv`,
                 html: emailHtml,
             });
-            console.log(`Customer email sent to ${customerEmail}`);
+            //console.log(`Customer email sent to ${customerEmail}`);
         } catch (e) {
-            console.error("Failed to send customer email", e);
+            //console.error("Failed to send customer email", e);
         }
     }
 
@@ -100,8 +100,8 @@ export async function sendOrderEmails(orderId: string) {
             subject: `New Order: ${customerName} (₹${order.total_amount})`,
             html: adminHtml,
         });
-        console.log(`Admin alert sent to ${ADMIN_EMAIL}`);
+        //console.log(`Admin alert sent to ${ADMIN_EMAIL}`);
     } catch (e) {
-        console.error("Failed to send admin email", e);
+        //console.error("Failed to send admin email", e);
     }
 }

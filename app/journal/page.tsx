@@ -42,7 +42,7 @@ export default function JournalPage() {
 
                 setPosts(data || []);
             } catch (err) {
-                console.error('Error fetching posts:', err);
+                //console.error('Error fetching posts:', err);
             } finally {
                 setLoading(false);
             }

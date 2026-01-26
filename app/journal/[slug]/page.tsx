@@ -62,7 +62,7 @@ export default function DynamicJournalReader() {
 
                 if (suggested) setSuggestedPosts(suggested);
             } catch (err) {
-                console.error('Error fetching post:', err);
+                //console.error('Error fetching post:', err);
                 setPost(null);
             } finally {
                 setLoading(false);

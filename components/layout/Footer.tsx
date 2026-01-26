@@ -9,12 +9,12 @@ const footerLinks = {
     ],
     about: [
         { name: "Our Story", href: "/about" },
-        { name: "Ingredients", href: "/ingredients" },
+        { name: "Ingredients", href: "/#Ingredients" },
         { name: "Journal", href: "/journal" },
     ],
     support: [
         { name: "Contact", href: "/contact" },
-        { name: "Shipping & Returns", href: "/shipping" },
+        { name: "Shipping Policy", href: "/shipping-policy" },
         { name: "FAQ", href: "/faq" },
     ],
 };
@@ -169,7 +169,7 @@ export function Footer() {
                         © {new Date().getFullYear()} Ayuniv Wellness. All rights reserved.
                     </p>
                     <div className="flex gap-8">
-                        <Link href="/privacy" className="text-xs text-white/30 hover:text-white transition-colors">Privacy Policy</Link>
+                        <Link href="/privacy_page" className="text-xs text-white/30 hover:text-white transition-colors">Privacy Policy</Link>
                         <Link href="/terms" className="text-xs text-white/30 hover:text-white transition-colors">Terms of Service</Link>
                     </div>
                 </div>

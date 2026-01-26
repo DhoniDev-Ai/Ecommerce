@@ -14,6 +14,7 @@ import { Product } from "@/types";
 import { cn } from "@/utils/cn";
 import { supabase } from "@/lib/supabase/client";
 import { useCart } from "@/hooks/useCart";
+import { useAI } from "@/context/AIContext";
 import { ProductSkeleton } from "@/components/products/ProductSkeleton";
 import { PriceDisplay } from "@/components/product/PriceDisplay";
 import Image from "next/image";
@@ -32,6 +33,7 @@ export default function ProductDetailPage() {
     const [isPaused, setIsPaused] = useState(false);
 
     const { addToCart, isAdding, isSuccess } = useCart();
+    const { openWithContext } = useAI();
 
     const handleAddToCart = () => {
         if (product) {
@@ -103,7 +105,7 @@ export default function ProductDetailPage() {
 
                 if (related) setRelatedProducts(related);
             } catch (err) {
-                console.error('Error fetching product:', err);
+                //console.error('Error fetching product:', err);
                 setProduct(null);
             } finally {
                 setLoading(false);
@@ -284,7 +286,7 @@ export default function ProductDetailPage() {
                                             onClick={handleAddToCart}
                                             disabled={isProcessing}
                                             className={cn(
-                                                "flex-2 py-5 rounded-full text-[10px] uppercase tracking-widest font-bold hover:shadow-[0_20px_40px_rgba(45,58,58,0.15)] hover:-translate-y-0.5 transition-all flex items-center justify-center gap-3 active:scale-95 disabled:opacity-70",
+                                                "flex-2 py-5 rounded-full text-[10px] uppercase tracking-widest font-bold hover:shadow-[0_20px_40px_rgba(45,58,58,0.15)] hover:-translate-y-0.5 transition-all flex items-center cursor-pointer justify-center gap-3 active:scale-95 disabled:opacity-70",
                                                 showSuccess
                                                     ? "bg-[#5A7A6A] text-white scale-105"
                                                     : "bg-[#2D3A3A] text-white"
@@ -297,12 +299,15 @@ export default function ProductDetailPage() {
                                     {/* Quick Buy: Performance checkout */}
                                     <button
                                         onClick={handleQuickBuy}
-                                        className="w-full py-5 bg-[#5A7A6A] text-white rounded-full text-[10px] uppercase tracking-widest font-bold hover:bg-[#4A6A5A] hover:shadow-[0_20px_40px_rgba(90,122,106,0.15)] hover:-translate-y-0.5 transition-all flex items-center justify-center gap-3 active:scale-95">
+                                        className="w-full py-5 bg-[#5A7A6A] text-white rounded-full text-[10px] cursor-pointer uppercase tracking-widest font-bold hover:bg-[#4A6A5A] hover:shadow-[0_20px_40px_rgba(90,122,106,0.15)] hover:-translate-y-0.5 transition-all flex items-center justify-center gap-3 active:scale-95">
                                         <Zap className="w-4 h-4 fill-white" /> Quick Buy — Direct Checkout
                                     </button>
 
                                     {/* AI Guide: Consultive approach */}
-                                    <button className="w-full py-4 rounded-full border border-[#5A7A6A]/20 text-[#5A7A6A] bg-white hover:bg-[#5A7A6A]/5 transition-all flex items-center justify-center gap-3 group">
+                                    <button
+                                        onClick={() => openWithContext(`Tell me about ${product.name}, its ingredients and how it helps.`)}
+                                        className="w-full py-4 rounded-full border border-[#5A7A6A]/20 text-[#5A7A6A] cursor-pointer bg-white hover:bg-[#5A7A6A]/5 transition-all flex items-center justify-center gap-3 group"
+                                    >
                                         <Sparkles className="w-4 h-4 group-hover:rotate-12 transition-transform duration-500" />
                                         <span className="text-[10px] uppercase tracking-widest font-bold">Consult Ayuniv AI Guide</span>
                                     </button>

@@ -113,7 +113,7 @@ export default function OrderDetailPage() {
                         window.location.reload();
                     }
                 })
-                .catch(err => console.error("Auto-verify failed", err));
+                .catch(err => //console.error("Auto-verify failed", err));
         }
     }, [order]);
 

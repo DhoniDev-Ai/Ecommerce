@@ -22,6 +22,7 @@ export function IngredientTransparency() {
     return (
         <section
             ref={containerRef}
+            id="Ingredients"
             className="relative py-16 lg:py-20 bg-[#FDFBF7] overflow-hidden"
             data-scroll-section
         >

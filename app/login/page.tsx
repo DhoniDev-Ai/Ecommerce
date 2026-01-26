@@ -86,7 +86,7 @@ export default function LoginPage() {
                     }).eq('id', session.user.id);
                 }
             } catch (err) {
-                console.error("Auto-name update failed", err);
+                //console.error("Auto-name update failed", err);
             }
 
             setMessage({ type: 'success', text: "Identity verified. Entering sanctuary..." });

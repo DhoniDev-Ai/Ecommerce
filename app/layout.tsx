@@ -3,6 +3,8 @@ import { Montserrat, Cormorant_Garamond } from "next/font/google";
 import "./globals.css";
 import { CartProvider } from "@/context/CartContext";
 import { CartSidebar } from "@/components/layout/CartSidebar";
+import { AIProvider } from "@/context/AIContext";
+import { ChatWidget } from "@/components/ai/ChatWidget";
 
 const montserrat = Montserrat({
   variable: "--font-montserrat",
@@ -65,15 +67,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html data-scroll-behavior="smooth" lang="en">
       <body
         className={`${montserrat.variable} ${juana.variable} antialiased`}
         suppressHydrationWarning
       >
-        <CartProvider>
-          {children}
-          <CartSidebar />
-        </CartProvider>
+        <AIProvider>
+          <CartProvider>
+            {children}
+            <ChatWidget />
+            <CartSidebar />
+          </CartProvider>
+        </AIProvider>
       </body>
     </html>
   );

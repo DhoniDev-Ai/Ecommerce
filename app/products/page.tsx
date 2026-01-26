@@ -66,7 +66,7 @@ function ProductsContent() {
                 setProducts(mappedProducts);
             } catch (err: any) {
                 if (err.name === 'AbortError' || err.message?.includes('AbortError')) return;
-                console.error('Error fetching products:', err);
+                //console.error('Error fetching products:', err);
                 setError('Failed to load products');
             } finally {
                 setLoading(false);

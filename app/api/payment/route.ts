@@ -30,7 +30,7 @@ export async function POST(req: Request) {
         const cart = data as { id: string } | null;
 
         if (!cart) {
-            console.error(`Cart not found for user ${userId}`);
+            //console.error(`Cart not found for user ${userId}`);
             throw new Error('Login to proceed with checkout');
         }
 
@@ -76,7 +76,7 @@ export async function POST(req: Request) {
         });
 
     } catch (err: any) {
-        console.error("Cashfree API Handshake Error:", err);
+        //console.error("Cashfree API Handshake Error:", err);
         return NextResponse.json({ error: err.message }, { status: 500 });
     }
 }
