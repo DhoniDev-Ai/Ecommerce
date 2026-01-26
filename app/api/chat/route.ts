@@ -5,7 +5,7 @@ import { getProductContext } from "@/lib/ai/context";
 // Initialize Gemini
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
-export const runtime = "edge"; // fast edge runtime
+
 
 export async function POST(req: Request) {
     try {
@@ -105,12 +105,12 @@ ${productContext}
         }
 
         // If loop finishes without return, throw the last error
-        //console.error("All AI models failed. Last error:", lastError);
+        console.error("All AI models failed. Last error:", lastError);
         throw lastError;
 
     } catch (error: any) {
-        //console.error("AI Chat Error Details:", error);
-        //console.error("API Key Status:", process.env.GEMINI_API_KEY ? "Present" : "Missing/Empty");
+        console.error("AI Chat Error Details:", error);
+        console.error("API Key Status:", process.env.GEMINI_API_KEY ? "Present" : "Missing/Empty");
         return NextResponse.json({ error: error.message || "Aya is meditating. Please try again." }, { status: 500 });
     }
 }
