@@ -5,6 +5,7 @@ import { CartProvider } from "@/context/CartContext";
 import { CartSidebar } from "@/components/layout/CartSidebar";
 import { AIProvider } from "@/context/AIContext";
 import { ChatWidget } from "@/components/ai/ChatWidget";
+import { Analytics } from "@vercel/analytics/next"
 
 const montserrat = Montserrat({
   variable: "--font-montserrat",
@@ -72,6 +73,7 @@ export default function RootLayout({
         className={`${montserrat.variable} ${juana.variable} antialiased`}
         suppressHydrationWarning
       >
+        <Analytics />
         <AIProvider>
           <CartProvider>
             {children}
