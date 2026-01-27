@@ -55,6 +55,7 @@ export function ProductCard({ product }: ProductCardProps) {
                             height={1000}
                             src={productImage}
                             alt={product.name}
+                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                             className={cn(
                                 "h-full w-full object-contain transition-transform duration-1000 ease-out rounded max-sm:rounded-4xl",
                                 isHovered ? "scale-110" : "scale-100"

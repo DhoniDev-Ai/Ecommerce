@@ -104,7 +104,7 @@ export function ChatWidget() {
                 // drag
                 // dragMomentum={false}
                 onClick={() => setIsOpen(true)}
-                className="fixed md:bottom-10 bottom-6 right-6 z-50 w-16 h-16 bg-[#2D3A3A] text-white rounded-full cursor-pointer shadow-2xl flex items-center justify-center border border-[#5A7A6A]/50 group"
+                className="fixed  bottom-20 right-6 z-50 w-16 h-16 bg-[#2D3A3A] text-white rounded-full cursor-pointer shadow-2xl flex items-center justify-center border border-[#5A7A6A]/50 group"
             >
                 <Image
                     src="/assets/ai_avatar.png"

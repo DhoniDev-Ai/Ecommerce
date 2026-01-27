@@ -49,6 +49,7 @@ export function ProductImageCarousel() {
                                 height={1000}
                                 src={currentImage.src}
                                 alt={currentImage.alt}
+                                sizes="100vw"
                                 className="w-full h-full object-cover"
                             />
                         </motion.div>

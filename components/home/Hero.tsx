@@ -94,7 +94,8 @@ export function Hero() {
                         height={1000}
                         src={slide.bgImage}
                         alt={slide.title}
-                        loading="eager"
+                        priority
+                        sizes="100vw"
                         // Mobile: Center | Desktop: Center
                         className="w-full  h-full object-[45%_center] object-cover md:object-center"
                     />

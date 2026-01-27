@@ -101,6 +101,7 @@ export function Header() {
                             width={1000}
                             height={1000}
                             loading="eager"
+                            priority
                             src="/assets/logo.png"
                             alt="Ayuniv"
                             className="h-16 w-auto"
