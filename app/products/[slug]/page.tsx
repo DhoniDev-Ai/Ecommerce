@@ -400,7 +400,7 @@ export default function ProductDetailPage() {
                         </div>
                         <div className="grid grid-cols-2  lg:grid-cols-4 gap-8">
                             {relatedProducts.map((rel) => (
-                                <Link key={rel.id} href={`/products/${rel.slug}`} className="group">
+                                <Link target="_blank" key={rel.id} href={`/products/${rel.slug}`} className="group">
                                     <div className="aspect-square rounded-4xl  overflow-hidden bg-white mb-6 transition-all duration-500 group-hover:shadow-2xl flex items-center justify-center p-8">
                                         <Image
                                             width={1000}
