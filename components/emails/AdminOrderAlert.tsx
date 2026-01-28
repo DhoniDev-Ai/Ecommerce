@@ -28,6 +28,7 @@ interface AdminOrderAlertProps {
     }[];
     totalAmount: any;
     shippingAddress: any;
+    paymentMethod?: string;
 }
 
 export const AdminOrderAlert = ({
@@ -37,6 +38,7 @@ export const AdminOrderAlert = ({
     items,
     totalAmount,
     shippingAddress,
+    paymentMethod = "Online",
 }: AdminOrderAlertProps) => {
     return (
         <Html>
@@ -76,7 +78,9 @@ export const AdminOrderAlert = ({
                                 <Text className="font-bold text-lg m-0">Total Revenue</Text>
                             </Column>
                             <Column className="text-right">
-                                <Text className="font-bold text-lg m-0">₹{totalAmount}</Text>
+                                <Text className="font-bold text-lg m-0">
+                                    ₹{totalAmount} <span className="text-gray-500 font-normal text-sm">({paymentMethod})</span>
+                                </Text>
                             </Column>
                         </Row>
 
@@ -101,7 +105,7 @@ export const AdminOrderAlert = ({
                     </Container>
                 </Body>
             </Tailwind>
-        </Html>
+        </Html >
     );
 };
 

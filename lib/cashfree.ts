@@ -113,4 +113,8 @@ export const verifyWebhookSignature = (signature: string, rawBody: string, times
     }
     
     return true;
+// ... existing code ...
+    return true;
 };
+
+// refundOrder removed as per "manual approval" workflow request

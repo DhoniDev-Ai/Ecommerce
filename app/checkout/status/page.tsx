@@ -14,6 +14,10 @@ function StatusContent() {
     useEffect(() => {
         if (!orderId) return;
 
+        let attempts = 0;
+        const maxAttempts = 10;
+        let timeoutId: NodeJS.Timeout;
+
         const verifyPayment = async () => {
             try {
                 const res = await fetch(`/api/payment/verify?order_id=${orderId}`);
@@ -21,16 +25,26 @@ function StatusContent() {
 
                 if (data.status === "SUCCESS") {
                     setStatus("success");
-                    clearCart(); // Only clear the cart on verified success
+                    clearCart();
+                } else if (data.status === "PENDING" && attempts < maxAttempts) {
+                    attempts++;
+                    timeoutId = setTimeout(verifyPayment, 2000); // Retry every 2s
                 } else {
                     setStatus("failed");
                 }
             } catch (err) {
-                setStatus("failed");
+                if (attempts < maxAttempts) {
+                    attempts++;
+                    timeoutId = setTimeout(verifyPayment, 2000);
+                } else {
+                    setStatus("failed");
+                }
             }
         };
 
         verifyPayment();
+
+        return () => clearTimeout(timeoutId);
     }, [orderId, clearCart]);
 
     if (status === "loading") {
@@ -60,7 +74,7 @@ function StatusContent() {
                         </p>
                     </div>
                     <div className="pt-10 flex flex-col sm:flex-row items-center justify-center gap-6">
-                        <Link href="/dashboard/orders" className="px-10 py-5 bg-[#2D3A3A] text-white rounded-full text-[10px] font-bold uppercase tracking-[0.3em] hover:shadow-xl transition-all">
+                        <Link href={`/dashboard/orders/${orderId}`} className="px-10 py-5 bg-[#2D3A3A] text-white rounded-full text-[10px] font-bold uppercase tracking-[0.3em] hover:shadow-xl transition-all">
                             Track Order
                         </Link>
                         <Link href="/products" className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#5A7A6A] flex items-center gap-2 group">

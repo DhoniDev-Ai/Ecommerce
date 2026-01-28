@@ -4,22 +4,40 @@ import { createOrder } from '@/lib/cashfree';
 
 export async function POST(req: Request) {
     try {
-        const { addressId, amount, couponId } = await req.json();
+        const { 
+            amount, 
+            couponId, 
+            paymentMethod, 
+            shippingAddress, 
+            items,
+            customerPhone,
+            customerEmail,
+            customerName
+        } = await req.json();
         
         // 1. Get Auth User
         const authHeader = req.headers.get('Authorization');
-        const { data: { user } } = await supabaseAdmin.auth.getUser(authHeader?.split(' ')[1]!);
+        const token = authHeader?.split(' ')[1];
+        if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+        const { data: { user } } = await supabaseAdmin.auth.getUser(token);
         if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
         // 2. Create Order in Supabase
+        // USES JSON ADDRESS to match Schema
         const { data: order, error: orderError } = await (supabaseAdmin
             .from('orders') as any)
             .insert({
                 user_id: user.id,
                 total_amount: amount,
-                shipping_address_id: addressId,
+                shipping_address: {
+                    ...shippingAddress,
+                    email: customerEmail || user.email // Persist email for failsafe delivery
+                }, 
                 status: 'pending',
                 payment_status: 'pending',
+                payment_method: paymentMethod || 'online',
+                payment_provider: paymentMethod === 'COD' ? 'COD' : 'cashfree', // Explicit provider
                 coupon_id: couponId || null
             })
             .select()
@@ -27,29 +45,56 @@ export async function POST(req: Request) {
 
         if (orderError) throw orderError;
 
-        // 3. Create Cashfree Order Session
-        const cfResponse = await createOrder({
+        // 3. Persist Items (Start Async)
+        let itemsPromise = Promise.resolve();
+        if (items && items.length > 0) {
+            const orderItemsData = items.map((item: any) => ({
+                order_id: order.id,
+                product_id: item.id,
+                quantity: item.quantity,
+                price_at_purchase: item.price
+            }));
+            
+            // @ts-ignore
+            itemsPromise = (supabaseAdmin.from('order_items') as any).insert(orderItemsData).then(({ error }) => {
+                 if (error) console.error("Item persistence warning:", error);
+            });
+        }
+
+        // 4. Handle COD
+        if (paymentMethod === 'COD') {
+            await itemsPromise; // Ensure items are saved before returning
+            return NextResponse.json({ 
+                mode: 'COD',
+                orderId: order.id
+            });
+        }
+
+        // 5. Create Cashfree Order Session (Parallel with Items)
+        const cfPromise = createOrder({
             order_amount: amount,
             order_currency: "INR",
             order_id: order.id,
             customer_details: {
                 customer_id: user.id,
-                customer_phone: user.phone || "9999999999",
-                customer_email: user.email || "",
-                customer_name: user.user_metadata?.full_name || "Guest User"
+                customer_phone: customerPhone || user.phone || "9999999999",
+                customer_email: customerEmail || user.email || "",
+                customer_name: customerName || user.user_metadata?.full_name || "Guest User"
             },
             order_meta: {
-                return_url: `${process.env.NEXT_PUBLIC_BASE_URL}/checkout/success?order_id={order_id}`
+                return_url: `${process.env.NEXT_PUBLIC_BASE_URL}/checkout/status?order_id={order_id}`
             }
         });
 
-        
+        // Await both operations (Performance Boost)
+        const [_, cfResponse] = await Promise.all([itemsPromise, cfPromise]);
+
         return NextResponse.json({ 
             paymentSessionId: cfResponse.payment_session_id 
         });
 
     } catch (err: any) {
-        //console.error("Cashfree Error:", err);
+        console.error("Cashfree Error:", err);
         return NextResponse.json({ error: err.message }, { status: 500 });
     }
 }

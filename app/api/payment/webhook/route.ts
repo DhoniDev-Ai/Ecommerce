@@ -30,23 +30,36 @@ export async function POST(req: Request) {
             const paymentStatus = body.data.payment.payment_status; // Should be SUCCESS
 
             if (paymentStatus === "SUCCESS") {
-                 //console.log(`Webhook: Payment Success for Order ${orderId}`);
+                 console.log(`Webhook: Payment Success for Order ${orderId}`);
+
+                 // 1. Check if already processed (Idempotency)
+                 const { data: existingOrder } = await supabaseAdmin
+                    .from('orders')
+                    .select('payment_status')
+                    .eq('id', orderId)
+                    .single();
+                
+                 if (existingOrder?.payment_status === 'succeeded') {
+                     console.log("Webhook: Order already SUCCEEDED. Skipping email/update.");
+                     return NextResponse.json({ status: "already_processed" });
+                 }
                  
-                 // Update Supabase
+                 // 2. Update Supabase
                  const { error } = await (supabaseAdmin.from('orders') as any)
                     .update({
-                        status: 'processing', // Valid enum value
-                        payment_status: 'succeeded',
+                        status: 'confirmed', // Align with verify route
+                        payment_status: 'succeeded', // Align with verify route
                         updated_at: new Date().toISOString()
                     })
                     .eq('id', orderId);
 
                  if (error) {
-                     //console.error("Webhook: Database update failed", error);
+                     console.error("Webhook: Database update failed", error);
                      return NextResponse.json({ error: "Database update failed" }, { status: 500 });
                  }
 
-                 // Send Emails
+                 // 3. Send Emails (Only if we updated it)
+                 console.log("Webhook: Triggering Email Service");
                  await sendOrderEmails(orderId);
             }
         }

@@ -14,6 +14,54 @@ export default function OrderDetailPage() {
     const [order, setOrder] = useState<any>(null);
     const [loading, setLoading] = useState(true);
 
+    // Cancellation State
+    const [isCancelling, setIsCancelling] = useState(false);
+    const [cancelReason, setCancelReason] = useState("");
+    const [cancelLoading, setCancelLoading] = useState(false);
+
+    const handleCancel = async () => {
+        if (!order || !cancelReason.trim()) return;
+        setCancelLoading(true);
+
+        try {
+            const res = await fetch('/api/orders/cancel', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`
+                },
+                body: JSON.stringify({
+                    orderId: order.id,
+                    reason: cancelReason
+                })
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) throw new Error(data.error || "Cancellation failed");
+
+            // Update UI Locally to reflect cancellation
+            setOrder((prev: any) => ({
+                ...prev,
+                status: 'cancelled',
+                payment: {
+                    ...prev.payment,
+                    ref: data.refund ? 'Refund Initiated' : 'Cancelled'
+                },
+                tracking: [
+                    { state: "Order Placed", desc: "Ritual Initiated", date: prev.tracking[0].date, done: true },
+                    { state: "Cancelled", desc: "Ritual Stopped", date: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }), done: true },
+                ]
+            }));
+            setIsCancelling(false);
+        } catch (err) {
+            console.error("Cancellation Error:", err);
+            alert("Failed to cancel ritual. Please try again.");
+        } finally {
+            setCancelLoading(false);
+        }
+    };
+
     useEffect(() => {
         const fetchOrder = async () => {
             const idParam = params.id;
@@ -54,18 +102,60 @@ export default function OrderDetailPage() {
                 }));
 
                 const createdDate = new Date(orderData.created_at);
-                const expectedDate = new Date(createdDate);
-                expectedDate.setDate(createdDate.getDate() + 7); // 7 days expected
+
+                // Delivery Logic:
+                // 1. Calculate Shipping Date (1 Day processing, or 2 days if after 8 PM IST)
+                // convert to IST string to get hour
+                const istDateString = createdDate.toLocaleString("en-US", { timeZone: "Asia/Kolkata" });
+                const istDate = new Date(istDateString);
+                const istHour = istDate.getHours();
+
+                // If before 8 PM (20:00), ship same day (0). Else tomorrow (1).
+                const daysToShip = istHour >= 20 ? 1 : 0;
+
+                const expectedShippingDate = new Date(createdDate);
+                expectedShippingDate.setDate(createdDate.getDate() + daysToShip);
+
+                // 2. Calculate Delivery Date (7 Days after shipping)
+                const expectedDeliveryDate = new Date(expectedShippingDate);
+                expectedDeliveryDate.setDate(expectedDeliveryDate.getDate() + 7);
 
                 const isCancelled = orderData.status === 'cancelled';
-
                 const updatedDate = new Date(orderData.updated_at);
 
                 let trackingSteps = [
-                    { state: "Order Placed", desc: "Ritual Initiated", date: createdDate.toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }), done: true },
-                    { state: "Processing", desc: "Alchemy in Progress", date: orderData.status === 'processing' ? updatedDate.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) : "Pending", done: !isCancelled && orderData.status !== 'pending' },
-                    { state: "Shipped", desc: orderData.status === 'shipped' || orderData.status === 'delivered' ? `Shipped on ${updatedDate.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}` : `Expected by ${expectedDate.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}`, date: orderData.status === 'shipped' ? updatedDate.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) : "Pending", done: !isCancelled && (orderData.status === 'shipped' || orderData.status === 'delivered') },
-                    { state: "Delivered", desc: "Ritual Complete", date: orderData.status === 'delivered' ? updatedDate.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) : "Pending", done: !isCancelled && orderData.status === 'delivered' },
+                    {
+                        state: "Order Placed",
+                        desc: "Ritual Initiated",
+                        date: createdDate.toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }),
+                        done: true
+                    },
+                    {
+                        state: "Processing",
+                        desc: "Alchemy in Progress",
+                        date: orderData.status === 'processing'
+                            ? "In Progress"
+                            : (orderData.status !== 'pending' ? "Completed" : "Pending"),
+                        done: !isCancelled && orderData.status !== 'pending'
+                    },
+                    {
+                        state: "Shipped",
+                        desc: orderData.status === 'shipped' || orderData.status === 'delivered'
+                            ? `Shipped on ${updatedDate.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}`
+                            : `Expected Ship: ${expectedShippingDate.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}`,
+                        date: orderData.status === 'shipped'
+                            ? updatedDate.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })
+                            : expectedShippingDate.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }),
+                        done: !isCancelled && (orderData.status === 'shipped' || orderData.status === 'delivered')
+                    },
+                    {
+                        state: "Delivered",
+                        desc: "Ritual Complete",
+                        date: orderData.status === 'delivered'
+                            ? updatedDate.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })
+                            : `Expected: ${expectedDeliveryDate.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}`,
+                        done: !isCancelled && orderData.status === 'delivered'
+                    },
                 ];
 
                 if (isCancelled) {
@@ -86,8 +176,10 @@ export default function OrderDetailPage() {
                         city: `${address.city || ''}, ${address.state || ''} ${address.pincode || ''}`
                     },
                     payment: {
-                        method: "Cashfree",
-                        ref: ['success', 'paid', 'succeeded', 'captured'].includes(orderData.payment_status) ? 'Succeeded' : (isCancelled ? 'Cancelled' : 'Pending'),
+                        method: orderData.payment_method === 'COD' ? 'Cash on Delivery' : 'Online (Cashfree)',
+                        ref: orderData.payment_method === 'COD'
+                            ? (orderData.status === 'delivered' ? 'Paid' : 'Due on Delivery')
+                            : (['success', 'paid', 'succeeded', 'captured'].includes(orderData.payment_status) ? 'Paid' : (isCancelled ? 'Cancelled' : 'Pending')),
                         subtotal: orderData.total_amount, // Simplified
                         shipping: 0,
                         tax: 0,
@@ -104,13 +196,26 @@ export default function OrderDetailPage() {
 
     // Verify payment on mount if pending
     useEffect(() => {
-        if (order && order.payment.ref === 'Pending' && order.status !== 'cancelled') {
+        if (order && order.payment.ref === 'Pending' && order.status !== 'cancelled' && order.payment.method !== 'Cash on Delivery') {
             fetch(`/api/payment/verify?order_id=${order.id}`)
                 .then(res => res.json())
                 .then(data => {
                     if (data.status === 'SUCCESS' || data.status === 'succeeded') {
-                        // Refresh order data if status changed
-                        window.location.reload();
+                        // Refresh local state instead of reloading page to prevent loops
+                        setOrder((prev: any) => ({
+                            ...prev,
+                            // Update Status
+                            status: prev.status === 'pending' ? 'confirmed' : prev.status,
+                            // Update Payment Ref
+                            payment: {
+                                ...prev.payment,
+                                ref: 'Paid'
+                            },
+                            // Update Tracking Step 2 (Processing) to done if applicable
+                            tracking: prev.tracking.map((t: any) =>
+                                t.state === "Processing" ? { ...t, done: true, date: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) } : t
+                            )
+                        }));
                     }
                 })
                 .catch(err => console.error("Auto-verify failed", err));
@@ -268,7 +373,9 @@ export default function OrderDetailPage() {
                         </div>
 
                         <div className="p-4 bg-[#FDFBF7] rounded-2xl border border-[#E8E6E2]">
-                            <p className="text-[8px] uppercase tracking-widest text-[#9AA09A] font-bold mb-1">Paid via {order.payment.method}</p>
+                            <p className="text-[8px] uppercase tracking-widest text-[#9AA09A] font-bold mb-1">
+                                {['Paid', 'Succeeded'].includes(order.payment.ref) ? 'Paid via' : 'Payment Method'} {order.payment.method}
+                            </p>
                             <p className="text-[10px] text-[#2D3A3A] font-medium font-mono">{order.payment.ref}</p>
                         </div>
                     </div>
@@ -277,8 +384,62 @@ export default function OrderDetailPage() {
                     <Link href="/contact" className="flex items-center justify-center gap-3 py-6 w-full border border-[#E8E6E2] rounded-full text-[9px] uppercase tracking-widest font-bold text-[#7A8A8A] hover:bg-[#F3F1ED] transition-all">
                         Ask about this Ritual
                     </Link>
+
+                    {/* Cancel Button (Conditional) */}
+                    {['pending', 'confirmed', 'processing'].includes(order.status) && (
+                        <button
+                            onClick={() => setIsCancelling(true)}
+                            className="w-full cursor-pointer border rounded-4xl py-4 text-red-500 text-[10px] uppercase tracking-widest font-bold hover:text-red-600 transition-colors"
+                        >
+                            Cancel Ritual
+                        </button>
+                    )}
                 </div>
             </div>
+
+            {/* Cancellation Modal */}
+            {isCancelling && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="bg-white rounded-[2rem] p-8 max-w-md w-full shadow-2xl space-y-6"
+                    >
+                        <div className="text-center space-y-2">
+                            <h3 className="text-xl font-heading text-[#2D3A3A]">Stop the Ritual?</h3>
+                            <p className="text-xs text-[#7A8A8A]">This action cannot be undone. If paid online, a refund will be initiated.</p>
+                        </div>
+
+                        <div className="space-y-4">
+                            <label className="text-[10px] uppercase tracking-widest text-[#7A8A8A] font-bold">Reason for Cancellation</label>
+                            <textarea
+                                value={cancelReason}
+                                onChange={(e) => setCancelReason(e.target.value)}
+                                placeholder="Why do you wish to cancel?"
+                                className="w-full h-32 p-4 rounded-xl bg-[#F9F8F6] border-none text-sm text-[#2D3A3A] focus:ring-1 focus:ring-[#5A7A6A] resize-none placeholder:text-[#9AA09A]"
+                            />
+                        </div>
+
+                        <div className="flex gap-4 pt-4">
+                            <button
+                                onClick={() => setIsCancelling(false)}
+                                disabled={cancelLoading}
+                                className="flex-1 py-4 cursor-pointer rounded-xl border border-[#E8E6E2] text-[10px] uppercase tracking-widest font-bold text-[#7A8A8A] hover:bg-[#F3F1ED]"
+                            >
+                                Keep Ritual
+                            </button>
+                            <button
+                                onClick={handleCancel}
+                                disabled={cancelLoading || !cancelReason.trim()}
+                                className="flex-1 py-4 rounded-xl bg-red-100 text-red-600 text-[10px] uppercase tracking-widest font-bold hover:bg-red-200 disabled:opacity-50 cursor-pointer flex justify-center items-center gap-2"
+                            >
+                                {cancelLoading && <Loader2 className="animate-spin w-3 h-3" />}
+                                {cancelLoading ? "Stopping..." : "Confirm Cancel"}
+                            </button>
+                        </div>
+                    </motion.div>
+                </div>
+            )}
         </section>
     );
 }

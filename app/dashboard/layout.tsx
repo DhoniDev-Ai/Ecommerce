@@ -40,7 +40,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <div className="min-h-screen bg-[#FDFBF7] pt-12 max-lg:pb-24 lg:pt-16 selection:bg-[#5A7A6A]/10">
             <div className="absolute inset-0 z-0 opacity-[0.03] pointer-events-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
 
-            <div className="relative z-10 mx-auto max-w-[1440px] px-4  md:px-6 lg:px-12 grid lg:grid-cols-12 gap-12">
+            <div className="relative z-10 mx-auto max-w-[1440px] px-3  md:px-6 lg:px-12 grid lg:grid-cols-12 gap-12">
 
                 {/* Desktop Sidebar (Left) */}
                 <aside className="hidden lg:block lg:col-span-3">

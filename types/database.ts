@@ -195,10 +195,13 @@ export interface Database {
           user_id: string
           total_amount: number
           status: 'pending' | 'confirmed' | 'shipped' | 'delivered' | 'cancelled'
-          payment_status: 'pending' | 'paid' | 'failed'
+          payment_status: 'pending' | 'succeeded' | 'failed'
           shipping_address: Json
           stripe_payment_intent_id: string | null
           cashfree_order_id: string | null
+          payment_method: 'online' | 'COD' | null
+          cancellation_reason: string | null
+          coupon_id: string | null
           created_at: string
           updated_at: string
         }
@@ -207,7 +210,10 @@ export interface Database {
           user_id: string
           total_amount: number
           status?: 'pending' | 'confirmed' | 'shipped' | 'delivered' | 'cancelled'
-          payment_status?: 'pending' | 'paid' | 'failed'
+          payment_status?: 'pending' | 'succeeded' | 'failed'
+          payment_method?: 'online' | 'COD'
+          cancellation_reason?: string
+          coupon_id?: string | null
           shipping_address: Json
           stripe_payment_intent_id?: string | null
           cashfree_order_id?: string | null
@@ -219,7 +225,10 @@ export interface Database {
           user_id?: string
           total_amount?: number
           status?: 'pending' | 'confirmed' | 'shipped' | 'delivered' | 'cancelled'
-          payment_status?: 'pending' | 'paid' | 'failed'
+          payment_status?: 'pending' | 'succeeded' | 'failed'
+          payment_method?: 'online' | 'COD'
+          cancellation_reason?: string
+          coupon_id?: string | null
           shipping_address?: Json
           stripe_payment_intent_id?: string | null
           cashfree_order_id?: string | null

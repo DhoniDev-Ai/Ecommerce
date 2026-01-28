@@ -38,6 +38,8 @@ export interface Order {
   items: OrderItem[];
   created_at: string;
   shipping_address: Address;
+  payment_method?: 'online' | 'COD';
+  cancellation_reason?: string;
 }
 
 export interface OrderItem {
