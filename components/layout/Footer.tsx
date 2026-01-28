@@ -225,7 +225,7 @@ export function Footer() {
                         © {new Date().getFullYear()} Ayuniv Wellness. All rights reserved.
                     </p>
                     <p className="text-xs text-white/30 font-light">
-                        Parent Company - SlighJoyHealthare
+                        Parent Company - SlightJoy Healthcare
                     </p>
                     <div className="flex gap-8">
                         <Link href="/privacy_page" className="text-xs text-white/30 hover:text-white transition-colors">Privacy Policy</Link>
