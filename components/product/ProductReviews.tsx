@@ -91,7 +91,7 @@ export function ProductReviews({ productId }: { productId: string }) {
                     .from('orders')
                     .select('id') // Simplified to avoid 400 Bad Request
                     .eq('user_id', user.id)
-                    .eq('payment_status', 'paid');
+                    .eq('payment_status', 'succeeded');
 
                 // Check if any order contains this product
                 if (orders && orders.length > 0) {
