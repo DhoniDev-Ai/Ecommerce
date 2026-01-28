@@ -15,7 +15,7 @@ const transporter = nodemailer.createTransport({
 });
 
 export const EMAIL_SENDER = `"Ayuniv Orders" <${process.env.SMTP_USER}>`;
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "onlyego1043@@gmail.com"; 
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "slightjoyhealthcare@gmail.com"; 
 
 export async function sendOrderEmails(orderId: string) {
     //console.log(`Attempting to send emails for Order ${orderId}`);
@@ -128,10 +128,9 @@ export async function sendOrderEmails(orderId: string) {
             subject: `New Order: ${customerName} (₹${order.total_amount})`,
             html: adminHtml,
         });
-        //console.log(`Admin alert sent to ${ADMIN_EMAIL}`);
+        console.log(`Email Service: Admin alert sent to ${ADMIN_EMAIL}`);
     } catch (e) {
-        //console.error("Failed to send admin email", e);
-        //console.error("Failed to send admin email", e);
+        console.error("Email Service: Failed to send admin email", e);
     }
 }
 

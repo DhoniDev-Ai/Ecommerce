@@ -47,7 +47,7 @@ export async function POST(req: Request) {
                  // 2. Update Supabase
                  const { error } = await (supabaseAdmin.from('orders') as any)
                     .update({
-                        status: 'confirmed', // Align with verify route
+                        status: 'processing', // Align with verify route (User preferred enum)
                         payment_status: 'succeeded', // Align with verify route
                         updated_at: new Date().toISOString()
                     })
