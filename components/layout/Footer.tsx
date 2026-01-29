@@ -98,6 +98,7 @@ export function Footer() {
                                 href="https://www.instagram.com/ayuniv_official/"
                                 target="_blank"
                                 rel="noopener noreferrer"
+                                aria-label="Follow us on Instagram"
                                 className="w-10 h-10 bg-white/5 rounded-full flex items-center justify-center text-white/70 hover:bg-[#5A7A6A] hover:text-white transition-all hover:-translate-y-1"
                             >
                                 <Instagram className="w-4 h-4" />
@@ -106,6 +107,7 @@ export function Footer() {
                                 href="https://facebook.com/ayuniv_official"
                                 target="_blank"
                                 rel="noopener noreferrer"
+                                aria-label="Follow us on Facebook"
                                 className="w-10 h-10 bg-white/5 rounded-full flex items-center justify-center text-white/70 hover:bg-[#5A7A6A] hover:text-white transition-all hover:-translate-y-1"
                             >
                                 <Facebook className="w-4 h-4" />
@@ -114,6 +116,7 @@ export function Footer() {
                                 href="#"
                                 target="_blank"
                                 rel="noopener noreferrer"
+                                aria-label="Follow us on Twitter"
                                 className="w-10 h-10 bg-white/5 rounded-full flex items-center justify-center text-white/70 hover:bg-[#5A7A6A] hover:text-white transition-all hover:-translate-y-1"
                             >
                                 <Twitter className="w-4 h-4" />
@@ -122,6 +125,7 @@ export function Footer() {
                                 href="#"
                                 target="_blank"
                                 rel="noopener noreferrer"
+                                aria-label="Connect with us on LinkedIn"
                                 className="w-10 h-10 bg-white/5 rounded-full flex items-center justify-center text-white/70 hover:bg-[#5A7A6A] hover:text-white transition-all hover:-translate-y-1"
                             >
                                 <Linkedin className="w-4 h-4" />
@@ -130,6 +134,7 @@ export function Footer() {
                                 href="#"
                                 target="_blank"
                                 rel="noopener noreferrer"
+                                aria-label="Follow us on Pinterest"
                                 className="w-10 h-10 bg-white/5 rounded-full flex items-center justify-center text-white/70 hover:bg-[#5A7A6A] hover:text-white transition-all hover:-translate-y-1"
                             >
                                 {/* Pinterest Icon */}
@@ -139,9 +144,10 @@ export function Footer() {
 
                             </a>
                             <a
-                                href="#"
+                                href="https://wa.me/917852011211"
                                 target="_blank"
                                 rel="noopener noreferrer"
+                                aria-label="Chat with us on WhatsApp"
                                 className="w-10 h-10 bg-white/5 rounded-full flex items-center justify-center text-white/70 hover:bg-[#5A7A6A] hover:text-white transition-all hover:-translate-y-1"
                             >
                                 {/* WhatsApp Icon */}
@@ -222,11 +228,9 @@ export function Footer() {
                 {/* Bottom Bar */}
                 <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
                     <p className="text-xs text-white/30 font-light">
-                        © {new Date().getFullYear()} Ayuniv Wellness. All rights reserved.
+                        © {new Date().getFullYear()} SlightJoy Healthcare. All rights reserved.
                     </p>
-                    <p className="text-xs text-white/30 font-light">
-                        Parent Company - SlightJoy Healthcare
-                    </p>
+
                     <div className="flex gap-8">
                         <Link href="/privacy_page" className="text-xs text-white/30 hover:text-white transition-colors">Privacy Policy</Link>
                         <Link href="/terms" className="text-xs text-white/30 hover:text-white transition-colors">Terms of Service</Link>

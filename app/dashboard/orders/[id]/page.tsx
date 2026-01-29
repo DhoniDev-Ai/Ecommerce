@@ -252,7 +252,7 @@ export default function OrderDetailPage() {
 
                         <div className="relative pl-2"> {/* Added padding for alignment */}
                             {/* Static Background Line */}
-                            <div className="absolute left-[19px] top-3 bottom-3 w-px bg-[#F3F1ED]" />
+                            <div className="absolute left-[19px] top-3 bottom-3 h-[80%] w-px bg-[#F3F1ED]" />
 
                             {/* Animated Progress Line */}
                             <div className="absolute left-[19px] top-3 bottom-3 w-px">

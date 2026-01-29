@@ -16,26 +16,26 @@ export interface Database {
           description: string
           price: number
           category: string
-          ingredients: string
-          benefits: string
-          image_urls: string
+          ingredients: string[]
+          benefits: string[]
+          image_urls: string[]
           stock_quantity: number
           created_at: string
           updated_at: string
           slug?: string
           wellness_goals?: string[]
-          nutrition_facts?: {
-            calories: number
-            sugar: string
-            fiber: string
-            serving_size: string
-          }
+          nutrition_facts?: Json
           usage_instructions?: string
-          ingredient_details?: Array<{
-            name: string
-            certification?: string
-          }>
+          ingredient_details?: Json
           lifestyle_images?: string[]
+          is_active: boolean
+          low_stock_threshold: number
+          sale_price?: number
+          is_on_sale: boolean
+          comparison_price?: number
+          sale_badge_text?: string
+          faq?: Json
+          meta_description?: string
         }
         Insert: {
           id?: string
@@ -43,14 +43,26 @@ export interface Database {
           description: string
           price: number
           category: string
-          ingredients: string
-          benefits: string
-          image_urls: string
+          ingredients: string[]
+          benefits: string[]
+          image_urls: string[]
           stock_quantity?: number
           created_at?: string
           updated_at?: string
           slug?: string
           wellness_goals?: string[]
+          nutrition_facts?: Json
+          usage_instructions?: string
+          ingredient_details?: Json
+          lifestyle_images?: string[]
+          is_active?: boolean
+          low_stock_threshold?: number
+          sale_price?: number
+          is_on_sale?: boolean
+          comparison_price?: number
+          sale_badge_text?: string
+          faq?: Json
+          meta_description?: string
         }
         Update: {
           id?: string
@@ -58,14 +70,26 @@ export interface Database {
           description?: string
           price?: number
           category?: string
-          ingredients?: string
-          benefits?: string
-          image_urls?: string
+          ingredients?: string[]
+          benefits?: string[]
+          image_urls?: string[]
           stock_quantity?: number
           created_at?: string
           updated_at?: string
           slug?: string
           wellness_goals?: string[]
+          nutrition_facts?: Json
+          usage_instructions?: string
+          ingredient_details?: Json
+          lifestyle_images?: string[]
+          is_active?: boolean
+          low_stock_threshold?: number
+          sale_price?: number
+          is_on_sale?: boolean
+          comparison_price?: number
+          sale_badge_text?: string
+          faq?: Json
+          meta_description?: string
         }
         Relationships: []
       }
@@ -138,7 +162,7 @@ export interface Database {
         }
         Relationships: []
       }
-     carts: {
+      carts: {
         Row: {
           id: string
           user_id: string
@@ -160,41 +184,41 @@ export interface Database {
         Relationships: []
       }
       cart_items: {
-  Row: {
-    id: string
-    cart_id: string
-    product_id: string
-    quantity: number
-    price_at_add: number
-    currency: string
-    updated_at: string // Add this line
-  }
-  Insert: {
-    id?: string
-    cart_id: string
-    product_id: string
-    quantity?: number
-    price_at_add: number
-    currency?: string
-    updated_at?: string // Add this line
-  }
-  Update: {
-    id?: string
-    cart_id?: string
-    product_id?: string
-    quantity?: number
-    price_at_add?: number
-    currency?: string
-    updated_at?: string // Add this line
-  }
-  Relationships: []
-}
+        Row: {
+          id: string
+          cart_id: string
+          product_id: string
+          quantity: number
+          price_at_add: number
+          currency: string
+          updated_at: string // Add this line
+        }
+        Insert: {
+          id?: string
+          cart_id: string
+          product_id: string
+          quantity?: number
+          price_at_add: number
+          currency?: string
+          updated_at?: string // Add this line
+        }
+        Update: {
+          id?: string
+          cart_id?: string
+          product_id?: string
+          quantity?: number
+          price_at_add?: number
+          currency?: string
+          updated_at?: string // Add this line
+        }
+        Relationships: []
+      }
       orders: {
         Row: {
           id: string
           user_id: string
           total_amount: number
-          status: 'pending' | 'confirmed' | 'shipped' | 'delivered' | 'cancelled'
+          status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled'
           payment_status: 'pending' | 'succeeded' | 'failed'
           shipping_address: Json
           stripe_payment_intent_id: string | null
@@ -209,7 +233,7 @@ export interface Database {
           id?: string
           user_id: string
           total_amount: number
-          status?: 'pending' | 'confirmed' | 'shipped' | 'delivered' | 'cancelled'
+          status?: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled'
           payment_status?: 'pending' | 'succeeded' | 'failed'
           payment_method?: 'online' | 'COD'
           cancellation_reason?: string
@@ -224,7 +248,7 @@ export interface Database {
           id?: string
           user_id?: string
           total_amount?: number
-          status?: 'pending' | 'confirmed' | 'shipped' | 'delivered' | 'cancelled'
+          status?: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled'
           payment_status?: 'pending' | 'succeeded' | 'failed'
           payment_method?: 'online' | 'COD'
           cancellation_reason?: string

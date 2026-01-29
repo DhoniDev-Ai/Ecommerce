@@ -24,7 +24,12 @@ export async function GET(req: Request) {
         }
 
         // 2. Handle COD Orders (Instant Success & Emails)
-        console.log(`Verify: Checking Order ${orderId} | Method: ${order.payment_method} | Status: ${order.status}`);
+        // console.log(`Verify: Checking Order ${orderId} | Method: ${order.payment_method} | Status: ${order.status}`);
+
+        // OPTIMIZATION: If order is already in a terminal state, DO NOT call Cashfree API.
+        if (['succeeded', 'failed', 'cancelled'].includes(order.payment_status)) {
+             return NextResponse.json({ status: order.payment_status === 'succeeded' ? 'SUCCESS' : order.payment_status.toUpperCase() });
+        }
 
         if (order.payment_method === 'COD') {
             // Only update and send emails if it's the first confirmation (i.e., currently pending)
@@ -46,11 +51,19 @@ export async function GET(req: Request) {
 
         // 3. Handle Online Orders (Cashfree Verification)
         const payments = await fetchPayments(orderId);
-         // Find the 'authoritative' payment status
-        const payment = payments.find((p: any) => ["SUCCESS", "FAILED", "USER_DROPPED", "CANCELLED"].includes(p.payment_status)) 
+         
+        if (!payments || payments.length === 0) {
+            // No payment attempt found (User created order but didn't pay/dropped off early)
+            // Ideally we cancel it if it's old, but for now just report PENDING
+             return NextResponse.json({ status: "PENDING" });
+        }
+
+        // Find the 'authoritative' payment status
+        const payment = payments.find((p: any) => ["SUCCESS", "FAILED", "USER_DROPPED"
+            , "CANCELLED"].includes(p.payment_status)) 
                         || payments[0];
         
-        console.log(`Verify: Cashfree Status for ${orderId}:`, payment?.payment_status);
+        // console.log(`Verify: Cashfree Status for ${orderId}:`, payment?.payment_status);
 
         const cfStatus = payment?.payment_status || "PENDING";
         let dbPaymentStatus = "pending";

@@ -4,7 +4,7 @@ export interface Product {
   name: string;
   description: string;
   price: number;
-  compare_at_price?: number;
+  comparison_price?: number;
   image_urls: string[];
   category: string;
   stock_quantity: number;
@@ -20,6 +20,11 @@ export interface Product {
   created_at: string;
   updated_at?: string;
   metadata?: Record<string, unknown>;
+
+  // Sale & Offer Fields
+  is_on_sale?: boolean;
+  sale_price?: number;
+  sale_badge_text?: string;
 }
 
 export interface NutritionInfo {

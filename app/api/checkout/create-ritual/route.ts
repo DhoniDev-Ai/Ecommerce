@@ -23,33 +23,59 @@ export async function POST(req: Request) {
         const { data: { user } } = await supabaseAdmin.auth.getUser(token);
         if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-        // 2. Create Order in Supabase
-        // USES JSON ADDRESS to match Schema
-        const { data: order, error: orderError } = await (supabaseAdmin
-            .from('orders') as any)
-            .insert({
-                user_id: user.id,
-                total_amount: amount,
-                shipping_address: {
-                    ...shippingAddress,
-                    email: customerEmail || user.email // Persist email for failsafe delivery
-                }, 
-                status: 'pending',
-                payment_status: 'pending',
-                payment_method: paymentMethod || 'online',
-                payment_provider: paymentMethod === 'COD' ? 'COD' : 'cashfree', // Explicit provider
-                coupon_id: couponId || null
-            })
-            .select()
+        // 2. CHECK FOR EXISTING PENDING ORDER (Idempotency)
+        // Prevent duplicates if user clicks twice or browser retries
+        const { data: existingOrder } = await supabaseAdmin
+            .from('orders')
+            .select('id, status, payment_status')
+            .eq('user_id', user.id)
+            .eq('total_amount', amount)
+            .eq('status', 'pending')
+            .eq('payment_status', 'pending')
+            .gt('created_at', new Date(Date.now() - 2 * 60 * 1000).toISOString()) // Created in last 2 mins
+            .limit(1)
             .single();
 
-        if (orderError) throw orderError;
+        let orderId = existingOrder?.id;
 
-        // 3. Persist Items (Start Async)
+        if (existingOrder) {
+            console.log(`Checkout: Reusing existing pending Order ID ${orderId}`);
+        } else {
+             // Create New Order
+             const { data: newOrder, error: orderError } = await (supabaseAdmin
+                .from('orders') as any)
+                .insert({
+                    user_id: user.id,
+                    total_amount: amount,
+                    shipping_address: {
+                        ...shippingAddress,
+                        email: customerEmail || user.email 
+                    }, 
+                    status: 'pending',
+                    payment_status: 'pending',
+                    payment_method: paymentMethod || 'online',
+                    payment_provider: paymentMethod === 'COD' ? 'COD' : 'cashfree',
+                    coupon_id: couponId || null
+                })
+                .select()
+                .single();
+
+             if (orderError) throw orderError;
+             orderId = newOrder.id;
+        }
+
+        if (!orderId) throw new Error("Failed to generate Order ID");
+
+        // 3. Persist Items (Only if new order, or maybe generic?)
+        // Actually, if reusing order, items are likely already there.
+        // But to be safe, we can skip item insertion if reusing, OR delete & re-insert.
+        // For speed/simplicity, if reusing, we assume items are same (since amount matches).
+        
         let itemsPromise = Promise.resolve();
-        if (items && items.length > 0) {
+        // Only insert items if we CREATED a new order. 
+        if (!existingOrder && items && items.length > 0) {
             const orderItemsData = items.map((item: any) => ({
-                order_id: order.id,
+                order_id: orderId!, // Assert string
                 product_id: item.id,
                 quantity: item.quantity,
                 price_at_purchase: item.price
@@ -60,21 +86,23 @@ export async function POST(req: Request) {
                  if (error) console.error("Item persistence warning:", error);
             });
         }
-
+        
         // 4. Handle COD
         if (paymentMethod === 'COD') {
-            await itemsPromise; // Ensure items are saved before returning
+            await itemsPromise; 
             return NextResponse.json({ 
                 mode: 'COD',
-                orderId: order.id
+                orderId: orderId!
             });
         }
 
-        // 5. Create Cashfree Order Session (Parallel with Items)
+        // 5. Create Cashfree Order
+        // We reuse the orderId for Cashfree too.
+        // Cashfree allows creating multiple sessions for same order_id (it just updates session).
         const cfPromise = createOrder({
             order_amount: amount,
             order_currency: "INR",
-            order_id: order.id,
+            order_id: orderId!,
             customer_details: {
                 customer_id: user.id,
                 customer_phone: customerPhone || user.phone || "9999999999",

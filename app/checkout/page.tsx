@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import {
     ShieldCheck, Loader2, MapPin, Plus, Ticket, CheckCircle2,
     AlertCircle, Minus, Trash2, ShoppingBag, Mail, Sparkles, Flag, ArrowRight, Pencil
@@ -66,26 +66,25 @@ export default function CheckoutPage() {
 
 
     // --- HELPERS ---
-    const loadUserData = async (currentUser: any) => {
+    const loadUserData = useCallback(async (currentUser: any) => {
         setUser(currentUser);
 
-        // Parallel data fetching: Prefill form and fetch addresses simultaneously
-        const formPrefillPromise = Promise.resolve().then(() => {
-            setFormData(prev => ({
-                ...prev,
-                email: currentUser.email || "",
-                fullName: currentUser.user_metadata?.full_name || prev.fullName
-            }));
-        });
-
-        const addressesPromise = supabase
-            .from('addresses')
-            .select('*')
-            .eq('user_id', currentUser.id)
-            .order('is_default', { ascending: false })
-            .returns<Address[]>();
-
-        const [_, { data: addresses }] = await Promise.all([formPrefillPromise, addressesPromise]);
+        // Parallel data fetching
+        const [_, { data: addresses }] = await Promise.all([
+            Promise.resolve().then(() => {
+                setFormData(prev => ({
+                    ...prev,
+                    email: currentUser.email || "",
+                    fullName: currentUser.user_metadata?.full_name || prev.fullName
+                }));
+            }),
+            supabase
+                .from('addresses')
+                .select('*')
+                .eq('user_id', currentUser.id)
+                .order('is_default', { ascending: false })
+                .returns<Address[]>()
+        ]);
 
         if (addresses && addresses.length > 0) {
             setSavedAddresses(addresses);
@@ -94,81 +93,8 @@ export default function CheckoutPage() {
                 fillFormWithAddress(addresses[0]);
             }
         }
-    };
+    }, [selectedAddressId]); // Minimal dependency
 
-    // --- OTP HANDLERS ---
-    const handleSendOtp = async () => {
-        if (!validateEmail(formData.email)) return;
-        setAuthLoading(true);
-        try {
-            const { error } = await supabase.auth.signInWithOtp({
-                email: formData.email,
-                options: { shouldCreateUser: true }
-            });
-            if (error) throw error;
-            setOtpSent(true);
-            setToast({ message: "OTP sent to your email.", type: 'success' });
-        } catch (err: any) {
-            console.error("OTP Error:", err);
-            const errorMessage = err.message || "Something went wrong";
-
-            if (errorMessage.includes("expired") || errorMessage.includes("invalid")) {
-                setToast({ message: "Code expired or invalid. Please request a new one.", type: 'error' });
-            } else {
-                setToast({ message: errorMessage, type: 'error' });
-            }
-        } finally {
-            setAuthLoading(false);
-        }
-    };
-
-    const handleVerifyOtp = async () => {
-        if (!otp || otp.length < 6) {
-            setToast({ message: "Please enter a valid code.", type: 'error' });
-            return;
-        }
-        setAuthLoading(true);
-        try {
-            const { data: { session, user }, error } = await supabase.auth.verifyOtp({
-                email: formData.email,
-                token: otp,
-                type: 'email'
-            });
-
-            if (error) throw error;
-
-            if (user) {
-                setToast({ message: "Identity Verified.", type: 'success' });
-                await loadUserData(user);
-            }
-        } catch (err: any) {
-            console.error("Verify Error:", err);
-            const errorMessage = err.message || "Invalid OTP";
-
-            if (errorMessage.includes("expired") || errorMessage.includes("invalid")) {
-                setToast({ message: "This code has expired. Please send a new one.", type: 'error' });
-            } else {
-                setToast({ message: errorMessage, type: 'error' });
-            }
-        } finally {
-            setAuthLoading(false);
-        }
-    };
-
-    // --- INITIALIZATION ---
-    // Ensuring client-side only to prevent hydration mismatch (though user's code didn't have the guard, I will trust their code worked)
-    // Actually, I'll add the isMounted check just to be safe as per our previous fix which *did* solve the blank screen.
-    const [isMounted, setIsMounted] = useState(false);
-    useEffect(() => {
-        setIsMounted(true);
-        const initCheckout = async () => {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session?.user) loadUserData(session.user);
-        };
-        initCheckout();
-    }, []);
-
-    // --- HELPERS ---
     const fillFormWithAddress = (addr: any) => {
         setFormData(prev => ({
             ...prev,
@@ -182,23 +108,32 @@ export default function CheckoutPage() {
         }));
     };
 
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
         setTouched(prev => ({ ...prev, [name]: true }));
-        if (errors[name]) setErrors(prev => { const n = { ...prev }; delete n[name]; return n; });
-    };
+        // Clear error immediately when user types
+        setErrors(prev => {
+            if (!prev[name]) return prev;
+            const n = { ...prev };
+            delete n[name];
+            return n;
+        });
+    }, []);
 
-    const getFieldStatus = (name: string, value: string) => {
+    const getFieldStatus = useCallback((name: string, value: string) => {
         if (!touched[name]) return null;
-        if (name === 'whatsapp') return validateWhatsApp(value) ? 'valid' : 'invalid';
-        if (name === 'email') return validateEmail(value) ? 'valid' : 'invalid';
-        if (name === 'pincode') return validatePincode(value) ? 'valid' : 'invalid';
-        if (name === 'fullName') return value.length >= 3 ? 'valid' : 'invalid';
-        if (name === 'addressLine') return value.length >= 5 ? 'valid' : 'invalid';
-        if (name === 'state' || name === 'city') return value ? 'valid' : 'invalid';
-        return null;
-    };
+        switch (name) {
+            case 'whatsapp': return validateWhatsApp(value) ? 'valid' : 'invalid';
+            case 'email': return validateEmail(value) ? 'valid' : 'invalid';
+            case 'pincode': return validatePincode(value) ? 'valid' : 'invalid';
+            case 'fullName': return value.length >= 3 ? 'valid' : 'invalid';
+            case 'addressLine': return value.length >= 5 ? 'valid' : 'invalid';
+            case 'state':
+            case 'city': return value ? 'valid' : 'invalid';
+            default: return null;
+        }
+    }, [touched]);
 
     const validateForm = () => {
         const newErrors: Record<string, string> = {};
@@ -291,23 +226,16 @@ export default function CheckoutPage() {
         }
     };
 
-    const handleProceedToPayment = async () => {
-        if (!user) {
-            setToast({ message: "Please verify your email first.", type: 'error' });
-            return;
-        }
+    // --- AUTO-SAVE LOGIC ---
+    const autoSaveData = async () => {
+        if (!user) return;
 
-        if (!validateForm()) {
-            const fields = ['fullName', 'whatsapp', 'email', 'addressLine', 'pincode', 'city', 'state'];
-            const allTouched = fields.reduce((acc, curr) => ({ ...acc, [curr]: true }), {});
-            setTouched(allTouched);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-            return;
-        }
-
-        // --- AUTO-SAVE ADDRESS & SYNC NAME ---
+        // 1. Auto-save Address if new
         if (selectedAddressId === "new") {
             try {
+                // Basic validation before save
+                if (formData.fullName.length < 3 || formData.addressLine.length < 5 || !formData.pincode) return;
+
                 const { data: newAddr } = await (supabase.from('addresses') as any)
                     .insert({
                         user_id: user.id,
@@ -330,7 +258,7 @@ export default function CheckoutPage() {
             } catch (err) { console.error("Auto-save address failed", err); }
         }
 
-        // Sync Profile
+        // 2. Sync Profile
         try {
             const { data: profile } = await supabase.from('users').select('full_name, phone').eq('id', user.id).single();
             if (!profile?.full_name || !profile?.phone) {
@@ -340,11 +268,40 @@ export default function CheckoutPage() {
                 }).eq('id', user.id);
             }
         } catch (err) { console.error("Profile sync failed", err); }
+    };
 
-        if (!agreedToTerms) return;
+    const toggleTerms = () => {
+        const newState = !agreedToTerms;
+        setAgreedToTerms(newState);
+        if (newState) {
+            autoSaveData();
+        }
+    };
+
+    const handleProceedToPayment = async () => {
+        // AUTH CHECK: Must be verified user (via phone or login)
+        if (!user) {
+            setToast({ message: "Please verify your WhatsApp number first.", type: 'error' });
+            return;
+        }
+
+        if (!validateForm()) {
+            const fields = ['fullName', 'whatsapp', 'email', 'addressLine', 'pincode', 'city', 'state'];
+            const allTouched = fields.reduce((acc, curr) => ({ ...acc, [curr]: true }), {});
+            setTouched(allTouched);
+            window.scrollTo({ top: 300, behavior: 'smooth' });
+            return;
+        }
+
+        if (!agreedToTerms) {
+            setToast({ message: "Please agree to the terms.", type: 'error' });
+            return;
+        }
 
         setProcessing(true);
         setToast({ message: "Initiating ritual...", type: 'success' });
+        // ... (rest of payment logic)
+
 
         try {
             // Updated API Call with Correct Payload
@@ -565,34 +522,34 @@ export default function CheckoutPage() {
                                     disabled={!!user || otpSent}
                                 />
 
-                                {/* AUTHENTICATION UI - OTP FLOW */}
-                                {!user && validateEmail(formData.email) && (
-                                    <div className="bg-[#5A7A6A]/5 p-6 rounded-3xl border border-[#5A7A6A]/10 animate-in fade-in slide-in-from-top-4">
+                                {/* AUTHENTICATION UI - OTP FLOW (WHATSAPP NOW) */}
+                                {!user && validateWhatsApp(formData.whatsapp) && (
+                                    <div className="bg-[#5A7A6A]/5 p-6 rounded-3xl border border-[#5A7A6A]/10 animate-in fade-in slide-in-from-top-4 my-6">
                                         {!otpSent ? (
                                             <div className="flex items-center justify-between gap-4">
                                                 <p className="text-[10px] text-[#5A7A6A] font-medium leading-relaxed">
                                                     <span className="font-bold block mb-1">Ritual Identity Required</span>
-                                                    We'll send a secret code to your email.
+                                                    Verify your WhatsApp number to secure this order.
                                                 </p>
                                                 <button
                                                     onClick={handleSendOtp}
                                                     disabled={authLoading}
-                                                    className="bg-[#5A7A6A] text-white px-5 py-3 rounded-full cursor-pointer text-[9px] uppercase font-bold tracking-widest hover:shadow-lg transition-all disabled:opacity-50 whitespace-nowrap"
+                                                    className="bg-[#25D366] text-white px-5 py-3 rounded-full cursor-pointer text-[9px] uppercase font-bold tracking-widest hover:shadow-lg hover:bg-[#1ebc57] transition-all disabled:opacity-50 whitespace-nowrap flex items-center gap-2"
                                                 >
-                                                    {authLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Send Code"}
+                                                    {authLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Verify Number"}
                                                 </button>
                                             </div>
                                         ) : (
                                             <div className="space-y-4">
                                                 <div className="flex items-center justify-between">
                                                     <p className="text-[10px] text-[#5A7A6A] font-medium">
-                                                        Enter the code sent to <span className="font-bold text-[#2D3A3A]">{formData.email}</span>
+                                                        WhatsApp code sent to <span className="font-bold text-[#2D3A3A]">{formData.whatsapp}</span>
                                                     </p>
                                                     <button
                                                         onClick={() => setOtpSent(false)}
                                                         className="text-[9px] text-[#7A8A8A] hover:text-[#5A7A6A] underline decoration-dotted underline-offset-2"
                                                     >
-                                                        Change Email
+                                                        Change
                                                     </button>
                                                 </div>
 
@@ -602,7 +559,7 @@ export default function CheckoutPage() {
                                                         name="otp"
                                                         value={otp}
                                                         onChange={(e: React.ChangeEvent<HTMLInputElement>) => setOtp(e.target.value)}
-                                                        placeholder="Enter 6-8 digit code"
+                                                        placeholder="Enter 6-digit code"
                                                         className="tracking-[0.5em]  text-center font-mono"
                                                     />
                                                     <button
@@ -610,7 +567,7 @@ export default function CheckoutPage() {
                                                         disabled={authLoading || otp.length < 6}
                                                         className="bg-[#2D3A3A] text-white px-6 h-10 mt-3 rounded-2xl text-[9px] uppercase font-bold tracking-widest hover:bg-black  transition-all disabled:opacity-50"
                                                     >
-                                                        {authLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Verify"}
+                                                        {authLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Confirm"}
                                                     </button>
                                                 </div>
                                             </div>
@@ -771,7 +728,7 @@ export default function CheckoutPage() {
                         {/* TERMS CHECKBOX */}
                         <div className="mb-8 flex items-start gap-3 px-2">
                             <button
-                                onClick={() => setAgreedToTerms(!agreedToTerms)}
+                                onClick={toggleTerms}
                                 className={cn(
                                     " h-5 aspect-square rounded-md border flex items-center justify-center shrink-0 transition-all mt-0.5",
                                     agreedToTerms ? "bg-[#2D3A3A] border-[#2D3A3A]" : "bg-white border-[#D4D2CE]"
@@ -779,7 +736,7 @@ export default function CheckoutPage() {
                             >
                                 {agreedToTerms && <CheckCircle2 className=" w-3 h-3 text-white" />}
                             </button>
-                            <p className="text-[10px] text-[#7A8A8A] leading-relaxed cursor-pointer" onClick={() => setAgreedToTerms(!agreedToTerms)}>
+                            <p className="text-[10px] text-[#7A8A8A] leading-relaxed cursor-pointer" onClick={toggleTerms}>
                                 I acknowledge the holistic nature of these products and agree to the <span className="underline decoration-[#5A7A6A] decoration-dashed underline-offset-2 hover:text-[#2D3A3A]">Terms of Sanctuary</span> & Privacy Ritual.
                             </p>
                         </div>

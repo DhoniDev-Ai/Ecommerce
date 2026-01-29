@@ -15,9 +15,9 @@ import Image from "next/image";
 const navigation = [
     { name: "Collection", href: "/products" },
     { name: "The Alchemy", href: "/about" },
-    { name: "Contact", href: "/contact" },
     { name: "Journal", href: "/journal" },
-    { name: "Orders", href: "/dashboard/orders" }
+    { name: "Orders", href: "/dashboard/orders" },
+    { name: "Contact", href: "/contact" }
 ];
 
 export function Header() {
@@ -30,18 +30,30 @@ export function Header() {
     const dropdownRef = useRef<HTMLDivElement>(null);
     const { openCart, itemCount } = useCartContext();
 
+    const [userRole, setUserRole] = useState<string | null>(null);
+
     // Listen for auth state changes
     useEffect(() => {
         // Get initial session
-        supabase.auth.getSession().then(({ data: { session } }) => {
+        supabase.auth.getSession().then(async ({ data: { session } }) => {
             setUser(session?.user ?? null);
+            if (session?.user) {
+                const { data } = await supabase.from('users').select('role').eq('id', session.user.id).single();
+                setUserRole(data?.role || null);
+            }
         });
 
         // Listen for changes
         const {
             data: { subscription },
-        } = supabase.auth.onAuthStateChange((_event, session) => {
+        } = supabase.auth.onAuthStateChange(async (_event, session) => {
             setUser(session?.user ?? null);
+            if (session?.user) {
+                const { data } = await supabase.from('users').select('role').eq('id', session.user.id).single();
+                setUserRole(data?.role || null);
+            } else {
+                setUserRole(null);
+            }
         });
 
         return () => subscription.unsubscribe();
@@ -95,7 +107,7 @@ export function Header() {
             >
                 {/* Logo */}
                 <div className="flex lg:flex-1">
-                    <Link href="/" className="-m-1.5 p-1.5 flex items-center gap-2">
+                    <Link href="/" className="-m-1.5 p-1.5 flex cursor-pointer items-center gap-2">
                         <span className="sr-only">Ayuniv</span>
                         <Image
                             width={1000}
@@ -203,19 +215,28 @@ export function Header() {
                                     >
                                         <div className="p-3 border-b border-[#E8E6E2]">
                                             <p className="text-[9px] uppercase tracking-[0.3em] text-[#7A8B7A] font-bold">
-                                                Ritual Member
+                                                {userRole === 'admin' ? 'Administrator' : 'Ritual Member'}
                                             </p>
                                             <p className="text-xs text-[#2D3A3A] mt-1 truncate font-light">
                                                 {user.email}
                                             </p>
                                         </div>
                                         <div className="py-2">
+                                            {userRole === 'admin' && (
+                                                <Link
+                                                    href="/admin"
+                                                    onClick={() => setProfileDropdownOpen(false)}
+                                                    className="block px-4 py-2.5 text-[10px] uppercase tracking-[0.25em] font-bold text-[#2D3A3A]/70 hover:bg-[#5A7A6A]/5 hover:text-[#5A7A6A] transition-colors"
+                                                >
+                                                    Admin Area
+                                                </Link>
+                                            )}
                                             <Link
                                                 href="/dashboard"
                                                 onClick={() => setProfileDropdownOpen(false)}
                                                 className="block px-4 py-2.5 text-[10px] uppercase tracking-[0.25em] font-bold text-[#2D3A3A]/70 hover:bg-[#5A7A6A]/5 hover:text-[#5A7A6A] transition-colors"
                                             >
-                                                Dashboard
+                                                My profile
                                             </Link>
                                             <button
                                                 onClick={handleLogout}

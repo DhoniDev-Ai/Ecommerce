@@ -23,20 +23,8 @@ export function ProductCard({ product }: ProductCardProps) {
         addToCart(product);
     };
 
-    const getProductImage = () => {
-        const nameToImage: Record<string, string> = {
-            "Green Goddess Cleanse": "/assets/sea_buckthorn_pulp_300ml.png",
-            "Sunrise Citrus Roots": "/assets/sea_buckthorn_pulp_300ml_1.png",
-            "Beet It Up": "/assets/sea_buckthorn_pulp_500ml.png",
-            "Tropical Immunity Boost": "/assets/shecare_closup_duo.png",
-            "Sea Buckthorn Elixir": "/assets/sea_buckthorn_pulp_500ml.png",
-            "Calm Lavender Blend": "/assets/duo_shecare.png",
-            "Protein Power Green": "/assets/duo_shecare_2.png",
-        };
-        return nameToImage[product.name] || product.image_urls?.[0] || "/assets/sea_buckthorn_pulp_300ml.png";
-    };
-
-    const productImage = getProductImage();
+    // Use image from Supabase (fallback to safe default if empty)
+    const productImage = product.image_urls?.[0] || "/assets/sea_buckthorn_pulp_300ml.png";
     const isProcessing = isAdding(product.id);
     const showSuccess = isSuccess(product.id);
 
@@ -57,8 +45,8 @@ export function ProductCard({ product }: ProductCardProps) {
                             alt={product.name}
                             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                             className={cn(
-                                "h-full w-full object-contain transition-transform duration-1000 ease-out rounded max-sm:rounded-4xl",
-                                isHovered ? "scale-110" : "scale-100"
+                                "h-full w-full object-contain transition-all duration-1000 ease-out rounded-xl max-sm:rounded-4xl ",
+                                isHovered ? "scale-110 rounded-4xl" : "scale-100 "
                             )}
                         />
                     </div>
@@ -92,16 +80,35 @@ export function ProductCard({ product }: ProductCardProps) {
                     <Plus className={cn("h-3 w-3 md:h-6 md:w-6 transition-transform", showSuccess && "rotate-90")} />
                 </button>
 
-                <div className="absolute top-6 left-6 max-sm:hidden ">
-                    <span className="rounded-full bg-white/80 backdrop-blur-md px-4 py-1 text-[8px] font-bold tracking-[0.2em] text-[#5A7A6A] uppercase">
-                        {product.wellness_goals?.[0]}
-                    </span>
+                <div className="absolute bottom-4 left-4 max-sm:hidden flex flex-col gap-2">
+                    {product.wellness_goals?.[0] && (
+                        <span className="rounded-full bg-white/80 backdrop-blur-md px-4 py-1 text-[8px] font-bold tracking-[0.2em] text-[#5A7A6A] uppercase w-fit">
+                            {product.wellness_goals[0]}
+                        </span>
+                    )}
+
+                </div>
+                <div className="absolute top-4 right-4 max-sm:right-4 max-sm:top-2 flex flex-col gap-2 z-10">
+                    {(product.is_on_sale && product.sale_badge_text) && (
+                        <span
+                            className="
+        font-heading text-[12px] leading-none tracking-[0.08em] uppercase
+        
+        px-3 py-2 max-sm:p-1  max-sm:text-[8px]  bg-red-50 text-red-600 rounded-full  font-bold border border-red-100
+        shadow-[0_2px_4px_rgba(45,58,58,0.1)]
+        
+        inline-block w-fit
+      "
+                        >
+                            {product.sale_badge_text}
+                        </span>
+                    )}
                 </div>
             </div>
 
             {/* Refined Text Info */}
             <div className="mt-3 max-sm:mt-2 flex flex-col items-center text-center px-2">
-                <h3 className="font-heading sm:text-lg  text-[#2D3A3A] leading-tight transition-colors group-hover:text-[#5A7A6A]">
+                <h3 className="font-heading max-sm:text-sm    sm:text-lg  text-[#2D3A3A] leading-tight transition-colors group-hover:text-[#5A7A6A]">
                     <Link href={`/products/${product.slug}`}>{product.name}</Link>
                 </h3>
 
@@ -109,7 +116,9 @@ export function ProductCard({ product }: ProductCardProps) {
                 <div className="mt-1 ">
                     <PriceDisplay
                         price={product.price}
-                        comparisonPrice={product.compare_at_price}
+                        comparisonPrice={product.comparison_price}
+                        salePrice={product.sale_price}
+                        isOnSale={product.is_on_sale}
                     />
                 </div>
 

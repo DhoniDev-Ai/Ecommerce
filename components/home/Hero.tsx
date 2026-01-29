@@ -13,8 +13,8 @@ const SLIDES = [
         slug: "sea-buckthorn-pulp",
         category: "Immunity Archive",
         title: "Sea Buckthorn",
-        subtitle: "The Golden Berry",
-        description: "Wild-harvested Himalayan berries. A concentrated burst of Omega-7.",
+        subtitle: "The Himalayan Wild Berry",
+        description: "Wild-harvested Himalayan berries. A concentrated burst of Omega-3,6,7 & 9.",
         bgImage: "/assets/Tm/12.png",
         color: "text-[#2D3A3A]",
         accentColor: "#E67E22",
@@ -25,7 +25,7 @@ const SLIDES = [
         slug: "she-care-juice",
         category: "Vitality Collection",
         title: "She Care",
-        subtitle: "Inner Harmony",
+        subtitle: "Harmonal Balance",
         description: "A gentle, potent Ayurvedic blend for hormonal balance crafted with Shatavari.",
         bgImage: "/assets/Tm/24.png",
         color: "text-[#2D3A3A]",
@@ -37,8 +37,8 @@ const SLIDES = [
         slug: "cholesterol-care",
         category: "Heart Series",
         title: "Heart Guard",
-        subtitle: "Ancient Roots",
-        description: "A precise blend of garlic, ginger, and honey for cardiovascular strength.",
+        subtitle: "Healthy Circulation",
+        description: "Supports healthy cholesterol levels, improves blood circulation, and promotes overall heart wellness naturally",
         bgImage: "/assets/Tm/26.png",
         color: "text-[#3E2723]",
         accentColor: "#8B5A2B",
@@ -121,7 +121,7 @@ export function Hero() {
             <div className="relative z-10 w-full h-full max-w-[1920px] mx-auto px-6 md:px-12 lg:px-20 grid grid-cols-1 lg:grid-cols-12">
 
 
-                <div className="lg:col-span-5 flex flex-col justify-start max-sm:justify-start  sm:pb-0 sm:pt-24 md:pt-40 pb-24  h-full pointer-events-none">
+                <div className="lg:col-span-5 flex flex-col justify-start max-sm:justify-start  sm:pb-0 sm:pt-24 md:pt-30 pb-24  h-full pointer-events-none">
                     <AnimatePresence mode="wait">
                         <motion.div key={slide.id} className="space-y-4 md:space-y-6 relative z-20 pointer-events-auto">
 
@@ -158,7 +158,7 @@ export function Hero() {
                                     initial="initial"
                                     animate="animate"
                                     exit="exit"
-                                    className="italic font-serif font-light opacity-80 block text-3xl md:text-5xl lg:text-[4rem] leading-none"
+                                    className="italic font-serif font-light opacity-80 block text-2xl md:text-3xl lg:text-[3.5rem] leading-none"
                                 >
                                     {slide.subtitle}
                                 </motion.span>

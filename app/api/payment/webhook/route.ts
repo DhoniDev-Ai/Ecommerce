@@ -62,6 +62,25 @@ export async function POST(req: Request) {
                  console.log("Webhook: Triggering Email Service");
                  await sendOrderEmails(orderId);
             }
+        } else if (event === "PAYMENT_FAILED_WEBHOOK" || event === "PAYMENT_USER_DROPPED_WEBHOOK") {
+            const orderId = body.data.order.order_id;
+            const paymentStatus = body.data.payment.payment_status;
+
+            console.log(`Webhook: Payment Failed/Dropped for Order ${orderId} | Status: ${paymentStatus}`);
+            
+            // Update Supabase to 'cancelled' or 'failed' to cleanup pending state
+            const targetStatus = event === "PAYMENT_USER_DROPPED_WEBHOOK" ? 'cancelled' : 'failed'; // Or both 'cancelled' if 'failed' enum not preferred for order_status.
+            // My DB has 'cancelled' for order_status. 'failed' for payment_status.
+            
+            const { error } = await (supabaseAdmin.from('orders') as any)
+                .update({
+                    status: 'cancelled', 
+                    payment_status: 'failed',
+                    updated_at: new Date().toISOString()
+                })
+                .eq('id', orderId);
+
+             if (error) console.error("Webhook: DB Update Failed for Failure Event", error);
         }
 
         return NextResponse.json({ status: "ok" });

@@ -27,11 +27,11 @@ export function FeaturedProducts({ products }: FeaturedProductsProps) {
                         transition={{ duration: 0.8 }}
                     >
                         <p className="text-[10px] uppercase tracking-[0.4em] text-[#7A8B7A] font-bold mb-4">
-                            Curated Selection
+                            Inspired by Ayurveda
                         </p>
                         <h2 className="font-heading text-4xl lg:text-6xl text-[#2D3A3A] tracking-tighter leading-[0.9]">
                             Featured <br />
-                            <span className="italic font-serif font-light text-[#5A7A6A]">Blends.</span>
+                            <span className="italic font-serif font-light text-[#5A7A6A]">Herbal Blends.</span>
                         </h2>
                     </motion.div>
 
@@ -52,8 +52,8 @@ export function FeaturedProducts({ products }: FeaturedProductsProps) {
                 </div>
 
                 {/* Responsive Products Grid - Asymmetric staggered effect on desktop */}
-                <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-10 lg:gap-16">
-                    {products.slice(0, 4).map((product, index) => (
+                <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-3 gap-10 lg:gap-16">
+                    {products.slice(0, 3).map((product, index) => (
                         <motion.div
                             key={product.id}
                             initial={{ opacity: 0, y: 30 }}

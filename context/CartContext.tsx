@@ -158,7 +158,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
                     String(item.id) === productId ? { ...item, quantity: item.quantity + quantity } : item
                 );
             }
-            return [...prev, { ...product, quantity }];
+            return [...prev, {
+                ...product,
+                price: (product.is_on_sale && product.sale_price) ? product.sale_price : product.price,
+                quantity
+            }];
         });
         openCart();
 
@@ -172,11 +176,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
                     .single();
 
                 const newQty = (dbItem?.quantity || 0) + quantity;
+                const finalPrice = (product.is_on_sale && product.sale_price) ? product.sale_price : product.price;
+
                 await (supabase.from('cart_items') as any).upsert({
                     cart_id: cartId,
                     product_id: productId,
                     quantity: newQty,
-                    price_at_add: product.price
+                    price_at_add: finalPrice
                 }, { onConflict: 'cart_id,product_id' });
             }
         }

@@ -20,7 +20,7 @@ export default async function Home() {
   const { data } = await supabase
     .from('products')
     .select('*')
-    .limit(4);
+    .limit(3);
 
   const products = data?.map((p: any) => ({
     id: p.id,
@@ -35,6 +35,10 @@ export default async function Home() {
     benefits: p.benefits || [],
     wellness_goals: p.wellness_goals || [],
     created_at: p.created_at,
+    is_on_sale: p.is_on_sale || false,
+    sale_price: p.sale_price,
+    sale_badge_text: p.sale_badge_text,
+    comparison_price: p.comparison_price,
   })) || [];
 
   return (

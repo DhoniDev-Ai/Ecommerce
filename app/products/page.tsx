@@ -61,6 +61,10 @@ function ProductsContent() {
                     benefits: product.benefits || [],
                     wellness_goals: product.wellness_goals || [],
                     created_at: product.created_at,
+                    is_on_sale: product.is_on_sale || false,
+                    sale_price: product.sale_price,
+                    sale_badge_text: product.sale_badge_text,
+                    comparison_price: product.comparison_price,
                 }));
 
                 setProducts(mappedProducts);
@@ -104,8 +108,8 @@ function ProductsContent() {
                                 Seasonal Collection
                             </p>
                             <h1 className="font-heading text-[clamp(3rem,6vw,5.5rem)] leading-[0.9] text-[#2D3A3A] tracking-tighter">
-                                Pure vitality, <br />
-                                <span className="italic font-serif font-light text-[#5A7A6A]">expertly bottled.</span>
+                                Ayurvedic Wellness,<br />
+                                <span className="italic font-serif font-light text-[#5A7A6A]">Pure Bottled.</span>
                             </h1>
                         </motion.div>
                         <motion.div
@@ -115,11 +119,11 @@ function ProductsContent() {
                             className="lg:col-span-4 flex lg:justify-end"
                         >
                             <p className="text-sm text-[#6A7A7A] max-w-xs font-light leading-relaxed border-l border-[#E8E6E2] pl-6">
-                                From our Jaipur studio to your morning ritual. Each blend is cold-pressed to preserve enzymatic life.
+                                Discover our collection of cold‑pressed Ayurvedic juices made to support energy, immunity, digestion, heart health, and daily balance. Made with natural ingredients and no added sugar.
                             </p>
                         </motion.div>
                     </div>
-
+                    <span className="text-sm  text-[#6A7A7A] max-w-xs font-light leading-relaxed border-l border-[#E8E6E2] pl-6">🌿 100% Ayurvedic • Cold‑Pressed • No Added Sugar</span>
                     {/* Filter Bar - Minimalist Sticky Ribbon */}
                     <div className=" z-30 mb-20">
                         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8 py-6 border-y border-[#E8E6E2]/50 backdrop-blur-sm bg-[#FDFBF7]/40">
