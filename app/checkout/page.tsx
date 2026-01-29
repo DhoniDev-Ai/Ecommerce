@@ -95,6 +95,72 @@ export default function CheckoutPage() {
         }
     }, [selectedAddressId]); // Minimal dependency
 
+    // --- OTP HANDLERS (EMAIL) ---
+    const handleSendOtp = async () => {
+        if (!validateEmail(formData.email)) {
+            setToast({ message: "Please enter a valid email.", type: 'error' });
+            return;
+        }
+
+        setAuthLoading(true);
+        try {
+            const { error } = await supabase.auth.signInWithOtp({
+                email: formData.email,
+                options: { shouldCreateUser: true }
+            });
+            if (error) throw error;
+            setOtpSent(true);
+            setToast({ message: "OTP sent to your email.", type: 'success' });
+        } catch (err: any) {
+            console.error("OTP Error:", err);
+            setToast({ message: err.message || "Failed to send code.", type: 'error' });
+        } finally {
+            setAuthLoading(false);
+        }
+    };
+
+    const handleVerifyOtp = async () => {
+        if (!otp || otp.length < 6) {
+            setToast({ message: "Please enter a valid code.", type: 'error' });
+            return;
+        }
+        setAuthLoading(true);
+        try {
+            const { data: { session, user }, error } = await supabase.auth.verifyOtp({
+                email: formData.email,
+                token: otp,
+                type: 'email'
+            });
+
+            if (error) throw error;
+
+            if (user) {
+                setToast({ message: "Identity Verified.", type: 'success' });
+                await loadUserData(user);
+            }
+        } catch (err: any) {
+            console.error("Verify Error:", err);
+            const errorMessage = err.message || "Invalid OTP";
+            if (errorMessage.includes("expired") || errorMessage.includes("invalid")) {
+                setToast({ message: "Code expired or invalid.", type: 'error' });
+            } else {
+                setToast({ message: errorMessage, type: 'error' });
+            }
+        } finally {
+            setAuthLoading(false);
+        }
+    };
+
+    const [isMounted, setIsMounted] = useState(false);
+    useEffect(() => {
+        setIsMounted(true);
+        const initCheckout = async () => {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session?.user) loadUserData(session.user);
+        };
+        initCheckout();
+    }, []);
+
     const fillFormWithAddress = (addr: any) => {
         setFormData(prev => ({
             ...prev,
@@ -522,28 +588,29 @@ export default function CheckoutPage() {
                                     disabled={!!user || otpSent}
                                 />
 
-                                {/* AUTHENTICATION UI - OTP FLOW (WHATSAPP NOW) */}
-                                {!user && validateWhatsApp(formData.whatsapp) && (
+
+                                {/* AUTHENTICATION UI - OTP FLOW (EMAIL) */}
+                                {!user && validateEmail(formData.email) && (
                                     <div className="bg-[#5A7A6A]/5 p-6 rounded-3xl border border-[#5A7A6A]/10 animate-in fade-in slide-in-from-top-4 my-6">
                                         {!otpSent ? (
                                             <div className="flex items-center justify-between gap-4">
                                                 <p className="text-[10px] text-[#5A7A6A] font-medium leading-relaxed">
                                                     <span className="font-bold block mb-1">Ritual Identity Required</span>
-                                                    Verify your WhatsApp number to secure this order.
+                                                    Verify your email to secure this order.
                                                 </p>
                                                 <button
                                                     onClick={handleSendOtp}
                                                     disabled={authLoading}
-                                                    className="bg-[#25D366] text-white px-5 py-3 rounded-full cursor-pointer text-[9px] uppercase font-bold tracking-widest hover:shadow-lg hover:bg-[#1ebc57] transition-all disabled:opacity-50 whitespace-nowrap flex items-center gap-2"
+                                                    className="bg-[#5A7A6A] text-white px-5 py-3 rounded-full cursor-pointer text-[9px] uppercase font-bold tracking-widest hover:shadow-lg transition-all disabled:opacity-50 whitespace-nowrap flex items-center gap-2"
                                                 >
-                                                    {authLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Verify Number"}
+                                                    {authLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Verify Email"}
                                                 </button>
                                             </div>
                                         ) : (
                                             <div className="space-y-4">
                                                 <div className="flex items-center justify-between">
                                                     <p className="text-[10px] text-[#5A7A6A] font-medium">
-                                                        WhatsApp code sent to <span className="font-bold text-[#2D3A3A]">{formData.whatsapp}</span>
+                                                        Code sent to <span className="font-bold text-[#2D3A3A]">{formData.email}</span>
                                                     </p>
                                                     <button
                                                         onClick={() => setOtpSent(false)}

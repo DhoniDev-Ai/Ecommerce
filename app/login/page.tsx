@@ -9,7 +9,7 @@ import { Sparkles, Mail, ArrowRight, Loader2, KeyRound, Smartphone, MessageCircl
 import { cn } from "@/utils/cn";
 
 export default function LoginPage() {
-    const [loginMethod, setLoginMethod] = useState<'phone' | 'email'>('phone');
+    const [loginMethod, setLoginMethod] = useState<'phone' | 'email'>('email');
     const [email, setEmail] = useState("");
     const [phone, setPhone] = useState("+91");
     const [otp, setOtp] = useState("");
@@ -159,8 +159,8 @@ export default function LoginPage() {
                         </p>
                     </div>
 
-                    {/* Method Toggle */}
-                    {!otpSent && (
+                    {/* Method Toggle (DISABLED FOR NOW) */}
+                    {/* {!otpSent && (
                         <div className="flex bg-white rounded-full p-1 border border-[#E8E6E2] mb-8 shadow-sm">
                             <button
                                 onClick={() => setLoginMethod('phone')}
@@ -185,7 +185,7 @@ export default function LoginPage() {
                                 <Mail className="w-3.5 h-3.5" /> Email
                             </button>
                         </div>
-                    )}
+                    )} */}
 
                     {!otpSent ? (
                         <form onSubmit={handleSendOtp} className="space-y-6">

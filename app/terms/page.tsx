@@ -1,105 +1,82 @@
-import React from 'react';
-import { Metadata } from 'next';
-import { Header } from '@/components/layout/Header';
-import { Footer } from '@/components/layout/Footer';
+import { Header } from "@/components/layout/Header";
+import { Footer } from "@/components/layout/Footer";
+import { Metadata } from "next";
 
 export const metadata: Metadata = {
-    title: 'Terms of Service | Ayuniv Sanctuary',
-    description: 'The sacred agreement between Ayuniv and its community members.',
+    title: "Terms of Sanctuary | Ayuniv",
+    description: "The guiding principles and agreements for your journey with Ayuniv.",
 };
 
-export default function TermsAndConditions() {
-    const lastUpdated = "January 27, 2026";
-
+export default function TermsPage() {
     return (
-        <div className="bg-[#fdfbf7] min-h-screen font-serif text-[#2d3a3a] selection:bg-[#e8e6e2]">
-            {/* Decorative Header */}
+        <div className="min-h-screen bg-[#FDFBF7] selection:bg-[#5A7A6A]/20">
             <Header />
-            <header className="max-w-4xl mx-auto pt-32 pb-12 px-6 text-center">
-                <span className="uppercase tracking-[0.2em] text-sm text-[#9aa09a] block mb-4">The Sacred Agreement</span>
-                <h1 className="text-5xl md:text-6xl lg:text-7xl font-light leading-tight">
-                    Terms of <span className="italic">Service</span>
-                </h1>
-                <p className="mt-8 text-[#5a6a6a] max-w-xl mx-auto italic">
-                    "By entering the sanctuary, you agree to walk this path with us."
-                </p>
-            </header>
 
-            <main className="max-w-3xl mx-auto px-6 pb-24">
-                <div className="border-t border-[#e8e6e2] pt-12 space-y-16">
+            <main className="pt-32 pb-24 px-6 md:px-12 max-w-[1440px] mx-auto">
+                <div className="max-w-4xl mx-auto mb-20 text-center">
+                    <p className="text-[10px] uppercase tracking-[0.4em] font-bold text-[#5A7A6A] mb-6">Agreement</p>
+                    <h1 className="font-heading text-4xl md:text-5xl lg:text-6xl text-[#2D3A3A] mb-8">
+                        Terms of <span className="font-serif italic text-[#5A7A6A]">Sanctuary.</span>
+                    </h1>
+                    <p className="text-[#7A8A8A] text-sm md:text-base leading-relaxed max-w-2xl mx-auto">
+                        By entering our digital space and partaking in our rituals, you agree to these guiding principles. They exist to ensure harmony between our offerings and your wellbeing.
+                    </p>
+                </div>
 
-                    {/* Section 1: The Digital Identity */}
-                    <section className="group">
-                        <div className="flex items-baseline gap-4 mb-4">
-                            <span className="text-[#9aa09a] font-sans text-xs uppercase tracking-widest">01</span>
-                            <h2 className="text-2xl font-medium uppercase tracking-wide">The Digital Identity</h2>
-                        </div>
-                        <div className="pl-10 space-y-4 text-[#5a6a6a] leading-relaxed">
-                            <p>
-                                To provide a bespoke wellness experience, Ayuniv preserves certain digital markers: your "Sanctuary Address", "Email", and "Phone Number".
-                            </p>
-                            <p>
-                                By creating an account, you consent to the archiving of these details to facilitate seamless future rituals and secure delivery of our alchemical products.
-                            </p>
-                        </div>
-                    </section>
+                <div className="max-w-3xl mx-auto space-y-16">
 
-                    {/* Section 2: Financial Exchanges */}
-                    <section className="group">
-                        <div className="flex items-baseline gap-4 mb-4">
-                            <span className="text-[#9aa09a] font-sans text-xs uppercase tracking-widest">02</span>
-                            <h2 className="text-2xl font-medium uppercase tracking-wide">Financial Integrity</h2>
-                        </div>
-                        <div className="pl-10 space-y-4 text-[#5a6a6a] leading-relaxed">
-                            <p>
-                                All transactions are processed via secure, third-party encrypted gateways. While we record the "success of a transaction", your sensitive card details are never housed within the Ayuniv Sanctuary’s primary archives.
-                            </p>
-                            <p>
-                                You agree to provide current, complete, and accurate purchase and account information for all rituals performed at our store.
-                            </p>
-                        </div>
-                    </section>
+                    <Section title="1. Nature of Artifacts">
+                        <p>
+                            Ayuniv products are born from nature and crafted with intent. Due to this organic origin, slight variations in color, texture, or scent may occur. These are not flaws but signatures of authenticity.
+                        </p>
+                    </Section>
 
-                    {/* Section 3: The Connection (Marketing) */}
-                    <section className="group">
-                        <div className="flex items-baseline gap-4 mb-4">
-                            <span className="text-[#9aa09a] font-sans text-xs uppercase tracking-widest">03</span>
-                            <h2 className="text-2xl font-medium uppercase tracking-wide">The Connection</h2>
-                        </div>
-                        <div className="pl-10 space-y-4 text-[#5a6a6a] leading-relaxed">
-                            <p>
-                                Communication is the thread that binds our community. By sharing your contact details, you agree to receive:
-                            </p>
-                            <ul className="list-disc pl-5 space-y-2 decoration-[#e8e6e2]">
-                                <li><strong>Ritual Updates:</strong> Information regarding order status and delivery.</li>
-                                <li><strong>The Archive:</strong> Periodic insights from the Ayuniv Blog.</li>
-                                <li><strong>Alchemical Releases:</strong> First access to new products and wellness guides.</li>
-                            </ul>
-                            <p className="text-sm italic">You may withdraw your consent to marketing communications at any time via the "Unsubscribe" link in our digital signals.</p>
-                        </div>
-                    </section>
+                    <Section title="2. Holistic Advice">
+                        <p>
+                            The wisdom shared on our platform is educational and rooted in holistic traditions. It is not a substitute for professional medical advice. If you have specific medical conditions, always consult your physician before beginning a new ritual.
+                        </p>
+                    </Section>
 
-                    {/* Section 4: Use of the Sanctuary */}
-                    <section className="group">
-                        <div className="flex items-baseline gap-4 mb-4">
-                            <span className="text-[#9aa09a] font-sans text-xs uppercase tracking-widest">04</span>
-                            <h2 className="text-2xl font-medium uppercase tracking-wide">Sacred Conduct</h2>
-                        </div>
-                        <div className="pl-10 space-y-4 text-[#5a6a6a] leading-relaxed">
-                            <p>
-                                The content, imagery, and "Ayuniv" trademark are the intellectual property of our Jaipur Studio. You agree not to replicate, sell, or exploit any portion of the Sanctuary without express written permission.
-                            </p>
-                        </div>
-                    </section>
+                    <Section title="3. Intellectual Property">
+                        <p>
+                            The imagery, words, and designs within Ayuniv are the soul of our brand. They are protected by copyright. You may admire them, but you may not copy, reproduce, or use them for commercial purposes without our blessing (written consent).
+                        </p>
+                    </Section>
 
-                    {/* Final Footer */}
-                    <footer className="pt-20 border-t border-[#e8e6e2] text-center text-[#9aa09a] text-sm italic">
-                        <p>Last updated: {lastUpdated}</p>
-                        <p>Ayuniv Jaipur Studio • Governing Law: Rajasthan, India</p>
-                    </footer>
+                    <Section title="4. Returns & Harmony">
+                        <p>
+                            We strive for your absolute contentment. If a product arrives damaged or does not resonate with you due to a defect, please consult our Return Policy (FAQ) within 7 days. Personal care items, once opened, generally cannot be returned for hygiene reasons.
+                        </p>
+                    </Section>
+
+                    <Section title="5. Governing Law">
+                        <p>
+                            These terms are governed by the laws of India. Any disputes arising shall be subject to the exclusive jurisdiction of the courts in Jaipur, Rajasthan—the heart of our operations.
+                        </p>
+                    </Section>
+
+                    <div className="pt-12 border-t border-[#E8E6E2]">
+                        <p className="text-xs text-[#9AA09A] leading-relaxed">
+                            Questions about these terms?<br />
+                            Reach out at <a href="mailto:care@ayuniv.in" className="text-[#5A7A6A] hover:underline">care@ayuniv.in</a>
+                        </p>
+                    </div>
+
                 </div>
             </main>
+
             <Footer />
         </div>
+    );
+}
+
+function Section({ title, children }: { title: string, children: React.ReactNode }) {
+    return (
+        <section className="space-y-4">
+            <h2 className="font-heading text-2xl text-[#2D3A3A]">{title}</h2>
+            <div className="text-[#5A7A6A] text-sm md:text-base leading-loose font-light text-justify">
+                {children}
+            </div>
+        </section>
     );
 }

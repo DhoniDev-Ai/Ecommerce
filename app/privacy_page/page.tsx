@@ -1,89 +1,89 @@
-import React from 'react';
-import { Metadata } from 'next';
-import { Footer } from '@/components/layout/Footer';
-import { Header } from '@/components/layout/Header';
+import { Header } from "@/components/layout/Header";
+import { Footer } from "@/components/layout/Footer";
+import { Metadata } from "next";
 
 export const metadata: Metadata = {
-    title: 'Privacy Ritual | Ayuniv Sanctuary',
-    description: 'Learn how we protect your digital energy and data within the Ayuniv Sanctuary.',
+    title: "Privacy Ritual | Ayuniv",
+    description: "Our sacred vow to protect your personal sanctuary and data.",
 };
 
-export default function PrivacyPolicy() {
-    const lastUpdated = "January 27, 2026";
-
+export default function PrivacyPage() {
     return (
-        <div className="bg-[#fdfbf7] min-h-screen font-serif text-[#2d3a3a] selection:bg-[#e8e6e2]">
+        <div className="min-h-screen bg-[#FDFBF7] selection:bg-[#5A7A6A]/20">
             <Header />
-            {/* Decorative Header Area */}
-            <header className="max-w-4xl mx-auto pt-32 md:pt-28 pb-12 px-6 text-center">
-                <span className="uppercase tracking-[0.2em] text-sm text-[#9aa09a] block mb-4">The Ethical Foundation</span>
-                <h1 className="text-5xl md:text-6xl lg:text-7xl font-light leading-tight">
-                    Privacy <span className="italic">Ritual</span>
-                </h1>
-                <p className="mt-8 text-[#5a6a6a] max-w-xl mx-auto italic">
-                    "Your trust is the most sacred ingredient in our alchemy."
-                </p>
-            </header>
 
-            <main className="max-w-3xl mx-auto px-6 pb-24">
-                <div className="border-t border-[#e8e6e2] pt-12 space-y-16">
+            <main className="pt-32 pb-24 px-6 md:px-12 max-w-[1440px] mx-auto">
+                {/* HERO SECTION */}
+                <div className="max-w-4xl mx-auto mb-20 text-center">
+                    <p className="text-[10px] uppercase tracking-[0.4em] font-bold text-[#5A7A6A] mb-6">Transparency</p>
+                    <h1 className="font-heading text-4xl md:text-5xl lg:text-6xl text-[#2D3A3A] mb-8">
+                        The Privacy <span className="font-serif italic text-[#5A7A6A]">Ritual.</span>
+                    </h1>
+                    <p className="text-[#7A8A8A] text-sm md:text-base leading-relaxed max-w-2xl mx-auto">
+                        Your trust is the foundation of our sanctuary. We hold your personal information with the same reverence as the ingredients in our blends—safeguarded, respected, and used only to enhance your well-being.
+                    </p>
+                </div>
 
-                    {/* Section 1: Data Gathering */}
-                    <section className="group">
-                        <div className="flex items-baseline gap-4 mb-4">
-                            <span className="text-[#9aa09a] font-sans text-xs uppercase tracking-widest">01</span>
-                            <h2 className="text-2xl font-medium uppercase tracking-wide">Data Gathering</h2>
-                        </div>
-                        <div className="pl-10 space-y-4 text-[#5a6a6a] leading-relaxed">
-                            <p>
-                                To facilitate your wellness journey, we collect essential digital signatures: your name, email address (via Supabase), and the physical sanctuary address where your rituals are delivered.
-                            </p>
-                            <p>
-                                This data is gathered solely to fulfill your orders and provide seamless access to your personal sanctuary account.
-                            </p>
-                        </div>
-                    </section>
+                {/* CONTENT */}
+                <div className="max-w-3xl mx-auto space-y-16">
 
-                    {/* Section 2: Secure Transmissions */}
-                    <section className="group">
-                        <div className="flex items-baseline gap-4 mb-4">
-                            <span className="text-[#9aa09a] font-sans text-xs uppercase tracking-widest">02</span>
-                            <h2 className="text-2xl font-medium uppercase tracking-wide">Secure Alchemy</h2>
-                        </div>
-                        <div className="pl-10 space-y-4 text-[#5a6a6a] leading-relaxed">
-                            <p>
-                                Financial exchanges are handled with the utmost integrity. We utilize encrypted payment gateways (Stripe/Razorpay) to ensure your sensitive data never touches our internal servers.
-                            </p>
-                            <p>
-                                Your transactional energy is protected by industry-standard SSL encryption and modern security protocols.
-                            </p>
-                        </div>
-                    </section>
+                    <Section title="1. The Collection">
+                        <p>
+                            To process your rituals (orders), we collect essential artifacts: your name, contact scrolls (email/phone), and physical sanctuary coordinates (address). We may also gather digital footprints (cookies) to ensure your path through our sanctuary is smooth and personalized.
+                        </p>
+                    </Section>
 
-                    {/* Section 3: Digital Footprints */}
-                    <section className="group">
-                        <div className="flex items-baseline gap-4 mb-4">
-                            <span className="text-[#9aa09a] font-sans text-xs uppercase tracking-widest">03</span>
-                            <h2 className="text-2xl font-medium uppercase tracking-wide">Your Digital Sovereignty</h2>
-                        </div>
-                        <div className="pl-10 space-y-4 text-[#5a6a6a] leading-relaxed">
-                            <p>
-                                You retain full control over your digital footprint. At any moment, you may request to view, modify, or permanently erase your data from our archives.
-                            </p>
-                            <p>
-                                Direct your requests to <span className="text-[#2d3a3a] border-b border-[#2d3a3a]/30">info@ayuniv.com</span>. We will honor your request within 72 hours.
-                            </p>
-                        </div>
-                    </section>
+                    <Section title="2. The Alchemy of Use">
+                        <p>
+                            Your data flows through our systems for three sacred purposes:
+                        </p>
+                        <ul className="list-disc pl-5 space-y-2 mt-4 marker:text-[#5A7A6A]">
+                            <li>Fulfilment: Ensuring your chosen remedies reach your doorstep.</li>
+                            <li>Communication: Sending you updates, wisdom, and ritual confirmations.</li>
+                            <li>Improvement: Refining our digital sanctuary based on how you interact with it.</li>
+                        </ul>
+                    </Section>
 
-                    {/* Footer of the page */}
-                    <footer className="pt-20 border-t border-[#e8e6e2] text-center text-[#9aa09a] text-sm italic">
-                        <p>Last updated: {lastUpdated}</p>
-                        <p className="mt-2">Ayuniv Jaipur Studio • Holistic Wellness Archive</p>
-                    </footer>
+                    <Section title="3. The Circle of Trust">
+                        <p>
+                            We do not sell your essence. We share it only with Trusted Guardians—logistics partners who deliver your order and payment processors who secure your transaction. These entities are bound by vows (contracts) to strict confidentiality.
+                        </p>
+                    </Section>
+
+                    <Section title="4. Sacred Security">
+                        <p>
+                            We employ modern enchantments (SSL encryption and secure servers) to protect your information. While no digital realm is impenetrable, we vigilantly guard the gates to your data.
+                        </p>
+                    </Section>
+
+                    <Section title="5. Your Sovereignty">
+                        <p>
+                            You hold dominion over your data. You may request to see what we hold, correct it, or ask for its erasure from our records, subject to legal requirements. Contact our guardians at <a href="mailto:info@ayuniv.com" className="text-[#5A7A6A] underline decoration-dotted underline-offset-4">info@ayuniv.com</a>.
+                        </p>
+                    </Section>
+
+                    <div className="pt-12 border-t border-[#E8E6E2]">
+                        <p className="text-xs text-[#9AA09A]">
+                            Last Updated: January 2026<br />
+                            Ayuniv Wellness Pvt. Ltd.
+                        </p>
+                    </div>
+
                 </div>
             </main>
+
             <Footer />
         </div>
+    );
+}
+
+function Section({ title, children }: { title: string, children: React.ReactNode }) {
+    return (
+        <section className="space-y-4">
+            <h2 className="font-heading text-2xl text-[#2D3A3A]">{title}</h2>
+            <div className="text-[#5A7A6A] text-sm md:text-base leading-loose font-light">
+                {children}
+            </div>
+        </section>
     );
 }

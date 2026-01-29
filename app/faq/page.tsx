@@ -1,112 +1,74 @@
-import React from 'react';
-import { Metadata } from 'next';
-import { Header } from '@/components/layout/Header';
+import { Header } from "@/components/layout/Header";
+import {Footer} from "@/components/layout/Footer";
+import { Metadata } from "next";
+import { Plus, Minus } from "lucide-react";
 
 export const metadata: Metadata = {
-    title: 'Common Rituals (FAQ) | Ayuniv Sanctuary',
-    description: 'Find answers to common questions about our wellness juices, shipping, and the Ayuniv philosophy.',
+    title: "Frequently Asked Questions | Ayuniv",
+    description: "Answers to your queries about our rituals, shipping, and products.",
 };
 
-export default function FAQ() {
-    const categories = [
-        {
-            title: "The Alchemy",
-            questions: [
-                {
-                    q: "What makes Ayuniv juices unique?",
-                    a: "Our juices are not mere beverages; they are cold-pressed alchemies crafted in our Jaipur studio. We use locally sourced, organic ingredients designed to bio-hack your immunity and energy levels without artificial preservatives."
-                },
-                {
-                    q: "What is the shelf life of the rituals?",
-                    a: "Because we prioritize freshness over chemistry, our cold-pressed elixirs typically have a sanctuary life of 3-5 days when kept refrigerated. Always check the 'Ritual Date' on the bottle."
-                }
-            ]
-        },
-        {
-            title: "The Journey (Shipping)",
-            questions: [
-                {
-                    q: "How long until the sanctuary reaches me?",
-                    a: "Orders are prepared with intention within 1-2 business days. Transit typically takes 5-7 business days across India. Orders placed after the 'Sacred Hour' (8:00 PM IST) begin their journey the following morning."
-                },
-                {
-                    q: "Is there a complimentary shipping ritual?",
-                    a: "Yes. For orders that reach a total investment of ₹899 or more, the shipping ritual is complimentary. For orders below this threshold, a standard shipping fee is applied at checkout."
-                }
-            ]
-        },
-        {
-            title: "Cancellations & Care",
-            questions: [
-                {
-                    q: "Can I pause or cancel a ritual?",
-                    a: "You may cancel your order before 8:00 PM IST on the day of purchase. Once our alchemists begin the preparation, we are unable to halt the process."
-                },
-                {
-                    q: "What if my elixir arrives compromised?",
-                    a: "While we package with care, should a bottle arrive damaged, please document it and email info@ayuniv.com within 24 hours. We will initiate a replacement ritual immediately."
-                }
-            ]
-        }
-    ];
+const FAQS = [
+    {
+        question: "How do I choose the right ritual for me?",
+        answer: "Listen to your body and intuition. If you seek calm, look for ingredients like Lavender or Chamomile. If you seek vitality, look for Citrus or Ginseng. Each product page details its unique benefits. You are also welcome to write to us for personal guidance."
+    },
+    {
+        question: "Are your ingredients truly natural?",
+        answer: "Yes. We source our botanicals from ethical growers who respect the earth. We compromise on nothing. No harsh parabens, no sulfates, no artificial synthetic fragrances—only the pure essence of nature."
+    },
+    {
+        question: "How long does shipping take?",
+        answer: "Once you summon a ritual (place an order), we prepare it with care within 24 hours. Delivery typically takes 3-7 days depending on your coordinates within India."
+    },
+    {
+        question: "Do you offer Cash on Delivery?",
+        answer: "Yes, we honor Cash on Delivery for most locations to make your experience seamless."
+    },
+    {
+        question: "What is your return policy?",
+        answer: "If a product reaches you in a damaged state, we will replace it immediately. For hygiene reasons, opened personal care products cannot be returned. Please notify us within 48 hours of delivery if there is an issue."
+    }
+];
 
+export default function FAQPage() {
     return (
-        <div className="bg-[#fdfbf7] min-h-screen font-serif text-[#2d3a3a] selection:bg-[#e8e6e2]">
-            {/* Decorative Header */}
+        <div className="min-h-screen bg-[#FDFBF7]">
             <Header />
-            <header className="max-w-4xl mx-auto pt-32 pb-12 px-6 text-center">
-                <span className="uppercase tracking-[0.2em] text-sm text-[#9aa09a] block mb-4">The Archive of Knowledge</span>
-                <h1 className="text-5xl md:text-6xl font-light leading-tight italic">Common Rituals</h1>
-                <p className="mt-8 text-[#5a6a6a] max-w-xl mx-auto italic">
-                    "Finding clarity is the first step toward wellness."
-                </p>
-            </header>
 
-            <main className="max-w-3xl mx-auto px-6 pb-24">
-                <div className=" border-[#e8e6e2] pt-12 space-y-20">
-
-                    {categories.map((category, index) => (
-                        <section key={index} className="space-y-10">
-                            <div className="flex items-center gap-4">
-                                <h2 className="text-xs uppercase tracking-[0.3em] text-[#9aa09a] whitespace-nowrap">
-                                    {category.title}
-                                </h2>
-                                <div className="h-px w-full bg-[#e8e6e2]"></div>
-                            </div>
-
-                            <div className="space-y-12">
-                                {category.questions.map((item, qIndex) => (
-                                    <div key={qIndex} className="group">
-                                        <h3 className="text-xl md:text-2xl mb-4 font-medium leading-snug">
-                                            {item.q}
-                                        </h3>
-                                        <p className="text-[#5a6a6a] leading-relaxed pl-6 border-l border-[#e8e6e2] group-hover:border-[#2d3a3a] transition-colors">
-                                            {item.a}
-                                        </p>
-                                    </div>
-                                ))}
-                            </div>
-                        </section>
-                    ))}
-
-                    {/* Contact Ritual Prompt */}
-                    <div className="bg-[#f8f6f2] p-10 text-center rounded-sm border border-[#e8e6e2]">
-                        <h3 className="text-xl mb-4 italic">Still seeking clarity?</h3>
-                        <p className="text-[#5a6a6a] mb-6">If your question remains unanswered, reach out to our Jaipur studio.</p>
-                        <a
-                            href="mailto:info@ayuniv.com"
-                            className="inline-block border-b border-[#2d3a3a] pb-1 text-sm uppercase tracking-widest hover:text-[#9aa09a] transition-colors"
-                        >
-                            Contact info@ayuniv.com
-                        </a>
-                    </div>
-
-                    {/* Final Footer */}
-                    <footer className="pt-20 border-t border-[#e8e6e2] text-center text-[#9aa09a] text-sm italic">
-                        <p>Ayuniv Jaipur Studio • Rajasthan, India</p>
-                    </footer>
+            <main className="pt-32 pb-24 px-6 md:px-12 max-w-[1440px] mx-auto">
+                <div className="max-w-4xl mx-auto mb-20 text-center">
+                    <p className="text-[10px] uppercase tracking-[0.4em] font-bold text-[#5A7A6A] mb-6">Guidance</p>
+                    <h1 className="font-heading text-4xl md:text-5xl lg:text-6xl text-[#2D3A3A] mb-8">
+                        Common <span className="font-serif italic text-[#5A7A6A]">Queries.</span>
+                    </h1>
                 </div>
-            </main >
-        </div >
+
+                <div className="max-w-2xl mx-auto space-y-4">
+                    {FAQS.map((faq, idx) => (
+                        <div key={idx} className="group bg-white rounded-3xl border border-[#E8E6E2] overflow-hidden transition-all hover:border-[#5A7A6A]/50 hover:shadow-lg">
+                            <details className="w-full [&_summary::-webkit-details-marker]:hidden">
+                                <summary className="flex items-center justify-between p-6 md:p-8 cursor-pointer list-none outline-none">
+                                    <h3 className="font-heading text-lg md:text-xl text-[#2D3A3A] group-open:text-[#5A7A6A] transition-colors">
+                                        {faq.question}
+                                    </h3>
+                                    <div className="w-8 h-8 rounded-full border border-[#E8E6E2] flex items-center justify-center text-[#2D3A3A] group-open:bg-[#5A7A6A] group-open:text-white group-open:border-[#5A7A6A] transition-all">
+                                        <Plus className="w-4 h-4 group-open:hidden" />
+                                        <Minus className="w-4 h-4 hidden group-open:block" />
+                                    </div>
+                                </summary>
+                                <div className="px-6 md:px-8 pb-8 pt-0">
+                                    <p className="text-[#7A8A8A] leading-relaxed border-t border-[#F3F1ED] pt-4">
+                                        {faq.answer}
+                                    </p>
+                                </div>
+                            </details>
+                        </div>
+                    ))}
+                </div>
+            </main>
+
+            <Footer />
+        </div>
     );
 }
