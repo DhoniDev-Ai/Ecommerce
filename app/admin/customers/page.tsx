@@ -64,7 +64,7 @@ export default async function CustomersPage() {
                                     <td className="py-6 px-8">
                                         <div className="flex items-center gap-4">
                                             <div className="w-10 h-10 rounded-full bg-[#2D3A3A] text-white flex items-center justify-center font-heading text-sm">
-                                                {customer.full_name?.[0] || customer.email[0].toUpperCase()}
+                                                {customer.full_name?.[0] || customer.email?.[0]?.toUpperCase() || customer.phone?.slice(-1) || "?"}
                                             </div>
                                             <div>
                                                 <p className="font-heading text-lg text-[#2D3A3A]">{customer.full_name || 'Guest'}</p>
