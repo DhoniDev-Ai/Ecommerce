@@ -10,7 +10,7 @@ import { supabase } from "@/lib/supabase/client";
 
 const navItems = [
     { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
-    { name: "My Profile", href: "/dashboard/profile", icon: User },
+    // { name: "My Profile", href: "/dashboard/profile", icon: User },
     { name: "Addresses", href: "/dashboard/addresses", icon: MapPin },
     { name: "Orders", href: "/dashboard/orders", icon: Package },
 ];

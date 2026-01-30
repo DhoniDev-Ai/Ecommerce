@@ -38,7 +38,7 @@ export const metadata: Metadata = {
     siteName: "Ayuniv",
     images: [
       {
-        url: "/og-image.jpg", // Ensure this exists or use a product image
+        url: "/assets/logo_1by1.png", // Ensure this exists or use a product image
         width: 1200,
         height: 630,
         alt: "Ayuniv Wellness",

@@ -95,22 +95,38 @@ export default function CheckoutPage() {
         }
     }, [selectedAddressId]); // Minimal dependency
 
-    // --- OTP HANDLERS (EMAIL) ---
+    // --- OTP HANDLERS (WHATSAPP) ---
     const handleSendOtp = async () => {
-        if (!validateEmail(formData.email)) {
-            setToast({ message: "Please enter a valid email.", type: 'error' });
+        // Force +91 prefix
+        const digits = formData.whatsapp.replace(/\D/g, '');
+        let phone = '';
+
+        if (digits.length === 12 && digits.startsWith('91')) {
+            phone = '+' + digits;
+        } else if (digits.length === 10) {
+            phone = '+91' + digits;
+        } else {
+            setToast({ message: "Please enter a valid 10-digit number.", type: 'error' });
             return;
         }
 
         setAuthLoading(true);
         try {
+            // NOTE: This requires 'whatsapp' channel enabled in Supabase -> Authentication -> Providers -> Phone
+            // And a Twilio/Msg91 connection.
             const { error } = await supabase.auth.signInWithOtp({
-                email: formData.email,
-                options: { shouldCreateUser: true }
+                phone: phone,
+                options: { channel: 'whatsapp', shouldCreateUser: true }
             });
-            if (error) throw error;
+
+            if (error) {
+                // Fallback suggestion for user if they haven't set up WhatsApp yet
+                if (error.message.includes("Signups not allowed")) throw new Error("Please enable Phone Auth in Supabase.");
+                throw error;
+            }
+
             setOtpSent(true);
-            setToast({ message: "OTP sent to your email.", type: 'success' });
+            setToast({ message: "WhatsApp code sent.", type: 'success' });
         } catch (err: any) {
             console.error("OTP Error:", err);
             setToast({ message: err.message || "Failed to send code.", type: 'error' });
@@ -121,15 +137,21 @@ export default function CheckoutPage() {
 
     const handleVerifyOtp = async () => {
         if (!otp || otp.length < 6) {
-            setToast({ message: "Please enter a valid code.", type: 'error' });
+            setToast({ message: "Please enter a valid 6-digit code.", type: 'error' });
             return;
         }
         setAuthLoading(true);
         try {
+            const digits = formData.whatsapp.replace(/\D/g, '');
+            let phone = '';
+            if (digits.length === 12 && digits.startsWith('91')) phone = '+' + digits;
+            else if (digits.length === 10) phone = '+91' + digits;
+            else throw new Error("Invalid phone number format");
+
             const { data: { session, user }, error } = await supabase.auth.verifyOtp({
-                email: formData.email,
+                phone: phone,
                 token: otp,
-                type: 'email'
+                type: 'sms' // Verify uses 'sms' type even for WhatsApp typically
             });
 
             if (error) throw error;
@@ -191,7 +213,7 @@ export default function CheckoutPage() {
         if (!touched[name]) return null;
         switch (name) {
             case 'whatsapp': return validateWhatsApp(value) ? 'valid' : 'invalid';
-            case 'email': return validateEmail(value) ? 'valid' : 'invalid';
+            // case 'email': return validateEmail(value) ? 'valid' : 'invalid';
             case 'pincode': return validatePincode(value) ? 'valid' : 'invalid';
             case 'fullName': return value.length >= 3 ? 'valid' : 'invalid';
             case 'addressLine': return value.length >= 5 ? 'valid' : 'invalid';
@@ -205,7 +227,8 @@ export default function CheckoutPage() {
         const newErrors: Record<string, string> = {};
         if (formData.fullName.length < 3) newErrors.fullName = "Required";
         if (!validateWhatsApp(formData.whatsapp)) newErrors.whatsapp = "Invalid Number";
-        if (!validateEmail(formData.email)) newErrors.email = "Invalid Email";
+        // Email is now optional/auto-detected
+        // if (!validateEmail(formData.email)) newErrors.email = "Invalid Email";
         if (formData.addressLine.length < 5) newErrors.addressLine = "Incomplete Address";
         if (!validatePincode(formData.pincode)) newErrors.pincode = "Invalid Pincode";
         if (!formData.city) newErrors.city = "Required";
@@ -581,36 +604,36 @@ export default function CheckoutPage() {
                                 </div>
 
                                 <CheckoutInput
-                                    label="Email Address" name="email" value={formData.email}
+                                    label="Email Address (Optional)" name="email" value={formData.email}
                                     status={getFieldStatus('email', formData.email)}
                                     onChange={handleInputChange} placeholder="hello@ayuniv.in"
                                     icon={<Mail className="w-3 h-3" />}
-                                    disabled={!!user || otpSent}
+                                    disabled={otpSent}
                                 />
 
 
-                                {/* AUTHENTICATION UI - OTP FLOW (EMAIL) */}
-                                {!user && validateEmail(formData.email) && (
+                                {/* AUTHENTICATION UI - OTP FLOW (WHATSAPP NOW) */}
+                                {!user && validateWhatsApp(formData.whatsapp) && (
                                     <div className="bg-[#5A7A6A]/5 p-6 rounded-3xl border border-[#5A7A6A]/10 animate-in fade-in slide-in-from-top-4 my-6">
                                         {!otpSent ? (
                                             <div className="flex items-center justify-between gap-4">
                                                 <p className="text-[10px] text-[#5A7A6A] font-medium leading-relaxed">
                                                     <span className="font-bold block mb-1">Ritual Identity Required</span>
-                                                    Verify your email to secure this order.
+                                                    Verify your WhatsApp number to secure this order.
                                                 </p>
                                                 <button
                                                     onClick={handleSendOtp}
                                                     disabled={authLoading}
-                                                    className="bg-[#5A7A6A] text-white px-5 py-3 rounded-full cursor-pointer text-[9px] uppercase font-bold tracking-widest hover:shadow-lg transition-all disabled:opacity-50 whitespace-nowrap flex items-center gap-2"
+                                                    className="bg-[#25D366] text-white px-5 py-3 rounded-full cursor-pointer text-[9px] uppercase font-bold tracking-widest hover:shadow-lg hover:bg-[#1ebc57] transition-all disabled:opacity-50 whitespace-nowrap flex items-center gap-2"
                                                 >
-                                                    {authLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Verify Email"}
+                                                    {authLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Verify Number"}
                                                 </button>
                                             </div>
                                         ) : (
                                             <div className="space-y-4">
                                                 <div className="flex items-center justify-between">
                                                     <p className="text-[10px] text-[#5A7A6A] font-medium">
-                                                        Code sent to <span className="font-bold text-[#2D3A3A]">{formData.email}</span>
+                                                        WhatsApp code sent to <span className="font-bold text-[#2D3A3A]">{formData.whatsapp}</span>
                                                     </p>
                                                     <button
                                                         onClick={() => setOtpSent(false)}

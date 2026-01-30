@@ -132,7 +132,7 @@ export interface Database {
       users: {
         Row: {
           id: string
-          email: string
+          email: string | null
           full_name: string | null
           phone: string | null
           alt_phone: string | null
@@ -142,17 +142,17 @@ export interface Database {
         }
         Insert: {
           id: string
-          email: string
-          full_name?: string | null
-          phone?: string | null
-          alt_phone?: string | null
+          email: string | null
+          full_name: string | null
+          phone: string | null
+          alt_phone: string | null
           role?: 'user' | 'admin'
           created_at?: string
           updated_at?: string
         }
         Update: {
           id?: string
-          email?: string
+          email?: string | null
           full_name?: string | null
           phone?: string | null
           alt_phone?: string | null

@@ -218,7 +218,7 @@ export function Header() {
                                                 {userRole === 'admin' ? 'Administrator' : 'Ritual Member'}
                                             </p>
                                             <p className="text-xs text-[#2D3A3A] mt-1 truncate font-light">
-                                                {user.email}
+                                                {user.email || user.phone || "Welcome"}
                                             </p>
                                         </div>
                                         <div className="py-2">

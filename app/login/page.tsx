@@ -9,9 +9,7 @@ import { Sparkles, Mail, ArrowRight, Loader2, KeyRound, Smartphone, MessageCircl
 import { cn } from "@/utils/cn";
 
 export default function LoginPage() {
-    const [loginMethod, setLoginMethod] = useState<'phone' | 'email'>('email');
-    const [email, setEmail] = useState("");
-    const [phone, setPhone] = useState("+91");
+    const [phone, setPhone] = useState("");
     const [otp, setOtp] = useState("");
 
     // Auth State
@@ -21,15 +19,15 @@ export default function LoginPage() {
 
     const router = useRouter();
 
-    // Redirect if already logged in
+    // Optimize: Single robust listener for auth state changes
     useEffect(() => {
-        const checkUser = async () => {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session) {
-                router.push("/");
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+            if (event === 'SIGNED_IN' || session) {
+                router.replace("/"); // Use replace to prevent back-button loops
             }
-        };
-        checkUser();
+        });
+
+        return () => subscription.unsubscribe();
     }, [router]);
 
     const handleSendOtp = async (e: React.FormEvent) => {
@@ -38,38 +36,18 @@ export default function LoginPage() {
         setMessage(null);
 
         try {
-            let error;
+            const digits = phone.replace(/\D/g, '');
+            if (digits.length !== 10) throw new Error("Please enter a valid 10-digit phone number.");
 
-            if (loginMethod === 'phone') {
-                // Remove spaces and ensure format
-                const cleanPhone = phone.replace(/\s+/g, '');
-                if (cleanPhone.length < 10) {
-                    throw new Error("Please enter a valid phone number.");
-                }
-
-                const res = await supabase.auth.signInWithOtp({
-                    phone: cleanPhone,
-                    options: { channel: 'whatsapp' }
-                });
-                error = res.error;
-            } else {
-                const res = await supabase.auth.signInWithOtp({
-                    email,
-                    options: { shouldCreateUser: true }
-                });
-                error = res.error;
-            }
+            const { error } = await supabase.auth.signInWithOtp({
+                phone: '+91' + digits,
+                options: { channel: 'whatsapp' }
+            });
 
             if (error) throw error;
 
             setOtpSent(true);
-            setMessage({
-                type: 'success',
-                text: loginMethod === 'phone'
-                    ? `WhatsApp code sent to ${phone}`
-                    : `Code sent to ${email}`
-            });
-
+            setMessage({ type: 'success', text: `WhatsApp code sent to +91 ${digits}` });
         } catch (err: any) {
             setMessage({ type: 'error', text: err.message || "Failed to send code." });
         } finally {
@@ -79,7 +57,7 @@ export default function LoginPage() {
 
     const handleVerifyOtp = async (e: React.FormEvent) => {
         e.preventDefault();
-        setLoading(true);
+        setLoading(true); // Keep loading true on success to prevent UI flicker
         setMessage(null);
 
         if (otp.length < 6) {
@@ -89,47 +67,29 @@ export default function LoginPage() {
         }
 
         try {
-            let sessionData;
-            let error;
-
-            if (loginMethod === 'phone') {
-                const cleanPhone = phone.replace(/\s+/g, '');
-                const res = await supabase.auth.verifyOtp({
-                    phone: cleanPhone,
-                    token: otp,
-                    type: 'sms'
-                });
-                sessionData = res.data.session;
-                error = res.error;
-            } else {
-                const res = await supabase.auth.verifyOtp({
-                    email,
-                    token: otp,
-                    type: 'email'
-                });
-                sessionData = res.data.session;
-                error = res.error;
-            }
+            const digits = phone.replace(/\D/g, '');
+            const { error } = await supabase.auth.verifyOtp({
+                phone: '+91' + digits,
+                token: otp,
+                type: 'sms'
+            });
 
             if (error) throw error;
 
-            if (sessionData) {
-                // Auto-update name if missing (Optional polish)
-                await supabase.auth.refreshSession();
-                setMessage({ type: 'success', text: "Identity verified. Entering sanctuary..." });
-                router.refresh(); // Refresh to update Header state
-                router.push("/");
-            }
+            // Success: Show message but KEEP loading state true while redirecting
+            setMessage({ type: 'success', text: "Verified! Entering Sanctuary..." });
+
+            // The useEffect listener will handle the redirect automatically and faster
+            // We just wait here to avoid resetting loading state
 
         } catch (err: any) {
-            const errorMessage = err.message || "Invalid OTP";
-            if (errorMessage.includes("expired") || errorMessage.includes("invalid")) {
+            setLoading(false); // Only stop loading on error
+            const msg = err.message || "Invalid OTP";
+            if (msg.includes("expired") || msg.includes("invalid")) {
                 setMessage({ type: 'error', text: "Code expired or invalid. Try again." });
             } else {
-                setMessage({ type: 'error', text: errorMessage });
+                setMessage({ type: 'error', text: msg });
             }
-        } finally {
-            setLoading(false);
         }
     };
 
@@ -159,62 +119,29 @@ export default function LoginPage() {
                         </p>
                     </div>
 
-                    {/* Method Toggle (DISABLED FOR NOW) */}
-                    {/* {!otpSent && (
-                        <div className="flex bg-white rounded-full p-1 border border-[#E8E6E2] mb-8 shadow-sm">
-                            <button
-                                onClick={() => setLoginMethod('phone')}
-                                className={cn(
-                                    "flex-1 py-2.5 rounded-full text-xs font-bold uppercase tracking-widest transition-all flex items-center justify-center gap-2",
-                                    loginMethod === 'phone'
-                                        ? "bg-[#2D3A3A] text-white shadow-md"
-                                        : "text-[#9AA09A] hover:text-[#5A7A6A]"
-                                )}
-                            >
-                                <MessageCircle className="w-3.5 h-3.5" /> WhatsApp
-                            </button>
-                            <button
-                                onClick={() => setLoginMethod('email')}
-                                className={cn(
-                                    "flex-1 py-2.5 rounded-full text-xs font-bold uppercase tracking-widest transition-all flex items-center justify-center gap-2",
-                                    loginMethod === 'email'
-                                        ? "bg-[#2D3A3A] text-white shadow-md"
-                                        : "text-[#9AA09A] hover:text-[#5A7A6A]"
-                                )}
-                            >
-                                <Mail className="w-3.5 h-3.5" /> Email
-                            </button>
-                        </div>
-                    )} */}
-
                     {!otpSent ? (
                         <form onSubmit={handleSendOtp} className="space-y-6">
                             <div className="relative group">
-                                {loginMethod === 'phone' ? (
-                                    <>
-                                        <Smartphone className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#7A8B7A] transition-colors group-focus-within:text-[#5A7A6A]" />
+                                <>
+                                    <Smartphone className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#7A8B7A] transition-colors group-focus-within:text-[#5A7A6A]" />
+                                    <div className="flex items-center w-full bg-white border border-[#E8E6E2] rounded-4xl focus-within:ring-2 focus-within:ring-[#5A7A6A]/20 focus-within:border-[#5A7A6A] transition-all overflow-hidden">
+                                        <div className="pl-14 pr-2 py-5 bg-gray-50 border-r border-[#E8E6E2] text-sm font-mono text-[#5A7A6A] select-none">
+                                            +91
+                                        </div>
                                         <input
                                             type="tel"
-                                            placeholder="+91 99999 99999"
+                                            placeholder="99999 99999"
                                             required
+                                            maxLength={10}
                                             value={phone}
-                                            onChange={(e) => setPhone(e.target.value)}
-                                            className="w-full pl-14 pr-6 py-5 bg-white border border-[#E8E6E2] rounded-4xl focus:outline-none focus:ring-2 focus:ring-[#5A7A6A]/20 focus:border-[#5A7A6A] transition-all text-sm placeholder:text-[#9AA09A] font-mono"
+                                            onChange={(e) => {
+                                                const val = e.target.value.replace(/\D/g, '');
+                                                if (val.length <= 10) setPhone(val);
+                                            }}
+                                            className="w-full px-4 py-5 bg-transparent focus:outline-none text-sm placeholder:text-[#9AA09A] font-mono tracking-widest"
                                         />
-                                    </>
-                                ) : (
-                                    <>
-                                        <Mail className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#7A8B7A] transition-colors group-focus-within:text-[#5A7A6A]" />
-                                        <input
-                                            type="email"
-                                            placeholder="name@email.com"
-                                            required
-                                            value={email}
-                                            onChange={(e) => setEmail(e.target.value)}
-                                            className="w-full pl-14 pr-6 py-5 bg-white border border-[#E8E6E2] rounded-4xl focus:outline-none focus:ring-2 focus:ring-[#5A7A6A]/20 focus:border-[#5A7A6A] transition-all text-sm placeholder:text-[#9AA09A]"
-                                        />
-                                    </>
-                                )}
+                                    </div>
+                                </>
                             </div>
 
                             <button
@@ -268,7 +195,7 @@ export default function LoginPage() {
                                 }}
                                 className="w-full text-[9px] text-[#9AA09A] hover:text-[#5A7A6A] uppercase tracking-widest transition-colors"
                             >
-                                {loginMethod === 'phone' ? "Change Number" : "Change Email"}
+                                Change Number
                             </button>
                         </form>
                     )}

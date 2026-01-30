@@ -235,7 +235,7 @@ export function ProductDetailClient({ product, relatedProducts }: ProductDetailC
                                                 return (
                                                     <Link
                                                         key={variant.size}
-                                                        target="_blank"
+
                                                         href={`/products/${variant.slug}`}
                                                         className={cn(
                                                             "px-6 py-2 rounded-full text-xs font-bold transition-all border uppercase tracking-wider",
