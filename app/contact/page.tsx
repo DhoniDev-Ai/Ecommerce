@@ -30,13 +30,13 @@ export default function ContactPage() {
                             <h2 className="font-heading text-2xl text-[#2D3A3A] mb-8">Direct Channels</h2>
 
                             <div className="space-y-8">
-                                <a href="mailto:care@ayuniv.in" className="flex items-start gap-4 group">
+                                <a href="mailto:info@ayuniv.com" className="flex items-start gap-4 group">
                                     <div className="w-12 h-12 rounded-full bg-[#F3F1ED] flex items-center justify-center shrink-0 group-hover:bg-[#5A7A6A] group-hover:text-white transition-colors">
                                         <Mail className="w-5 h-5" />
                                     </div>
                                     <div>
                                         <p className="text-xs uppercase tracking-widest font-bold text-[#9AA09A] mb-1">Electronic Mail</p>
-                                        <p className="text-lg text-[#2D3A3A] group-hover:text-[#5A7A6A] transition-colors">care@ayuniv.in</p>
+                                        <p className="text-lg text-[#2D3A3A] group-hover:text-[#5A7A6A] transition-colors">info@ayuniv.com</p>
                                     </div>
                                 </a>
 
@@ -69,7 +69,7 @@ export default function ContactPage() {
                         <h2 className="font-heading text-2xl text-[#2D3A3A] mb-2">Send a Message</h2>
                         <p className="text-[#7A8A8A] mb-8 text-sm">We typically respond within 24 hours.</p>
 
-                        <form className="space-y-6" action="mailto:care@ayuniv.in" method="GET">
+                        <form className="space-y-6" action="mailto:info@ayuniv.com" method="GET">
                             {/* Note: This is a mailto form for simplicity given current static requirements */}
 
                             <div className="space-y-2">

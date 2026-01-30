@@ -58,7 +58,7 @@ export default function TermsPage() {
                     <div className="pt-12 border-t border-[#E8E6E2]">
                         <p className="text-xs text-[#9AA09A] leading-relaxed">
                             Questions about these terms?<br />
-                            Reach out at <a href="mailto:care@ayuniv.in" className="text-[#5A7A6A] hover:underline">care@ayuniv.in</a>
+                            Reach out at <a href="mailto:info@ayuniv.com" className="text-[#5A7A6A] hover:underline">info@ayuniv.com</a>
                         </p>
                     </div>
 

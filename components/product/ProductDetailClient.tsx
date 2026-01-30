@@ -73,7 +73,7 @@ export function ProductDetailClient({ product, relatedProducts }: ProductDetailC
 
             <Header />
 
-            <main className="grow pt-32 pb-24 relative z-10">
+            <main className="grow pt-32 relative z-10">
                 <div className="mx-auto max-w-7xl px-8 lg:px-12">
 
                     <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="mb-12">
@@ -427,7 +427,7 @@ function FAQItem({ question, answer }: { question: string, answer: string }) {
         <div className="border-b border-[#E8E6E2]">
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="w-full py-6 flex justify-between items-center text-left hover:text-[#5A7A6A] transition-colors"
+                className="w-full py-6 cursor-pointer flex justify-between items-center text-left hover:text-[#5A7A6A] transition-colors"
             >
                 <span className="font-heading text-lg text-[#2D3A3A]">{question}</span>
                 <ChevronDown className={cn("w-5 h-5 text-[#7A8A8A] transition-transform duration-300", isOpen && "rotate-180")} />
