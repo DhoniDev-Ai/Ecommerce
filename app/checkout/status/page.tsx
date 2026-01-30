@@ -4,12 +4,14 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { CheckCircle2, XCircle, Loader2, ShoppingBag, ArrowRight } from "lucide-react";
 import { useCartContext } from "@/context/CartContext";
 import Link from "next/link";
+import Script from "next/script";
 
 function StatusContent() {
     const searchParams = useSearchParams();
     const orderId = searchParams.get("order_id");
     const { clearCart } = useCartContext();
     const [status, setStatus] = useState<"loading" | "success" | "failed">("loading");
+    const [orderData, setOrderData] = useState<any>(null);
 
     useEffect(() => {
         if (!orderId) return;
@@ -25,6 +27,7 @@ function StatusContent() {
 
                 if (data.status === "SUCCESS") {
                     setStatus("success");
+                    setOrderData(data); // Capture Google Reviews Data
                     clearCart();
                 } else if (data.status === "PENDING" && attempts < maxAttempts) {
                     attempts++;
@@ -47,6 +50,21 @@ function StatusContent() {
         return () => clearTimeout(timeoutId);
     }, [orderId, clearCart]);
 
+    // Google Opt-in Render Effect
+    useEffect(() => {
+        if (status === "success" && orderData && (window as any).gapi) {
+            (window as any).gapi.load('surveyoptin', function () {
+                (window as any).gapi.surveyoptin.render({
+                    "merchant_id": 5718502243,
+                    "order_id": orderId,
+                    "email": orderData.email,
+                    "delivery_country": orderData.delivery_country,
+                    "estimated_delivery_date": orderData.estimated_delivery_date,
+                });
+            });
+        }
+    }, [status, orderData, orderId]);
+
     if (status === "loading") {
         return (
             <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-6">
@@ -58,6 +76,11 @@ function StatusContent() {
 
     return (
         <div className="max-w-2xl mx-auto py-32 px-6 text-center">
+            <Script
+                src="https://apis.google.com/js/platform.js?onload=renderOptIn"
+                async defer
+            />
+
             {status === "success" ? (
                 <div className="space-y-10 animate-in fade-in zoom-in duration-700">
                     <div className="flex justify-center">
@@ -81,6 +104,7 @@ function StatusContent() {
                             Continue Journey <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
                         </Link>
                     </div>
+                    {/* Google Opt-in Container (Implicitly handled by popup) */}
                 </div>
             ) : (
                 <div className="space-y-10">

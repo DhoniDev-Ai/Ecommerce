@@ -19,47 +19,81 @@ const juana = Cormorant_Garamond({
   display: "swap",
 });
 
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "Ayuniv",
+  "url": "https://ayuniv.com",
+  "logo": "https://ayuniv.com/assets/logo_1by1.png",
+  "sameAs": [
+    "https://instagram.com/ayuniv.wellness",
+    "https://twitter.com/ayuniv"
+  ],
+  "contactPoint": {
+    "@type": "ContactPoint",
+    "telephone": "+91-9999999999",
+    "contactType": "customer service",
+    "areaServed": "IN",
+    "availableLanguage": "en"
+  }
+};
+
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || "https://ayuniv.com"),
   title: {
-    default: "Ayuniv | Natural Juice & Wellness",
-    template: "%s | Ayuniv"
+    default: "Ayuniv | The Sanctuary of Natural Wellness",
+    template: "%s | Ayuniv Sanctuary"
   },
-  description: "Experience the purity of nature with Ayuniv. Cold-pressed elixirs, organic blends, and wellness rituals designed for your vitality.",
-  keywords: ["organic juice", "wellness", "cold-pressed", "ayurveda", "natural health", "detox", "immunity"],
-  authors: [{ name: "Ayuniv Team" }],
+  description: "Experience the purity of nature with Ayuniv. Handcrafted cold-pressed elixirs, ancient Ayurvedic rituals, and holistic wellness solutions designed to restore your vitality.",
+  keywords: ["organic juice", "ayurveda", "cold-pressed", "wellness sanctuary", "natural health", "detox rituals", "immunity boosters", "fresh juices india"],
+  authors: [{ name: "Ayuniv Artisans" }],
   creator: "Ayuniv",
+  publisher: "Ayuniv Wellness",
   openGraph: {
     type: "website",
     locale: "en_IN",
     url: "https://ayuniv.com",
-    title: "Ayuniv | Natural Juice & Wellness",
-    description: "Experience the purity of nature with Ayuniv. Cold-pressed elixirs for your daily ritual.",
-    siteName: "Ayuniv",
+    siteName: "Ayuniv Sanctuary",
+    title: "Ayuniv | The Sanctuary of Natural Wellness",
+    description: "Reclaim your harmony with nature. Pure, preservative-free elixirs and wellness rituals.",
     images: [
       {
-        url: "/assets/logo_1by1.png", // Ensure this exists or use a product image
+        url: "/assets/og-image.jpg",
         width: 1200,
         height: 630,
-        alt: "Ayuniv Wellness",
+        alt: "Ayuniv Wellness Sanctuary",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Ayuniv | Natural Juice & Wellness",
-    description: "Pure, cold-pressed wellness elixirs.",
+    title: "Ayuniv | Natural Wellness & Elixirs",
+    description: "Pure, cold-pressed wellness elixirs. Nature's wisdom, bottled.",
     creator: "@ayuniv",
-    images: ["/assets/logo_1by1.png"],
+    images: ["/assets/og-image.jpg"],
   },
   robots: {
     index: true,
     follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  verification: {
+    google: "verification_token", // Placeholder
+  },
+  alternates: {
+    canonical: 'https://ayuniv.com',
   },
 };
 
 export const viewport = {
   themeColor: "#5A7A6A",
+  colorScheme: 'light',
 };
 
 export default function RootLayout({
@@ -73,6 +107,10 @@ export default function RootLayout({
         className={`${montserrat.variable} ${juana.variable} antialiased`}
         suppressHydrationWarning
       >
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
         <Analytics />
         <AIProvider>
           <CartProvider>

@@ -7,19 +7,25 @@ import { FeaturedProducts } from "@/components/home/FeaturedProducts";
 import { IngredientTransparency } from "@/components/home/IngredientTransparency";
 import { InstagramCommunity } from "@/components/home/InstagramCommunity";
 import { AIAssistantTeaser } from "@/components/home/AIAssistantTeaser";
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from '@/lib/supabase/server';
+import { Metadata } from "next";
 
-// Server-side Supabase client (no 'use client')
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+export const metadata: Metadata = {
+  title: "Ayuniv | Begin Your Ritual",
+  description: "A sanctuary of cold-pressed purity. Discover curated wellness boxes, herbal elixirs, and ancient rituals crafted for modern vitality.",
+  alternates: {
+    canonical: 'https://ayuniv.com',
+  },
+};
 
 export default async function Home() {
+  const supabase = await createClient(); // Use server client
+
   // Fetch products on the SERVER before rendering
   const { data } = await supabase
     .from('products')
     .select('*')
+    .eq('is_active', true) // Only active products
     .limit(3);
 
   const products = data?.map((p: any) => ({
@@ -41,8 +47,24 @@ export default async function Home() {
     comparison_price: p.comparison_price,
   })) || [];
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "Ayuniv Sanctuary",
+    "url": "https://ayuniv.com",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": "https://ayuniv.com/products?q={search_term_string}",
+      "query-input": "required name=search_term_string"
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-[#FDFBF7]">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <Header />
 
       <main className="grow">
@@ -60,5 +82,5 @@ export default async function Home() {
   );
 }
 
-// Revalidate every 60 seconds (ISR)
-export const revalidate = 60;
+// Revalidate every hour since inventory/prices don't change minutely
+export const revalidate = 3600;

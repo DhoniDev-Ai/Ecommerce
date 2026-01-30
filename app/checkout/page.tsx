@@ -606,7 +606,7 @@ export default function CheckoutPage() {
                                 <CheckoutInput
                                     label="Email Address (Optional)" name="email" value={formData.email}
                                     status={getFieldStatus('email', formData.email)}
-                                    onChange={handleInputChange} placeholder="hello@ayuniv.in"
+                                    onChange={handleInputChange} placeholder="hello@ayuniv.com"
                                     icon={<Mail className="w-3 h-3" />}
                                     disabled={otpSent}
                                 />

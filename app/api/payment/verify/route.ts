@@ -15,7 +15,7 @@ export async function GET(req: Request) {
         // 1. Fetch Order from DB first (Optimization)
         const { data: order, error: fetchError } = await supabaseAdmin
             .from('orders')
-            .select('id, payment_method, status, payment_status')
+            .select('id, payment_method, status, payment_status, shipping_address, users(email)')
             .eq('id', orderId)
             .single();
 
@@ -23,20 +23,23 @@ export async function GET(req: Request) {
             return NextResponse.json({ error: "Order not found" }, { status: 404 });
         }
 
+        // Cast to any for easier access to joined fields
+        const orderData = order as any;
+
         // 2. Handle COD Orders (Instant Success & Emails)
         // console.log(`Verify: Checking Order ${orderId} | Method: ${order.payment_method} | Status: ${order.status}`);
 
         // OPTIMIZATION: If order is already in a terminal state, DO NOT call Cashfree API.
-        if (['succeeded', 'failed', 'cancelled'].includes(order.payment_status)) {
-             return NextResponse.json({ status: order.payment_status === 'succeeded' ? 'SUCCESS' : order.payment_status.toUpperCase() });
+        if (['succeeded', 'failed', 'cancelled'].includes(orderData.payment_status)) {
+            return NextResponse.json({ status: orderData.payment_status === 'succeeded' ? 'SUCCESS' : orderData.payment_status.toUpperCase() });
         }
 
-        if (order.payment_method === 'COD') {
+        if (orderData.payment_method === 'COD') {
             // Only update and send emails if it's the first confirmation (i.e., currently pending)
-            if (order.status === 'pending') {
+            if (orderData.status === 'pending') {
                 console.log("Verify: Confirming COD Order");
                 await (supabaseAdmin.from('orders') as any)
-                    .update({ 
+                    .update({
                         status: 'processing',  // Correct Enum
                         updated_at: new Date().toISOString()
                     })
@@ -45,24 +48,24 @@ export async function GET(req: Request) {
                 // Send Emails for COD (Background - don't await to keep UI fast)
                 sendOrderEmails(orderId).catch(err => console.error("Background Email Error:", err));
             }
-            
+
             return NextResponse.json({ status: "SUCCESS", mode: 'COD' });
         }
 
         // 3. Handle Online Orders (Cashfree Verification)
         const payments = await fetchPayments(orderId);
-         
+
         if (!payments || payments.length === 0) {
             // No payment attempt found (User created order but didn't pay/dropped off early)
             // Ideally we cancel it if it's old, but for now just report PENDING
-             return NextResponse.json({ status: "PENDING" });
+            return NextResponse.json({ status: "PENDING" });
         }
 
         // Find the 'authoritative' payment status
         const payment = payments.find((p: any) => ["SUCCESS", "FAILED", "USER_DROPPED"
-            , "CANCELLED"].includes(p.payment_status)) 
-                        || payments[0];
-        
+            , "CANCELLED"].includes(p.payment_status))
+            || payments[0];
+
         // console.log(`Verify: Cashfree Status for ${orderId}:`, payment?.payment_status);
 
         const cfStatus = payment?.payment_status || "PENDING";
@@ -78,26 +81,26 @@ export async function GET(req: Request) {
         }
 
         // Update Supabase if status changed
-        const currentStatus = order.payment_status; // Use already fetched status
+        const currentStatus = orderData.payment_status; // Use already fetched status
 
         if (dbPaymentStatus !== "pending" && dbPaymentStatus !== currentStatus) {
             console.log(`Verify: Updating DB from ${currentStatus} to ${dbPaymentStatus}`);
-            
+
             // Avoid re-updating if already succeeded (idempotency)
             if (currentStatus !== 'succeeded') {
                 const { error: updateError } = await (supabaseAdmin.from('orders') as any)
-                    .update({ 
-                        status: dbOrderStatus, 
+                    .update({
+                        status: dbOrderStatus,
                         payment_status: dbPaymentStatus,
                         updated_at: new Date().toISOString()
                     })
                     .eq('id', orderId);
-                
+
                 if (updateError) {
                     console.error("Verify: DB Update FAILED", updateError);
                 } else {
                     console.log("Verify: DB Update SUCCESS");
-                    
+
                     // Send Emails only on fresh success (Background - don't await)
                     if (dbPaymentStatus === 'succeeded') {
                         console.log("Verify: Triggering Email Service");
@@ -107,7 +110,29 @@ export async function GET(req: Request) {
             }
         }
 
-        return NextResponse.json({ status: cfStatus });
+        // --- PREPARE DATA FOR GOOGLE REVIEWS ---
+        let googleData = null;
+        if (cfStatus === 'SUCCESS' || orderData.payment_status === 'succeeded' || orderData.payment_method === 'COD') {
+            const deliveryDate = new Date();
+            deliveryDate.setDate(deliveryDate.getDate() + 5); // Est. 5 days
+
+            let email = orderData.users?.email;
+            // Try to extract email from shipping address json if not in user
+            if (!email && orderData.shipping_address) {
+                try {
+                    const addr = typeof orderData.shipping_address === 'string' ? JSON.parse(orderData.shipping_address) : orderData.shipping_address;
+                    if (addr.email) email = addr.email;
+                } catch (e) { }
+            }
+
+            googleData = {
+                email: email || "",
+                delivery_country: "IN",
+                estimated_delivery_date: deliveryDate.toISOString().split('T')[0],
+            };
+        }
+
+        return NextResponse.json({ status: cfStatus, ...googleData });
 
     } catch (err: any) {
         console.error("Verification Error:", err);
