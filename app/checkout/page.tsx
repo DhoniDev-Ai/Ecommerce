@@ -131,7 +131,7 @@ export default function CheckoutPage() {
             setToast({ message: "OTP Code sent to your email!", type: 'success' });
         } catch (err: any) {
             console.error("Auth Error:", err);
-            setToast({ message: err.message || "Failed to send link.", type: 'error' });
+            setToast({ message: err.message || "Failed to send OTP.", type: 'error' });
         } finally {
             setAuthLoading(false);
         }

@@ -55,7 +55,7 @@ export default function LoginPage() {
             setMessage({ type: 'success', text: `OTP Code sent to ${email}` });
         } catch (err: any) {
             console.error("Auth Error:", err);
-            setMessage({ type: 'error', text: err.message || "Failed to send link." });
+            setMessage({ type: 'error', text: err.message || "Failed to send Code." });
         } finally {
             setLoading(false);
         }
@@ -165,8 +165,8 @@ export default function LoginPage() {
                                 <div className="relative group mb-6">
                                     <input
                                         type="text"
-                                        placeholder="000000"
-                                        maxLength={6}
+                                        placeholder="00000000"
+                                        maxLength={8}
                                         required
                                         value={otp}
                                         onChange={(e) => setOtp(e.target.value)}
@@ -175,7 +175,7 @@ export default function LoginPage() {
                                 </div>
 
                                 <button
-                                    disabled={loading || otp.length < 6}
+                                    disabled={loading || otp.length < 8}
                                     type="submit"
                                     className="w-full py-4 bg-[#2D3A3A] text-white rounded-xl text-[10px] font-bold uppercase tracking-[0.3em] hover:bg-[#1D2A2A] transition-all flex items-center justify-center gap-3 disabled:opacity-50"
                                 >
