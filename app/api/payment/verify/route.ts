@@ -45,8 +45,12 @@ export async function GET(req: Request) {
                     })
                     .eq('id', orderId);
 
-                // Send Emails for COD (Background - don't await to keep UI fast)
-                sendOrderEmails(orderId).catch(err => console.error("Background Email Error:", err));
+                // Send Emails for COD
+                try {
+                    await sendOrderEmails(orderId);
+                } catch (e) {
+                    console.error("COD Email Error:", e);
+                }
             }
 
             return NextResponse.json({ status: "SUCCESS", mode: 'COD' });
@@ -101,10 +105,13 @@ export async function GET(req: Request) {
                 } else {
                     console.log("Verify: DB Update SUCCESS");
 
-                    // Send Emails only on fresh success (Background - don't await)
-                    if (dbPaymentStatus === 'succeeded') {
-                        console.log("Verify: Triggering Email Service");
-                        sendOrderEmails(orderId).catch(err => console.error("Background Email Error:", err));
+                    // Send Emails (Must await in Serverless/Vercel)
+                    console.log("Verify: Triggering Email Service");
+                    try {
+                        await sendOrderEmails(orderId);
+                        console.log("Verify: Email Service Completed");
+                    } catch (emailErr) {
+                        console.error("Verify: Email Logic Failed", emailErr);
                     }
                 }
             }
