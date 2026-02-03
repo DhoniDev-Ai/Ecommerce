@@ -11,9 +11,11 @@ import Image from "next/image";
 
 interface ProductCardProps {
     product: Product;
+    trendingRank?: number; // 1 = Top Bestseller, 2 = 2nd, etc.
+    salesCount?: number;
 }
 
-export function ProductCard({ product }: ProductCardProps) {
+export function ProductCard({ product, trendingRank, salesCount }: ProductCardProps) {
     const [isHovered, setIsHovered] = useState(false);
     const { addToCart, isAdding, isSuccess } = useCart();
 
@@ -35,7 +37,10 @@ export function ProductCard({ product }: ProductCardProps) {
             onMouseLeave={() => setIsHovered(false)}
         >
             {/* Visual Container */}
-            <div className="relative aspect-square overflow-hidden rounded-[2.5rem] bg-[#F3F1ED]">
+            <div className={cn(
+                "relative aspect-square overflow-hidden rounded-[2.5rem] bg-[#F3F1ED] transition-all duration-500",
+                trendingRank === 1 && "ring-1 ring-[#5A7A6A] ring-offset-4 ring-offset-[#FDFBF7]"
+            )}>
                 <Link href={`/products/${product.slug}`} className="block h-full w-full">
                     <div className="absolute inset-0 flex items-center justify-center p-10 max-sm:p-3">
                         <Image
@@ -103,6 +108,14 @@ export function ProductCard({ product }: ProductCardProps) {
                             {product.sale_badge_text}
                         </span>
                     )}
+                    {/* Only show Most Loved for Rank 1. Hide "Trending" for 2, 3 etc. */}
+                    {!product.is_on_sale && trendingRank === 1 && (
+                        <span
+                            className="font-heading text-[10px] leading-none tracking-[0.08em] uppercase px-3 py-2 max-sm:p-1 max-sm:text-[8px] rounded-full font-bold border shadow-sm inline-flex items-center gap-1 bg-[#2D3A3A] text-[#F3F1ED] border-[#2D3A3A]"
+                        >
+                            Start Here • Most Loved
+                        </span>
+                    )}
                 </div>
             </div>
 
@@ -111,6 +124,12 @@ export function ProductCard({ product }: ProductCardProps) {
                 <h3 className="font-heading max-sm:text-sm    sm:text-lg  text-[#2D3A3A] leading-tight transition-colors group-hover:text-[#5A7A6A]">
                     <Link href={`/products/${product.slug}`}>{product.name}</Link>
                 </h3>
+                {/* Safe render check: Ensure salesCount is truthy AND > 5 to avoid rendering '0' */}
+                {(salesCount || 0) > 5 && (
+                    <p className="text-[9px] uppercase tracking-widest text-[#5A7A6A] font-bold mt-1 opacity-80">
+                        {salesCount}+ Bought this month
+                    </p>
+                )}
 
                 {/* Clean Pricing Ritual */}
                 <div className="mt-1 ">

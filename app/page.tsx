@@ -8,6 +8,7 @@ import { IngredientTransparency } from "@/components/home/IngredientTransparency
 import { InstagramCommunity } from "@/components/home/InstagramCommunity";
 import { AIAssistantTeaser } from "@/components/home/AIAssistantTeaser";
 import { createClient } from '@/lib/supabase/server';
+import { getProductStats } from "@/actions/store/stats";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -25,10 +26,18 @@ export default async function Home() {
   const { data } = await supabase
     .from('products')
     .select('*')
-    .eq('is_active', true) // Only active products
-    .limit(3);
+    .eq('is_active', true)
+  // .limit(3); // Don't limit yet, we need to sort by sales first
 
-  const products = data?.map((p: any) => ({
+  const stats = await getProductStats();
+
+  const sortedData = data?.sort((a: any, b: any) => {
+    const salesA = stats[a.id] || 0;
+    const salesB = stats[b.id] || 0;
+    return salesB - salesA; // Descending
+  }) || [];
+
+  const products = sortedData.slice(0, 3).map((p: any) => ({
     id: p.id,
     slug: p.slug,
     name: p.name,
@@ -71,7 +80,7 @@ export default async function Home() {
         <Hero />
         <TrustSection />
         <WellnessGoals />
-        <FeaturedProducts products={products} />
+        <FeaturedProducts products={products} stats={stats} />
         <IngredientTransparency />
         <InstagramCommunity />
         <AIAssistantTeaser />

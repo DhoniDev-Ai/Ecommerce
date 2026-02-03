@@ -6,6 +6,7 @@ import { Database } from "@/types/database";
 import { createProduct, updateProduct } from "@/actions/admin/products";
 import { Plus, X, Upload, Loader2, Save } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
+import { cn } from "@/utils/cn";
 import Image from "next/image";
 
 type Product = Database['public']['Tables']['products']['Row'];
@@ -29,6 +30,7 @@ export function ProductForm({ initialData }: { initialData?: Product }) {
         benefits: initialData?.benefits || [],
         wellness_goals: initialData?.wellness_goals || [],
         image_urls: initialData?.image_urls || [],
+        lifestyle_images: (initialData as any)?.lifestyle_images || [], // Cast for now until types update
         usage_instructions: initialData?.usage_instructions || '',
 
         // Complex JSON fields defaults
@@ -73,29 +75,29 @@ export function ProductForm({ initialData }: { initialData?: Product }) {
         }));
     };
 
-    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, field: 'image_urls' | 'lifestyle_images' = 'image_urls') => {
         if (!e.target.files || e.target.files.length === 0) return;
 
         setLoading(true);
         const file = e.target.files[0];
         const fileExt = file.name.split('.').pop();
-        const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
+        const fileName = `${field === 'lifestyle_images' ? 'lifestyle_' : ''}${Math.random().toString(36).substring(2)}.${fileExt}`;
         const filePath = `product-images/${fileName}`;
 
         try {
             const { error: uploadError } = await supabase.storage
-                .from('products')
+                .from('product-images')
                 .upload(filePath, file);
 
             if (uploadError) throw uploadError;
 
             const { data: { publicUrl } } = supabase.storage
-                .from('products')
+                .from('product-images')
                 .getPublicUrl(filePath);
 
             setFormData(prev => ({
                 ...prev,
-                image_urls: [...(prev.image_urls || []), publicUrl]
+                [field]: [...(prev[field] as string[] || []), publicUrl]
             }));
         } catch (error) {
             console.error('Upload failed:', error);
@@ -156,7 +158,7 @@ export function ProductForm({ initialData }: { initialData?: Product }) {
 
                 <Input type="textarea" label="Description" value={formData.description || ''} onChange={v => handleChange('description', v)} rows={4} />
 
-                <div className="grid grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 gap-8">
                     <Input type="number" label="Price (₹)" value={formData.price || 0} onChange={v => handleChange('price', parseFloat(v))} required />
                     <Input type="number" label="Stock" value={formData.stock_quantity || 0} onChange={v => handleChange('stock_quantity', parseInt(v))} />
                     <div className="flex items-center gap-4 pt-8">
@@ -164,6 +166,41 @@ export function ProductForm({ initialData }: { initialData?: Product }) {
                             <input type="checkbox" checked={formData.is_active} onChange={e => handleChange('is_active', e.target.checked)} className="w-5 h-5 accent-[#5A7A6A]" />
                             <span className="text-sm font-bold uppercase tracking-wider text-[#5A6A6A]">Active</span>
                         </label>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 pt-6  border-t border-[#E8E6E2]/60">
+                        <div className="flex flex-col gap-3">
+                            <span className="text-xs uppercase font-bold tracking-widest text-[#7A8A8A]">Status</span>
+                            <label className="flex items-center gap-3 cursor-pointer px-4 h-[48px] rounded-xl border border-[#E8E6E2] hover:border-[#5A7A6A] transition-colors bg-[#FAF9F7]">
+                                <input
+                                    type="checkbox"
+                                    checked={formData.is_on_sale}
+                                    onChange={e => handleChange('is_on_sale', e.target.checked)}
+                                    className="w-4 h-4 accent-[#5A7A6A]"
+                                />
+                                <span className={cn(
+                                    "text-sm font-bold uppercase tracking-wider transition-colors",
+                                    formData.is_on_sale ? "text-[#D97757]" : "text-[#7A8A8A]"
+                                )}>
+                                    On Sale
+                                </span>
+                            </label>
+                        </div>
+                        <div className={cn("transition-opacity duration-300", formData.is_on_sale ? "opacity-100" : "opacity-50 pointer-events-none")}>
+                            <Input
+                                type="number"
+                                label="Sale Price (₹)"
+                                value={formData.sale_price || 0}
+                                onChange={v => handleChange('sale_price', parseFloat(v))}
+                            />
+                        </div>
+                        <div className={cn("transition-opacity duration-300", formData.is_on_sale ? "opacity-100" : "opacity-50 pointer-events-none")}>
+                            <Input
+                                label="Sale Badge (e.g. 20% OFF)"
+                                value={formData.sale_badge_text || ''}
+                                onChange={v => handleChange('sale_badge_text', v)}
+                            />
+                        </div>
                     </div>
                 </div>
             </section>
@@ -185,10 +222,46 @@ export function ProductForm({ initialData }: { initialData?: Product }) {
                             </button>
                         </div>
                     ))}
-                    <label className="aspect-square rounded-xl border-2 border-dashed border-[#E8E6E2] flex flex-col items-center justify-center cursor-pointer hover:border-[#5A7A6A] hover:bg-[#F3F1ED] transition-all">
-                        <Upload className="w-8 h-8 text-[#5A7A6A] mb-2" />
-                        <span className="text-xs uppercase font-bold text-[#7A8A8A]">Upload</span>
-                        <input type="file" onChange={handleImageUpload} className="hidden" accept="image/*" />
+                    <label className={`aspect-square rounded-xl border-2 border-dashed border-[#E8E6E2] flex flex-col items-center justify-center transition-all ${loading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:border-[#5A7A6A] hover:bg-[#F3F1ED]'}`}>
+                        {loading ? (
+                            <Loader2 className="w-8 h-8 text-[#5A7A6A] mb-2 animate-spin" />
+                        ) : (
+                            <Upload className="w-8 h-8 text-[#5A7A6A] mb-2" />
+                        )}
+                        <span className="text-xs uppercase font-bold text-[#7A8A8A]">{loading ? 'Uploading...' : 'Upload'}</span>
+                        <input type="file" onChange={(e) => handleImageUpload(e, 'image_urls')} className="hidden" accept="image/*" disabled={loading} />
+                    </label>
+                </div>
+            </section>
+
+            {/* 2b. Lifestyle Media (Landscape) */}
+            <section className="bg-white p-10 rounded-[2.5rem] border border-[#E8E6E2]/60 space-y-8">
+                <h2 className="font-heading text-2xl text-[#2D3A3A] mb-6 border-b pb-4">Lifestyle Visuals (Landscape)</h2>
+
+                <div className="grid grid-cols-2 gap-4">
+                    {(formData as any).lifestyle_images?.map((url: string, i: number) => (
+                        <div key={i} className="relative aspect-video rounded-xl overflow-hidden group border border-[#E8E6E2]">
+                            <Image width={800} height={450} src={url} alt="" className="w-full h-full object-cover" />
+                            <button
+                                type="button"
+                                onClick={() => setFormData(p => ({ ...p, lifestyle_images: (p as any).lifestyle_images?.filter((_: any, idx: number) => idx !== i) }))}
+                                className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-all"
+                            >
+                                <X className="w-4 h-4" />
+                            </button>
+                            <div className="absolute bottom-2 left-2 px-2 py-1 bg-black/50 text-white text-[10px] rounded backdrop-blur-md">
+                                #{i + 1}
+                            </div>
+                        </div>
+                    ))}
+                    <label className={`aspect-video rounded-xl border-2 border-dashed border-[#E8E6E2] flex flex-col items-center justify-center transition-all ${loading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:border-[#5A7A6A] hover:bg-[#F3F1ED]'}`}>
+                        {loading ? (
+                            <Loader2 className="w-8 h-8 text-[#5A7A6A] mb-2 animate-spin" />
+                        ) : (
+                            <Upload className="w-8 h-8 text-[#5A7A6A] mb-2" />
+                        )}
+                        <span className="text-xs uppercase font-bold text-[#7A8A8A]">{loading ? 'Uploading...' : 'Upload Landscape'}</span>
+                        <input type="file" onChange={(e) => handleImageUpload(e, 'lifestyle_images')} className="hidden" accept="image/*" disabled={loading} />
                     </label>
                 </div>
             </section>
@@ -358,7 +431,7 @@ function FAQInput({ items, onChange }: { items: any[], onChange: (items: any[]) 
         <div className="space-y-6">
             <label className="text-[10px] uppercase tracking-[0.2em] text-[#7A8A8A] font-bold">Frequently Asked Questions</label>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start bg-[#Fdfbf7] p-4 rounded-xl border border-[#E8E6E2]">
+            <div className="grid grid-cols-2 gap-4 items-start bg-[#Fdfbf7] p-4 rounded-xl border border-[#E8E6E2]">
                 <input
                     placeholder="Question"
                     value={q}
@@ -370,12 +443,12 @@ function FAQInput({ items, onChange }: { items: any[], onChange: (items: any[]) 
                     value={a}
                     onChange={e => setA(e.target.value)}
                     className="w-full p-3 bg-white border border-[#E8E6E2] rounded-lg text-sm"
-                    rows={2}
+                    rows={1}
                 />
                 <button
                     type="button"
                     onClick={handleAdd}
-                    className="md:col-span-2 w-full py-2 bg-[#2D3A3A] text-white rounded-lg text-xs font-bold uppercase"
+                    className="md:col-span-2 w-full py-3 bg-[#2D3A3A] text-white rounded-lg text-xs font-bold uppercase"
                 >
                     Add FAQ
                 </button>

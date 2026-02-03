@@ -4,16 +4,13 @@ import Link from "next/link";
 import Image from "next/image";
 import { PriceDisplay } from "@/components/product/PriceDisplay";
 
+import { getProductStats } from "@/actions/store/stats";
+
 export default async function AdminProductsPage() {
-    // 1. Fetch Products with Order Items to calculate sales
+    // 1. Fetch Products
     const { data: products, error } = await supabaseAdmin
         .from('products')
-        .select(`
-            *,
-            order_items (
-                quantity
-            )
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
     if (error) {
@@ -21,15 +18,13 @@ export default async function AdminProductsPage() {
         return <div className="p-10 text-red-500">Failed to load products</div>;
     }
 
-    // 2. Calculate Stats
-    const productStats = (products as any[])?.map(product => {
-        // Calculate total quantity sold
-        const totalSold = product.order_items?.reduce((acc: number, item: any) => acc + (item.quantity || 0), 0) || 0;
-        return {
-            ...product,
-            totalSold
-        };
-    }) || [];
+    // 2. Fetch Stats
+    const stats = await getProductStats();
+
+    const productStats = (products as any[])?.map(product => ({
+        ...product,
+        totalSold: stats[product.id] || 0
+    })) || [];
 
     return (
         <section className="space-y-8">
@@ -48,7 +43,7 @@ export default async function AdminProductsPage() {
                 </Link>
             </header>
 
-            <div className="bg-white rounded-[2rem] border border-[#E8E6E2]/60 overflow-hidden shadow-sm">
+            <div className="bg-white rounded-4xl border border-[#E8E6E2]/60 overflow-hidden shadow-sm">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left">
                         <thead className="bg-[#Fdfbf7] border-b border-[#E8E6E2]">
@@ -101,7 +96,7 @@ export default async function AdminProductsPage() {
                                     <td className="py-6 px-8 text-center">
                                         <div className="flex flex-col items-center">
                                             <span className="font-heading text-xl text-[#2D3A3A]">{product.totalSold}</span>
-                                            <span className="text-[8px] uppercase text-[#7A8A8A]">Units Sold</span>
+                                            <span className="text-[8px] uppercase text-[#7A8A8A]">Last 28 Days</span>
                                         </div>
                                     </td>
                                     <td className="py-6 px-8 text-right">

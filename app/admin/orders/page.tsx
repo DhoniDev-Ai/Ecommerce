@@ -1,7 +1,7 @@
 
 import { supabaseAdmin } from '@/lib/supabase/admin';
-import Link from 'next/link';
-import { Badge } from 'lucide-react'; // Placeholder - we will build custom badges
+import { OrdersClient } from '@/components/admin/OrdersClient';
+import { PaymentSplitChart } from '@/components/admin/PaymentSplitChart';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,8 +14,8 @@ export default async function OrdersPage() {
             created_at, 
             status, 
             payment_status, 
-            total_amount, 
             payment_method,
+            total_amount,
             user:user_id (
                 full_name,
                 email
@@ -28,101 +28,58 @@ export default async function OrdersPage() {
         return <div className="p-8 text-red-500">Failed to load orders.</div>;
     }
 
+    // --- STATS PREPARATION ---
+    const totalOrders = orders.length;
+    const completedOrders = orders.filter((o: any) => o.status === 'delivered' || o.status === 'succeeded').length;
+    const pendingOrders = orders.filter((o: any) => o.status === 'pending' || o.status === 'processing').length;
+
+    // --- CHART PREPARATION (COD vs Prepaid) ---
+    const shippedOrders = orders.filter((o: any) => o.status === 'shipped').length;
+    const codCount = orders.filter((o: any) => o.payment_method === 'COD').length;
+    const onlineCount = orders.filter((o: any) => o.payment_method !== 'COD').length;
+
+    const chartData = [
+        { name: 'Online (Prepaid)', value: onlineCount, color: '#2D3A3A' },
+        { name: 'Cash on Delivery', value: codCount, color: '#5A7A6A' },
+    ];
+
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-center">
                 <h1 className="text-2xl font-bold font-juana text-gray-900">Orders</h1>
-                <div className="text-sm text-gray-500">
-                    Total: {orders?.length || 0}
-                </div>
             </div>
 
-            {/* Orders Table */}
-            <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left text-sm">
-                        <thead className="bg-gray-50 border-b border-gray-100 text-gray-500 font-medium">
-                            <tr>
-                                <th className="px-6 py-4">Order ID</th>
-                                <th className="px-6 py-4">Customer</th>
-                                <th className="px-6 py-4">Status</th>
-                                <th className="px-6 py-4">Payment</th>
-                                <th className="px-6 py-4">Total</th>
-                                <th className="px-6 py-4">Date</th>
-                                <th className="px-6 py-4 text-right">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-100">
-                            {orders?.length === 0 ? (
-                                <tr>
-                                    <td colSpan={7} className="px-6 py-12 text-center text-gray-400">
-                                        No orders found.
-                                    </td>
-                                </tr>
-                            ) : (
-                                orders?.map((order: any) => (
-                                    <tr key={order.id} className="hover:bg-gray-50 transition-colors group">
-                                        <td className="px-6 py-4 font-mono text-xs text-gray-500">
-                                            #{order.id.slice(0, 8)}...
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <div className="font-medium text-gray-900">{order.user?.full_name || 'Guest'}</div>
-                                            <div className="text-xs text-gray-400">{order.user?.email}</div>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <StatusBadge status={order.status} type="order" />
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <StatusBadge status={order.payment_status} type="payment" />
-                                            <div className="text-[10px] uppercase font-bold text-gray-400 mt-1">{order.payment_method}</div>
-                                        </td>
-                                        <td className="px-6 py-4 font-medium text-gray-900">
-                                            ₹{order.total_amount.toLocaleString()}
-                                        </td>
-                                        <td className="px-6 py-4 text-gray-500">
-                                            {new Date(order.created_at).toLocaleDateString()}
-                                        </td>
-                                        <td className="px-6 py-4 text-right">
-                                            <Link
-                                                href={`/admin/orders/${order.id}`}
-                                                className="text-green-700 font-medium hover:underline text-xs uppercase tracking-widest"
-                                            >
-                                                View
-                                            </Link>
-                                        </td>
-                                    </tr>
-                                ))
-                            )}
-                        </tbody>
-                    </table>
+            {/* TOP METRICS & CHART */}
+            <div className="grid md:grid-cols-3 gap-6">
+                {/* Chart */}
+                <div className="md:col-span-1">
+                    <PaymentSplitChart data={chartData} />
+                </div>
+
+                {/* Quick Stats Grid */}
+                <div className="md:col-span-2 grid grid-cols-2 gap-4">
+                    <StatCard label="Total Orders" value={totalOrders} icon="📦" />
+                    <StatCard label="Pending" value={pendingOrders} icon="⏳" highlight />
+                    <StatCard label="Completed" value={completedOrders} icon="✅" />
+                    <StatCard label="Shipped" value={shippedOrders} icon="🚚" />
                 </div>
             </div>
+            {/* MAIN ORDERS TABLE (Client Component) */}
+            <OrdersClient initialOrders={orders as any} />
         </div>
     );
 }
 
-// Simple Badge Component
-function StatusBadge({ status, type }: { status: string, type: 'order' | 'payment' }) {
-    const styles: Record<string, string> = {
-        // Order Statuses
-        pending: "bg-yellow-50 text-yellow-700 border-yellow-100",
-        processing: "bg-blue-50 text-blue-700 border-blue-100", // "Confirmed"
-        shipped: "bg-purple-50 text-purple-700 border-purple-100",
-        delivered: "bg-green-50 text-green-700 border-green-100",
-        cancelled: "bg-red-50 text-red-700 border-red-100",
-
-        // Payment Statuses
-        succeeded: "bg-green-50 text-green-700 border-green-100",
-        paid: "bg-green-50 text-green-700 border-green-100",
-        failed: "bg-red-50 text-red-700 border-red-100",
-    };
-
-    const defaultStyle = "bg-gray-50 text-gray-600 border-gray-100";
-    const className = styles[status] || defaultStyle;
-
+function StatCard({ label, value, icon, highlight = false }: { label: string, value: string | number, icon: string, highlight?: boolean }) {
     return (
-        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${className} capitalize`}>
-            {status}
-        </span>
+        <div className={`p-6 rounded-xl border flex items-center justify-between transition-all ${highlight ? 'bg-green-50 border-green-200 shadow-sm' : 'bg-white border-gray-200'}`}>
+            <div>
+                <p className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">{label}</p>
+                <p className={`text-2xl font-bold font-heading ${highlight ? 'text-green-800' : 'text-gray-900'}`}>{value}</p>
+            </div>
+            <div className="text-2xl opacity-80 grayscale">{icon}</div>
+        </div>
     );
 }
+
+

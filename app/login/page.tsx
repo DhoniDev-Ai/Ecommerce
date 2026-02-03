@@ -150,7 +150,7 @@ export default function LoginPage() {
                         </form>
                     ) : (
                         <form onSubmit={handleVerifyOtp} className="space-y-6">
-                            <div className="bg-white p-8 rounded-[2rem] border border-[#E8E6E2] shadow-sm text-center">
+                            <div className="bg-white p-8 rounded-4xl border border-[#E8E6E2] shadow-sm text-center">
                                 <div className="w-16 h-16 bg-[#5A7A6A]/10 rounded-full flex items-center justify-center mx-auto text-[#5A7A6A] mb-4">
                                     <KeyRound className="w-8 h-8" />
                                 </div>

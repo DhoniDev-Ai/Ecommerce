@@ -11,6 +11,7 @@ async function getProduct(slug: string) {
         .from('products')
         .select('*')
         .eq('slug', slug)
+        .eq('is_active', true)
         .single();
 
     if (error || !data) return null;
@@ -22,6 +23,7 @@ async function getRelatedProducts(category: string, currentId: string) {
         .from('products')
         .select('*')
         .eq('category', category)
+        .eq('is_active', true)
         .neq('id', currentId)
         .limit(4);
 
@@ -31,6 +33,7 @@ async function getRelatedProducts(category: string, currentId: string) {
     const { data: anyProducts } = await supabaseAdmin
         .from('products')
         .select('*')
+        .eq('is_active', true)
         .neq('id', currentId)
         .limit(4);
 

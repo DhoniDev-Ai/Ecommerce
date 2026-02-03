@@ -8,9 +8,10 @@ import { Product } from "@/types";
 
 interface FeaturedProductsProps {
     products: Product[];
+    stats?: { [key: string]: number };
 }
 
-export function FeaturedProducts({ products }: FeaturedProductsProps) {
+export function FeaturedProducts({ products, stats = {} }: FeaturedProductsProps) {
     return (
         <section className="relative py-24 lg:py-32 bg-[#FDFBF7] overflow-hidden">
             {/* Subtle Grain Texture for 2026 Premium feel */}
@@ -66,7 +67,16 @@ export function FeaturedProducts({ products }: FeaturedProductsProps) {
                             }}
                             className={index === 1 ? "lg:translate-y-12" : ""} // Staggered middle card for editorial feel
                         >
-                            <ProductCard product={product} />
+                            <ProductCard
+                                product={product}
+                                salesCount={stats[product.id] || 0}
+                                trendingRank={
+                                    // Calculate rank: get Index of this product ID in the sorted keys of stats
+                                    Object.keys(stats).length > 0
+                                        ? Object.entries(stats).sort(([, a], [, b]) => b - a).findIndex(([id]) => id === product.id) + 1
+                                        : undefined
+                                }
+                            />
                         </motion.div>
                     ))}
                 </div>

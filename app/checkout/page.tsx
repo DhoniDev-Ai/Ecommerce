@@ -240,9 +240,15 @@ export default function CheckoutPage() {
     const subtotal = cartTotal;
     const discount = useMemo(() => {
         if (!appliedCoupon) return 0;
-        return appliedCoupon.type === 'percentage'
-            ? (subtotal * appliedCoupon.value) / 100
-            : appliedCoupon.value;
+
+        // Handle both older schema (value, type) and newer schema (discount_value, discount_type)
+        // This defensive coding prevents NaN
+        const val = appliedCoupon.discount_value ?? appliedCoupon.value ?? 0;
+        const type = appliedCoupon.discount_type ?? appliedCoupon.type ?? 'fixed';
+
+        return type === 'percentage'
+            ? (subtotal * val) / 100
+            : val;
     }, [subtotal, appliedCoupon]);
 
     // LAUNCH OFFER: Free Shipping for everyone
@@ -829,18 +835,18 @@ export default function CheckoutPage() {
                         <div className="space-y-4 mb-10 pb-8 border-b border-[#E8E6E2]">
                             <div className="flex justify-between text-sm text-[#7A8A8A]"><span>Archive Value</span><span>₹{subtotal.toLocaleString()}</span></div>
 
-                            {/* DYNAMIC DISCOUNT ROW */}
-                            {discount > 0 && (
-                                <div className="flex justify-between text-sm text-[#5A7A6A] font-bold bg-[#5A7A6A]/5 p-3 rounded-xl -mx-3">
-                                    <span className="flex items-center gap-2"><Sparkles className="w-3 h-3" /> Ritual Reward</span>
-                                    <span>- ₹{discount.toLocaleString()}</span>
-                                </div>
-                            )}
-
                             <div className="flex justify-between text-sm text-[#7A8A8A]">
                                 <span>Logistics</span>
                                 <span className={shipping === 0 ? "text-[#5A7A6A] font-bold" : ""}>{shipping === 0 ? "Free (Launch Gift)" : `₹${shipping}`}</span>
                             </div>
+
+                            {/* DYNAMIC DISCOUNT ROW */}
+                            {discount > 0 && (
+                                <div className="flex justify-between text-sm text-[#5A7A6A] font-bold bg-[#5A7A6A]/5 p-3 rounded-xl -mx-3 my-2">
+                                    <span className="flex items-center gap-2"><Sparkles className="w-3 h-3" /> Coupon Off</span>
+                                    <span>- ₹{discount.toLocaleString()}</span>
+                                </div>
+                            )}
                         </div>
 
                         <div className="flex justify-between items-end mb-10">

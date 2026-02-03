@@ -103,15 +103,20 @@ export async function GET(req: Request) {
                 if (updateError) {
                     console.error("Verify: DB Update FAILED", updateError);
                 } else {
-                    console.log("Verify: DB Update SUCCESS");
+                    console.log(`Verify: DB Updated to ${dbPaymentStatus}`);
 
-                    // Send Emails (Must await in Serverless/Vercel)
-                    console.log("Verify: Triggering Email Service");
-                    try {
-                        await sendOrderEmails(orderId);
-                        console.log("Verify: Email Service Completed");
-                    } catch (emailErr) {
-                        console.error("Verify: Email Logic Failed", emailErr);
+                    // Send Emails ONLY if Succeeded
+                    if (dbPaymentStatus === 'succeeded') {
+                        console.log("Verify: Triggering Email Service");
+                        try {
+                            // Don't await? If we await, user waits. 
+                            // For critical order types, awaiting is safer to ensure delivery 
+                            // but we can catch errors so it doesn't fail the request.
+                            await sendOrderEmails(orderId);
+                            console.log("Verify: Email Service Completed");
+                        } catch (emailErr) {
+                            console.error("Verify: Email Logic Failed", emailErr);
+                        }
                     }
                 }
             }

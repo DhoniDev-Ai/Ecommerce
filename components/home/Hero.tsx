@@ -15,7 +15,7 @@ const SLIDES = [
         title: "Sea Buckthorn",
         subtitle: "The Himalayan Wild Berry",
         description: "Wild-harvested Himalayan berries. A concentrated burst of Omega-3,6,7 & 9.",
-        bgImage: "/assets/ttttt.png",
+        bgImage: "/assets/Tm/12.png",
         color: "text-[#2D3A3A]",
         accentColor: "#E67E22",
         borderColor: "rgba(230, 126, 34, 0.3)"
@@ -97,7 +97,7 @@ export function Hero() {
                         priority
                         sizes="100vw"
                         // Mobile: Center | Desktop: Center
-                        className="w-full  h-full max-sm:object-[45%_center] object-cover object-[25%_top] "
+                        className="w-full  h-full max-sm:object-[45%_center] object-cover object-[25%_bottom] "
                     />
 
                     {/* --- IMPROVISED ATMOSPHERIC LAYER --- */}

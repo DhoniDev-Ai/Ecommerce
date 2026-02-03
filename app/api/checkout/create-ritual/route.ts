@@ -2,10 +2,12 @@ import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase/admin';
 import { createOrder } from '@/lib/cashfree';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(req: Request) {
     try {
+        const payload = await req.json();
         const {
-            amount,
             couponId,
             paymentMethod,
             shippingAddress,
@@ -13,7 +15,7 @@ export async function POST(req: Request) {
             customerPhone,
             customerEmail,
             customerName
-        } = await req.json();
+        } = payload;
 
         // 1. Get Auth User
         const authHeader = req.headers.get('Authorization');
@@ -23,108 +25,178 @@ export async function POST(req: Request) {
         const { data: { user } } = await supabaseAdmin.auth.getUser(token);
         if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-        // 1.5 ENSURE USER EXISTS IN PUBLIC SCHEMA
-        // The trigger might fail or lag, so we force an upsert here to satisfy FK constraints.
-        const { error: upsertError } = await (supabaseAdmin
-            .from('users') as any)
+        // 2. Validate Items & Calculate Subtotal (SERVER SIDE)
+        if (!items || !Array.isArray(items) || items.length === 0) {
+            return NextResponse.json({ error: "Cart is empty" }, { status: 400 });
+        }
+
+        const productIds = items.map((i: any) => i.id);
+        // Cast to any to bypass stale types if needed, though product fields usually exist
+        const { data: dbProducts, error: prodError } = await (supabaseAdmin
+            .from('products') as any)
+            .select('id, price, sale_price, is_on_sale, stock_quantity')
+            .in('id', productIds);
+
+        if (prodError || !dbProducts) {
+            throw new Error("Failed to fetch products");
+        }
+
+        let calculatedSubtotal = 0;
+        const finalItems = [];
+
+        for (const item of items) {
+            const dbProduct = dbProducts.find((p: any) => p.id === item.id);
+            if (!dbProduct) continue; // Skip invalid items
+
+            // Determine price with strict casting
+            const rawPrice = Number(dbProduct.price);
+            const rawSale = Number(dbProduct.sale_price);
+            const isOnSale = dbProduct.is_on_sale;
+
+            const unitPrice = isOnSale ? (rawSale || rawPrice) : rawPrice;
+
+            // Log discrepancy check
+            console.log(`[API] Item: ${dbProduct.id} | DB Price: ${unitPrice} | Qty: ${item.quantity}`);
+
+            if (isNaN(unitPrice)) {
+                console.error(`[API] Invalid Price for product ${dbProduct.id}`);
+                continue;
+            }
+
+            calculatedSubtotal += unitPrice * Number(item.quantity);
+
+            finalItems.push({
+                product_id: dbProduct.id,
+                quantity: item.quantity,
+                price_at_purchase: unitPrice
+            });
+        }
+        console.log(`[API] Calculated Subtotal: ${calculatedSubtotal}`);
+
+        // 3. Coupon Logic
+        let discountAmount = 0;
+        let finalCouponId = null;
+
+        if (couponId) {
+            // Cast strictly to any because local types are definitely outdated for coupons
+            const { data: coupon, error: couponError } = await (supabaseAdmin
+                .from('coupons') as any)
+                .select('*')
+                .eq('id', couponId)
+                .eq('is_active', true)
+                .single();
+
+            if (coupon && !couponError) {
+                // FALLBACK for Schema Mismatch (discount_value vs value)
+                const val = coupon.discount_value ?? coupon.value ?? 0;
+                const type = coupon.discount_type ?? coupon.type ?? 'fixed';
+                const limit = coupon.usage_limit ?? null; // simple limit check
+                const min = coupon.min_purchase_amount ?? 0;
+                const max = coupon.max_discount_amount ?? null;
+
+                // Validation checks
+                const now = new Date();
+                const isExpired = coupon.expiry_date && new Date(coupon.expiry_date) < now;
+                const isLimitReached = limit && coupon.used_count >= limit;
+                const minPurchaseMet = calculatedSubtotal >= min;
+
+                // Log for debugging
+                console.log(`[API] Coupon Check: Code=${coupon.code}, Type=${type}, Val=${val}, Expired=${isExpired}, Limit=${isLimitReached}, MinMet=${minPurchaseMet}`);
+
+                if (!isExpired && !isLimitReached && minPurchaseMet) {
+                    finalCouponId = coupon.id;
+                    if (type === 'percentage') {
+                        discountAmount = (calculatedSubtotal * val) / 100;
+                        if (max && discountAmount > max) {
+                            discountAmount = max;
+                        }
+                    } else {
+                        discountAmount = val;
+                    }
+                }
+            }
+        }
+
+        console.log(`[API] Money Breakdown: Subtotal=${calculatedSubtotal}, Discount=${discountAmount}`);
+
+        // 4. Shipping Logic (Free for now, but explicit)
+        const shippingCost = 0;
+
+        // 5. Final Total
+        let totalAmount = calculatedSubtotal - discountAmount + shippingCost;
+        if (isNaN(totalAmount) || totalAmount < 0) totalAmount = 0;
+
+        console.log(`[API] Final: ${totalAmount} (Sub: ${calculatedSubtotal} - Disc: ${discountAmount} + Ship: ${shippingCost})`);
+
+        // 6. ENSURE USER EXISTS (Sync)
+        const { error: upsertError } = await (supabaseAdmin.from('users') as any)
             .upsert({
                 id: user.id,
                 email: user.email || customerEmail || null,
                 phone: user.phone || customerPhone || null,
                 full_name: user.user_metadata?.full_name || customerName || "Guest Member",
-                // role: 'user', // Removed to avoid Enum Mismatch (Let DB default handle it)
                 updated_at: new Date().toISOString()
             }, { onConflict: 'id' });
 
-        if (upsertError) {
-            console.error("User Upsert Failed:", upsertError);
-            // We continue? If upsert fails, insert order will likely fail too, but let's try.
-        }
+        if (upsertError) console.error("User Upsert Warning:", upsertError);
 
-        // 2. CHECK FOR EXISTING PENDING ORDER (Idempotency)
-        // Prevent duplicates if user clicks twice or browser retries
-        const { data: existingOrder } = await supabaseAdmin
-            .from('orders')
-            .select('id, status, payment_status')
-            .eq('user_id', user.id)
-            .eq('total_amount', amount)
-            .eq('status', 'pending')
-            .eq('payment_status', 'pending')
-            .gt('created_at', new Date(Date.now() - 2 * 60 * 1000).toISOString()) // Created in last 2 mins
-            .limit(1)
+        // 7. Create Order
+        const { data: newOrder, error: orderError } = await (supabaseAdmin.from('orders') as any)
+            .insert({
+                user_id: user.id,
+                total_amount: totalAmount, // Server calculated
+                shipping_address: {
+                    ...shippingAddress,
+                    email: customerEmail || user.email,
+                    breakdown: { // Storing breakdown for logic/display
+                        subtotal: calculatedSubtotal,
+                        discount: discountAmount,
+                        shipping: shippingCost
+                    }
+                },
+                status: 'pending',
+                payment_status: 'pending',
+                payment_method: paymentMethod || 'online',
+                payment_provider: paymentMethod === 'COD' ? 'COD' : 'cashfree',
+                coupon_id: finalCouponId
+            })
+            .select()
             .single();
 
-        let orderId = existingOrder?.id;
+        if (orderError) throw orderError;
+        const orderId = newOrder.id;
 
-        if (existingOrder) {
-            console.log(`Checkout: Reusing existing pending Order ID ${orderId}`);
-        } else {
-            // Create New Order
-            const { data: newOrder, error: orderError } = await (supabaseAdmin
-                .from('orders') as any)
-                .insert({
-                    user_id: user.id,
-                    total_amount: amount,
-                    shipping_address: {
-                        ...shippingAddress,
-                        email: customerEmail || user.email
-                    },
-                    status: 'pending',
-                    payment_status: 'pending',
-                    payment_method: paymentMethod || 'online',
-                    payment_provider: paymentMethod === 'COD' ? 'COD' : 'cashfree',
-                    coupon_id: couponId || null
-                })
-                .select()
-                .single();
-
-            if (orderError) throw orderError;
-            orderId = newOrder.id;
-        }
-
-        if (!orderId) throw new Error("Failed to generate Order ID");
-
-        // 3. Persist Items (Only if new order, or maybe generic?)
-        // Actually, if reusing order, items are likely already there.
-        // But to be safe, we can skip item insertion if reusing, OR delete & re-insert.
-        // For speed/simplicity, if reusing, we assume items are same (since amount matches).
-
-        let itemsPromise = Promise.resolve();
-        // Only insert items if we CREATED a new order. 
-        if (!existingOrder && items && items.length > 0) {
-            const orderItemsData = items.map((item: any) => ({
-                order_id: orderId!, // Assert string
-                product_id: item.id,
-                quantity: item.quantity,
-                price_at_purchase: item.price
+        // 8. Insert Order Items
+        if (finalItems.length > 0) {
+            const orderItemsData = finalItems.map(item => ({
+                order_id: orderId,
+                ...item
             }));
-
-            // @ts-ignore
-            itemsPromise = (supabaseAdmin.from('order_items') as any).insert(orderItemsData).then(({ error }) => {
-                if (error) console.error("Item persistence warning:", error);
-            });
+            await (supabaseAdmin.from('order_items') as any).insert(orderItemsData);
         }
 
-        // 4. Handle COD
+        // 9. Increment Coupon Usage
+        if (finalCouponId) {
+            await (supabaseAdmin.rpc as any)('increment_coupon_usage', { coupon_id: finalCouponId });
+        }
+
+        // 10. Handle Response
         if (paymentMethod === 'COD') {
-            await itemsPromise;
             return NextResponse.json({
                 mode: 'COD',
-                orderId: orderId!
+                orderId: orderId
             });
         }
 
-        // 5. Create Cashfree Order
-        // We reuse the orderId for Cashfree too.
-        // Cashfree allows creating multiple sessions for same order_id (it just updates session).
-        const cfPromise = createOrder({
-            order_amount: amount,
+        // 11. Cashfree
+        const cfResponse = await createOrder({
+            order_amount: totalAmount,
             order_currency: "INR",
-            order_id: orderId!,
+            order_id: orderId,
             customer_details: {
                 customer_id: user.id,
                 customer_phone: customerPhone || user.phone || "9999999999",
-                customer_email: customerEmail || user.email || "",
+                customer_email: customerEmail || user.email || "guest@example.com",
                 customer_name: customerName || user.user_metadata?.full_name || "Guest User"
             },
             order_meta: {
@@ -132,15 +204,13 @@ export async function POST(req: Request) {
             }
         });
 
-        // Await both operations (Performance Boost)
-        const [_, cfResponse] = await Promise.all([itemsPromise, cfPromise]);
-
         return NextResponse.json({
-            paymentSessionId: cfResponse.payment_session_id
+            paymentSessionId: cfResponse.payment_session_id,
+            orderId: orderId
         });
 
     } catch (err: any) {
-        console.error("Cashfree Error:", err);
-        return NextResponse.json({ error: err.message }, { status: 500 });
+        console.error("Create Ritual Error:", err);
+        return NextResponse.json({ error: err.message || "Internal Server Error" }, { status: 500 });
     }
 }

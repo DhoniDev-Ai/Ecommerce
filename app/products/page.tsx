@@ -12,10 +12,12 @@ import { SlidersHorizontal, X } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 
 import { Suspense } from "react";
+import { getProductStats, ProductStats } from "@/actions/store/stats";
 
 function ProductsContent() {
     const searchParams = useSearchParams();
     const [products, setProducts] = useState<Product[]>([]);
+    const [productStats, setProductStats] = useState<ProductStats>({});
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [selectedCategory, setSelectedCategory] = useState<string>("All");
@@ -43,6 +45,7 @@ function ProductsContent() {
                 const { data, error } = await supabase
                     .from('products')
                     .select('*')
+                    .eq('is_active', true)
                     .order('created_at', { ascending: false });
 
                 if (error) throw error;
@@ -68,6 +71,11 @@ function ProductsContent() {
                 }));
 
                 setProducts(mappedProducts);
+
+                // Fetch stats concurrently (client-side trigger for server action)
+                // Note: ideally we fetch this on server if this was a server component, but we are client-side for filtering.
+                getProductStats().then(stats => setProductStats(stats));
+
             } catch (err: any) {
                 if (err.name === 'AbortError' || err.message?.includes('AbortError')) return;
                 //console.error('Error fetching products:', err);
@@ -79,6 +87,25 @@ function ProductsContent() {
         fetchProducts();
     }, []);
 
+    // Re-sort products when stats load
+    useEffect(() => {
+        if (Object.keys(productStats).length > 0) {
+            setProducts(currentProducts => {
+                const sorted = [...currentProducts].sort((a, b) => {
+                    const salesA = productStats[a.id] || 0;
+                    const salesB = productStats[b.id] || 0;
+                    // Sort descending by sales
+                    return salesB - salesA;
+                });
+                // Only update if order actually changed to avoid loop
+                if (JSON.stringify(sorted.map(p => p.id)) !== JSON.stringify(currentProducts.map(p => p.id))) {
+                    return sorted;
+                }
+                return currentProducts;
+            });
+        }
+    }, [productStats]);
+
     const filteredProducts = useMemo(() => {
         return products.filter((p) => {
             const matchesCategory = selectedCategory === "All" || p.category === selectedCategory;
@@ -86,6 +113,18 @@ function ProductsContent() {
             return matchesCategory && matchesGoal;
         });
     }, [products, selectedCategory, selectedGoal]);
+
+    // Calculate ranking based on stats
+    const rankedProductIds = useMemo(() => {
+        return Object.entries(productStats)
+            .sort(([, a], [, b]) => b - a)
+            .map(([id]) => id);
+    }, [productStats]);
+
+    const getTrendingRank = (id: string) => {
+        const rank = rankedProductIds.indexOf(id);
+        return rank === -1 ? undefined : rank + 1;
+    };
 
     return (
         <div className="min-h-screen flex flex-col bg-[#FDFBF7] selection:bg-[#5A7A6A]/10">
@@ -192,7 +231,11 @@ function ProductsContent() {
                                         }}
                                         className={index % 3 === 1 ? "lg:translate-y-16" : ""}
                                     >
-                                        <ProductCard product={product} />
+                                        <ProductCard
+                                            product={product}
+                                            trendingRank={getTrendingRank(product.id)}
+                                            salesCount={productStats[product.id] || 0}
+                                        />
                                     </motion.div>
                                 ))}
                             </AnimatePresence>

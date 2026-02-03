@@ -8,12 +8,14 @@ import { cn } from "@/utils/cn";
 import ReactMarkdown from "react-markdown";
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 export function ChatWidget() {
     const { isOpen, setIsOpen, messages, sendMessage, isLoading } = useAI();
     const [input, setInput] = useState("");
     const [hasOpened, setHasOpened] = useState(false); // Track if user has seen the chat
     const messagesEndRef = useRef<HTMLDivElement>(null);
+    const pathname = usePathname();
 
     // Auto-scroll to bottom
     useEffect(() => {
@@ -92,6 +94,10 @@ export function ChatWidget() {
         }
     };
 
+    if (pathname?.startsWith('/admin')) {
+        return null;
+    }
+
     return (
         <>
             {/* 1. Floating Trigger Button */}
@@ -107,11 +113,11 @@ export function ChatWidget() {
                 className="fixed  bottom-20 right-6 z-50 w-16 h-16 bg-[#2D3A3A] text-white rounded-full cursor-pointer shadow-2xl flex items-center justify-center border border-[#5A7A6A]/50 group"
             >
                 <Image
-                    src="/assets/ai_avatar.png"
+                    src="/ai.webp"
                     alt="Aya"
                     width={64}
                     height={64}
-                    className="w-full h-full rounded-full object-cover opacity-90 group-hover:opacity-100 transition-opacity"
+                    className="w-full h-full object-[25%_top] rounded-full object-cover opacity-90 group-hover:opacity-100 transition-opacity"
                     priority // Load priority for the trigger avatar
                 />
 
@@ -140,11 +146,11 @@ export function ChatWidget() {
                     <div className="relative z-10 flex items-center gap-3">
                         <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center border border-white/10 overflow-hidden text-[#5A7A6A]">
                             <Image
-                                src="/assets/ai_avatar.png"
+                                src="/ai.webp"
                                 alt="Aya"
                                 width={40}
                                 height={40}
-                                className="w-full h-full object-cover"
+                                className="w-full object-[25%_top] h-full object-cover"
                             />
                         </div>
                         <div>
@@ -181,11 +187,11 @@ export function ChatWidget() {
                                     <User className="w-4 h-4 text-[#2D3A3A]" />
                                 ) : (
                                     <Image
-                                        src="/assets/ai_avatar.png"
+                                        src="/ai.webp"
                                         alt="Aya"
                                         width={32}
                                         height={32}
-                                        className="w-full h-full object-cover"
+                                        className="w-full object-[25%_top] h-full object-cover"
                                     />
                                 )}
                             </div>
