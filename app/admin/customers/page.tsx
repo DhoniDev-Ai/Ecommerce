@@ -46,7 +46,7 @@ export default async function CustomersPage() {
                 </div>
             </header>
 
-            <div className="bg-white rounded-[2rem] border border-[#E8E6E2]/60 overflow-hidden shadow-sm">
+            <div className="bg-white rounded-4xl border border-[#E8E6E2]/60 overflow-hidden shadow-sm">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left">
                         <thead className="bg-[#Fdfbf7] border-b border-[#E8E6E2]">

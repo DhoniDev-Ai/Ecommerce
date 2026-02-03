@@ -68,13 +68,18 @@ export default function CheckoutPage() {
     // --- HELPERS ---
     const loadUserData = useCallback(async (currentUser: any) => {
         setUser(currentUser);
+        // Ensure phone is prefilled from Auth User
+        const identifier = currentUser.phone || currentUser.email || "";
+        const isPhone = identifier.startsWith('+');
 
         // Parallel data fetching
         const [_, { data: addresses }] = await Promise.all([
             Promise.resolve().then(() => {
                 setFormData(prev => ({
                     ...prev,
-                    email: currentUser.email || "",
+                    // If auth user has phone, use it. Else keep existing or empty.
+                    whatsapp: currentUser.phone || prev.whatsapp,
+                    email: currentUser.email || prev.email,
                     fullName: currentUser.user_metadata?.full_name || prev.fullName
                 }));
             }),
@@ -89,89 +94,78 @@ export default function CheckoutPage() {
         if (addresses && addresses.length > 0) {
             setSavedAddresses(addresses);
             if (selectedAddressId === "new") {
-                setSelectedAddressId(addresses[0].id);
-                fillFormWithAddress(addresses[0]);
+                // If we have saved addresses, select the default one immediately
+                const defaultAddr = addresses.find(a => a.is_default) || addresses[0];
+                setSelectedAddressId(defaultAddr.id);
+                fillFormWithAddress(defaultAddr);
+                setIsEditing(false);
             }
         }
     }, [selectedAddressId]); // Minimal dependency
 
     // --- OTP HANDLERS (WHATSAPP) ---
-    const handleSendOtp = async () => {
-        // Force +91 prefix
-        const digits = formData.whatsapp.replace(/\D/g, '');
-        let phone = '';
-
-        if (digits.length === 12 && digits.startsWith('91')) {
-            phone = '+' + digits;
-        } else if (digits.length === 10) {
-            phone = '+91' + digits;
-        } else {
-            setToast({ message: "Please enter a valid 10-digit number.", type: 'error' });
+    // --- OTP HANDLERS (WHATSAPP - META DIRECT) ---
+    // --- AUTH HANDLERS (EMAIL MAGIC LINK) ---
+    const handleSendMagicLink = async () => {
+        if (!validateEmail(formData.email)) {
+            setToast({ message: "Please enter a valid email address.", type: 'error' });
             return;
         }
 
         setAuthLoading(true);
         try {
-            // NOTE: This requires 'whatsapp' channel enabled in Supabase -> Authentication -> Providers -> Phone
-            // And a Twilio/Msg91 connection.
             const { error } = await supabase.auth.signInWithOtp({
-                phone: phone,
-                options: { channel: 'whatsapp', shouldCreateUser: true }
+                email: formData.email,
+                options: {
+                    emailRedirectTo: `${window.location.origin}/checkout`, // Redirect back to checkout
+                }
             });
 
-            if (error) {
-                // Fallback suggestion for user if they haven't set up WhatsApp yet
-                if (error.message.includes("Signups not allowed")) throw new Error("Please enable Phone Auth in Supabase.");
-                throw error;
-            }
+            if (error) throw error;
 
             setOtpSent(true);
-            setToast({ message: "WhatsApp code sent.", type: 'success' });
+            setToast({ message: "Magic link sent to your email!", type: 'success' });
         } catch (err: any) {
-            console.error("OTP Error:", err);
-            setToast({ message: err.message || "Failed to send code.", type: 'error' });
+            console.error("Auth Error:", err);
+            setToast({ message: err.message || "Failed to send link.", type: 'error' });
         } finally {
             setAuthLoading(false);
         }
     };
 
-    const handleVerifyOtp = async () => {
+    const handleVerifyEmailOtp = async () => {
         if (!otp || otp.length < 6) {
             setToast({ message: "Please enter a valid 6-digit code.", type: 'error' });
             return;
         }
         setAuthLoading(true);
         try {
-            const digits = formData.whatsapp.replace(/\D/g, '');
-            let phone = '';
-            if (digits.length === 12 && digits.startsWith('91')) phone = '+' + digits;
-            else if (digits.length === 10) phone = '+91' + digits;
-            else throw new Error("Invalid phone number format");
-
-            const { data: { session, user }, error } = await supabase.auth.verifyOtp({
-                phone: phone,
+            // Verify Email OTP
+            const { data, error } = await supabase.auth.verifyOtp({
+                email: formData.email,
                 token: otp,
-                type: 'sms' // Verify uses 'sms' type even for WhatsApp typically
+                type: 'email'
             });
 
             if (error) throw error;
 
-            if (user) {
+            if (data.session) {
                 setToast({ message: "Identity Verified.", type: 'success' });
-                await loadUserData(user);
+                await loadUserData(data.user);
             }
         } catch (err: any) {
             console.error("Verify Error:", err);
-            const errorMessage = err.message || "Invalid OTP";
-            if (errorMessage.includes("expired") || errorMessage.includes("invalid")) {
-                setToast({ message: "Code expired or invalid.", type: 'error' });
-            } else {
-                setToast({ message: errorMessage, type: 'error' });
-            }
+            setToast({ message: err.message || "Invalid Code", type: 'error' });
         } finally {
             setAuthLoading(false);
         }
     };
+
+    // WHATSAPP AUTH LOGIC (PAUSED)
+    /*
+    const handleSendOtp = async () => { ... }
+    const handleVerifyOtp = async () => { ... }
+    */
 
     const [isMounted, setIsMounted] = useState(false);
     useEffect(() => {
@@ -247,7 +241,9 @@ export default function CheckoutPage() {
             : appliedCoupon.value;
     }, [subtotal, appliedCoupon]);
 
-    const shipping = subtotal >= 2500 ? 0 : 150;
+    // LAUNCH OFFER: Free Shipping for everyone
+    const shipping = 0;
+    // const shipping = subtotal >= 2500 ? 0 : 150;
     const finalTotal = subtotal - discount + shipping;
 
     // --- ACTIONS ---
@@ -316,20 +312,31 @@ export default function CheckoutPage() {
     };
 
     // --- AUTO-SAVE LOGIC ---
+    // (This was part of the original file but I need to link it back correctly. The next replacement added a new autoSaveData, so I don't need to add it here, BUT I must ensure this block ends right before the new autoSaveData)
+
+    const toggleTerms = () => {
+        const newState = !agreedToTerms;
+        setAgreedToTerms(newState);
+        if (newState) {
+            autoSaveData();
+        }
+    };
+
+    // --- AUTO-SAVE LOGIC (Enhanced) ---
     const autoSaveData = async () => {
         if (!user) return;
 
-        // 1. Auto-save Address if new
+        // 1. Save New Address explicitly
         if (selectedAddressId === "new") {
             try {
                 // Basic validation before save
                 if (formData.fullName.length < 3 || formData.addressLine.length < 5 || !formData.pincode) return;
 
-                const { data: newAddr } = await (supabase.from('addresses') as any)
+                const { data: newAddr, error } = await (supabase.from('addresses') as any)
                     .insert({
                         user_id: user.id,
                         full_name: formData.fullName,
-                        phone: formData.whatsapp,
+                        phone: formData.whatsapp, // Use current form phone
                         address_line_1: formData.addressLine,
                         address_line_2: formData.landmark,
                         city: formData.city,
@@ -343,29 +350,23 @@ export default function CheckoutPage() {
                 if (newAddr) {
                     setSavedAddresses([newAddr, ...savedAddresses]);
                     setSelectedAddressId(newAddr.id);
+                    // No toast needed for auto-save, generic success
                 }
             } catch (err) { console.error("Auto-save address failed", err); }
         }
 
-        // 2. Sync Profile
+        // 2. Sync Profile (Phone/Name/Email)
         try {
-            const { data: profile } = await supabase.from('users').select('full_name, phone').eq('id', user.id).single();
-            if (!profile?.full_name || !profile?.phone) {
-                await (supabase.from('users') as any).update({
-                    full_name: profile?.full_name || formData.fullName,
-                    phone: profile?.phone || formData.whatsapp
-                }).eq('id', user.id);
-            }
+            await (supabase.from('users') as any).update({
+                full_name: formData.fullName,
+                // Only update phone if it's missing in profile, or if we trust the user input
+                // But auth phone shouldn't change easily. Let's update metadata fields mainly.
+                email: formData.email // Sync email if changed
+            }).eq('id', user.id);
         } catch (err) { console.error("Profile sync failed", err); }
     };
 
-    const toggleTerms = () => {
-        const newState = !agreedToTerms;
-        setAgreedToTerms(newState);
-        if (newState) {
-            autoSaveData();
-        }
-    };
+    // ... (toggleTerms maintained) ...
 
     const handleProceedToPayment = async () => {
         // AUTH CHECK: Must be verified user (via phone or login)
@@ -389,7 +390,13 @@ export default function CheckoutPage() {
 
         setProcessing(true);
         setToast({ message: "Initiating ritual...", type: 'success' });
-        // ... (rest of payment logic)
+
+        // AUTO-SAVE BEFORE PAYMENT (CRITICAL FIX)
+        await autoSaveData();
+
+        // Continue with payment...
+        // ... (rest of function) ...
+
 
 
         try {
@@ -613,36 +620,40 @@ export default function CheckoutPage() {
 
 
                                 {/* AUTHENTICATION UI - OTP FLOW (WHATSAPP NOW) */}
-                                {!user && validateWhatsApp(formData.whatsapp) && (
+                                {!user && validateEmail(formData.email) && (
                                     <div className="bg-[#5A7A6A]/5 p-6 rounded-3xl border border-[#5A7A6A]/10 animate-in fade-in slide-in-from-top-4 my-6">
                                         {!otpSent ? (
                                             <div className="flex items-center justify-between gap-4">
                                                 <p className="text-[10px] text-[#5A7A6A] font-medium leading-relaxed">
                                                     <span className="font-bold block mb-1">Ritual Identity Required</span>
-                                                    Verify your WhatsApp number to secure this order.
+                                                    Verify your email to secure this order.
                                                 </p>
                                                 <button
-                                                    onClick={handleSendOtp}
+                                                    onClick={handleSendMagicLink}
                                                     disabled={authLoading}
-                                                    className="bg-[#25D366] text-white px-5 py-3 rounded-full cursor-pointer text-[9px] uppercase font-bold tracking-widest hover:shadow-lg hover:bg-[#1ebc57] transition-all disabled:opacity-50 whitespace-nowrap flex items-center gap-2"
+                                                    className="bg-[#2D3A3A] text-white px-5 py-3 rounded-full cursor-pointer text-[9px] uppercase font-bold tracking-widest hover:shadow-lg hover:bg-black transition-all disabled:opacity-50 whitespace-nowrap flex items-center gap-2"
                                                 >
-                                                    {authLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Verify Number"}
+                                                    {authLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Verify Email"}
                                                 </button>
                                             </div>
                                         ) : (
                                             <div className="space-y-4">
                                                 <div className="flex items-center justify-between">
                                                     <p className="text-[10px] text-[#5A7A6A] font-medium">
-                                                        WhatsApp code sent to <span className="font-bold text-[#2D3A3A]">{formData.whatsapp}</span>
+                                                        Magic link & Code sent to <span className="font-bold text-[#2D3A3A]">{formData.email}</span>
                                                     </p>
                                                     <button
                                                         onClick={() => setOtpSent(false)}
                                                         className="text-[9px] text-[#7A8A8A] hover:text-[#5A7A6A] underline decoration-dotted underline-offset-2"
                                                     >
-                                                        Change
+                                                        Retry
                                                     </button>
                                                 </div>
+                                                <div className="text-[10px] text-[#7A8A8A] italic mb-2">
+                                                    Check your inbox. Click the link OR enter the code below.
+                                                </div>
 
+                                                {/* EMAIL OTP INPUT */}
                                                 <div className="flex gap-2 items-center ">
                                                     <CheckoutInput
                                                         label=""
@@ -650,12 +661,12 @@ export default function CheckoutPage() {
                                                         value={otp}
                                                         onChange={(e: React.ChangeEvent<HTMLInputElement>) => setOtp(e.target.value)}
                                                         placeholder="Enter 6-digit code"
-                                                        className="tracking-[0.5em]  text-center font-mono"
+                                                        className="tracking-[0.5em] text-center font-mono bg-white"
                                                     />
                                                     <button
-                                                        onClick={handleVerifyOtp}
+                                                        onClick={handleVerifyEmailOtp}
                                                         disabled={authLoading || otp.length < 6}
-                                                        className="bg-[#2D3A3A] text-white px-6 h-10 mt-3 rounded-2xl text-[9px] uppercase font-bold tracking-widest hover:bg-black  transition-all disabled:opacity-50"
+                                                        className="bg-[#2D3A3A] text-white px-6 h-10 mt-3 rounded-2xl text-[9px] uppercase font-bold tracking-widest hover:bg-black transition-all disabled:opacity-50"
                                                     >
                                                         {authLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Confirm"}
                                                     </button>
@@ -806,7 +817,7 @@ export default function CheckoutPage() {
 
                             <div className="flex justify-between text-sm text-[#7A8A8A]">
                                 <span>Logistics</span>
-                                <span className={shipping === 0 ? "text-[#5A7A6A]" : ""}>{shipping === 0 ? "Complimentary" : `₹${shipping}`}</span>
+                                <span className={shipping === 0 ? "text-[#5A7A6A] font-bold" : ""}>{shipping === 0 ? "Free (Launch Gift)" : `₹${shipping}`}</span>
                             </div>
                         </div>
 

@@ -9,11 +9,12 @@ import { Sparkles, Mail, ArrowRight, Loader2, KeyRound, Smartphone, MessageCircl
 import { cn } from "@/utils/cn";
 
 export default function LoginPage() {
-    const [phone, setPhone] = useState("");
-    const [otp, setOtp] = useState("");
+    const [email, setEmail] = useState("");
+    // const [phone, setPhone] = useState(""); // WhatsApp Auth (Paused)
+    // const [otp, setOtp] = useState("");
 
     // Auth State
-    const [otpSent, setOtpSent] = useState(false);
+    const [linkSent, setLinkSent] = useState(false);
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
@@ -30,68 +31,39 @@ export default function LoginPage() {
         return () => subscription.unsubscribe();
     }, [router]);
 
-    const handleSendOtp = async (e: React.FormEvent) => {
+    const handleSendMagicLink = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
         setMessage(null);
 
         try {
-            const digits = phone.replace(/\D/g, '');
-            if (digits.length !== 10) throw new Error("Please enter a valid 10-digit phone number.");
+            // Basic Email Validation
+            if (!email.includes('@') || !email.includes('.')) throw new Error("Please enter a valid email address.");
 
             const { error } = await supabase.auth.signInWithOtp({
-                phone: '+91' + digits,
-                options: { channel: 'whatsapp' }
+                email,
+                options: {
+                    emailRedirectTo: `${window.location.origin}/auth/callback`,
+                }
             });
 
             if (error) throw error;
 
-            setOtpSent(true);
-            setMessage({ type: 'success', text: `WhatsApp code sent to +91 ${digits}` });
+            setLinkSent(true);
+            setMessage({ type: 'success', text: `Magic link sent to ${email}` });
         } catch (err: any) {
-            setMessage({ type: 'error', text: err.message || "Failed to send code." });
+            console.error("Auth Error:", err);
+            setMessage({ type: 'error', text: err.message || "Failed to send link." });
         } finally {
             setLoading(false);
         }
     };
 
-    const handleVerifyOtp = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setLoading(true); // Keep loading true on success to prevent UI flicker
-        setMessage(null);
-
-        if (otp.length < 6) {
-            setMessage({ type: 'error', text: "Please enter a valid 6-digit code." });
-            setLoading(false);
-            return;
-        }
-
-        try {
-            const digits = phone.replace(/\D/g, '');
-            const { error } = await supabase.auth.verifyOtp({
-                phone: '+91' + digits,
-                token: otp,
-                type: 'sms'
-            });
-
-            if (error) throw error;
-
-            // Success: Show message but KEEP loading state true while redirecting
-            setMessage({ type: 'success', text: "Verified! Entering Sanctuary..." });
-
-            // The useEffect listener will handle the redirect automatically and faster
-            // We just wait here to avoid resetting loading state
-
-        } catch (err: any) {
-            setLoading(false); // Only stop loading on error
-            const msg = err.message || "Invalid OTP";
-            if (msg.includes("expired") || msg.includes("invalid")) {
-                setMessage({ type: 'error', text: "Code expired or invalid. Try again." });
-            } else {
-                setMessage({ type: 'error', text: msg });
-            }
-        }
-    };
+    /* 
+    // WHATSAPP AUTH LOGIC (PAUSED FOR META VERIFICATION)
+    const handleSendOtp = async (e: React.FormEvent) => { ... }
+    const handleVerifyOtp = async (e: React.FormEvent) => { ... }
+    */
 
     return (
         <div className="min-h-screen bg-[#FDFBF7] flex flex-col selection:bg-[#5A7A6A]/10">
@@ -113,32 +85,25 @@ export default function LoginPage() {
                             Ritual <span className="italic font-serif font-light text-[#5A7A6A]">Access.</span>
                         </h1>
                         <p className="text-xs text-[#7A8A8A] font-light max-w-xs mx-auto leading-relaxed">
-                            {otpSent
-                                ? "Enter the secret code we just sent you."
+                            {linkSent
+                                ? "Check your inbox for the magic link."
                                 : "Begin your journey with a secure, passwordless login."}
                         </p>
                     </div>
 
-                    {!otpSent ? (
-                        <form onSubmit={handleSendOtp} className="space-y-6">
+                    {!linkSent ? (
+                        <form onSubmit={handleSendMagicLink} className="space-y-6">
                             <div className="relative group">
                                 <>
-                                    <Smartphone className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#7A8B7A] transition-colors group-focus-within:text-[#5A7A6A]" />
+                                    <Mail className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#7A8B7A] transition-colors group-focus-within:text-[#5A7A6A]" />
                                     <div className="flex items-center w-full bg-white border border-[#E8E6E2] rounded-4xl focus-within:ring-2 focus-within:ring-[#5A7A6A]/20 focus-within:border-[#5A7A6A] transition-all overflow-hidden">
-                                        <div className="pl-14 pr-2 py-5 bg-gray-50 border-r border-[#E8E6E2] text-sm font-mono text-[#5A7A6A] select-none">
-                                            +91
-                                        </div>
                                         <input
-                                            type="tel"
-                                            placeholder="99999 99999"
+                                            type="email"
+                                            placeholder="hello@ayuniv.com"
                                             required
-                                            maxLength={10}
-                                            value={phone}
-                                            onChange={(e) => {
-                                                const val = e.target.value.replace(/\D/g, '');
-                                                if (val.length <= 10) setPhone(val);
-                                            }}
-                                            className="w-full px-4 py-5 bg-transparent focus:outline-none text-sm placeholder:text-[#9AA09A] font-mono tracking-widest"
+                                            value={email}
+                                            onChange={(e) => setEmail(e.target.value)}
+                                            className="w-full pl-14 pr-4 py-5 bg-transparent focus:outline-none text-sm placeholder:text-[#9AA09A] font-mono tracking-wider"
                                         />
                                     </div>
                                 </>
@@ -153,51 +118,36 @@ export default function LoginPage() {
                                     <Loader2 className="w-4 h-4 animate-spin" />
                                 ) : (
                                     <>
-                                        Send OTP <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                                        Send Magic Link <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                                     </>
                                 )}
                             </button>
                         </form>
                     ) : (
-                        <form onSubmit={handleVerifyOtp} className="space-y-6">
-                            <div className="relative group">
-                                <KeyRound className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#7A8B7A] transition-colors group-focus-within:text-[#5A7A6A]" />
-                                <input
-                                    type="text"
-                                    placeholder="Enter 6-digit code"
-                                    required
-                                    maxLength={6}
-                                    value={otp}
-                                    onChange={(e) => setOtp(e.target.value)}
-                                    className="w-full pl-14 pr-6 py-5 bg-white border border-[#E8E6E2] rounded-4xl focus:outline-none focus:ring-2 focus:ring-[#5A7A6A]/20 focus:border-[#5A7A6A] transition-all text-sm placeholder:text-[#9AA09A] tracking-[0.5em] font-mono text-center"
-                                />
+                        <div className="space-y-6 bg-white p-8 rounded-[2rem] border border-[#E8E6E2] shadow-sm text-center">
+                            <div className="w-16 h-16 bg-[#5A7A6A]/10 rounded-full flex items-center justify-center mx-auto text-[#5A7A6A] mb-4">
+                                <Mail className="w-8 h-8" />
                             </div>
-
-                            <button
-                                disabled={loading}
-                                type="submit"
-                                className="w-full py-5 bg-[#2D3A3A] text-white rounded-full text-[10px] font-bold uppercase tracking-[0.3em] hover:bg-[#1D2A2A] transition-all flex items-center justify-center gap-3 group shadow-xl shadow-black/5 disabled:opacity-50"
-                            >
-                                {loading ? (
-                                    <Loader2 className="w-4 h-4 animate-spin" />
-                                ) : (
-                                    <>
-                                        Verify & Enter <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                                    </>
-                                )}
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => {
-                                    setOtpSent(false);
-                                    setOtp("");
-                                    setMessage(null);
-                                }}
-                                className="w-full text-[9px] text-[#9AA09A] hover:text-[#5A7A6A] uppercase tracking-widest transition-colors"
-                            >
-                                Change Number
-                            </button>
-                        </form>
+                            <div className="space-y-2">
+                                <h3 className="font-heading text-lg text-[#2D3A3A]">Link Sent</h3>
+                                <p className="text-xs text-[#7A8A8A] leading-relaxed">
+                                    We've sent a secure access link to <br />
+                                    <span className="font-bold text-[#2D3A3A]">{email}</span>
+                                </p>
+                            </div>
+                            <div className="pt-4">
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setLinkSent(false);
+                                        setMessage(null);
+                                    }}
+                                    className="text-[9px] text-[#9AA09A] hover:text-[#5A7A6A] uppercase tracking-widest transition-colors flex items-center justify-center gap-2 mx-auto"
+                                >
+                                    <ArrowRight className="w-3 h-3 rotate-180" /> Use different email
+                                </button>
+                            </div>
+                        </div>
                     )}
 
                     <AnimatePresence>

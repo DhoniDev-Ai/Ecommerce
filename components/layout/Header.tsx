@@ -14,10 +14,10 @@ import Image from "next/image";
 
 const navigation = [
     { name: "Collection", href: "/products" },
-    { name: "The Alchemy", href: "/about" },
+    { name: "Our Story", href: "/about" },
     { name: "Journal", href: "/journal" },
     { name: "Orders", href: "/dashboard/orders" },
-    { name: "Contact", href: "/contact" }
+    { name: "Wellness Support", href: "/contact" }
 ];
 
 export function Header() {
@@ -126,6 +126,7 @@ export function Header() {
                     {/* Cart Button - Mobile */}
                     <button
                         onClick={openCart}
+                        name="Cart"
                         className="text-[#2D3A3A]/70 hover:text-[#5A7A6A] transition-colors relative p-2"
                     >
                         <ShoppingBag className="h-5 w-5" />
@@ -140,6 +141,7 @@ export function Header() {
                     <button
                         type="button"
                         className="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-foreground"
+                        name="Menu"
                         onClick={() => setMobileMenuOpen(true)}
                     >
                         <span className="sr-only">Open main menu</span>
@@ -176,6 +178,7 @@ export function Header() {
                     </Link>
                     <button
                         onClick={openCart}
+                        name="Cart"
                         className="text-[#2D3A3A]/70 hover:text-[#5A7A6A] cursor-pointer transition-colors relative p-2"
                     >
                         <ShoppingBag className="h-5 w-5" />

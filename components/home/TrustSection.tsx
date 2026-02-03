@@ -22,7 +22,7 @@ const trustItems = [
     {
         icon: ShieldCheck,
         title: "Clean Promise",
-        description: "Transparent sourcing from Jaipur with zero hidden additives.",
+        description: "Every product is rigorously vetted to ensure zero hidden additives.",
     },
 ];
 

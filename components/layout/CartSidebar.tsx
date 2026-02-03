@@ -44,7 +44,8 @@ export function CartSidebar() {
     };
 
     const total = cartTotal;
-    const isFreeShipping = total >= 2500;
+    const isFreeShipping = true; // LAUNCH OFFER
+    // const isFreeShipping = total >= 2500;
 
     return (
         <>
@@ -136,22 +137,22 @@ export function CartSidebar() {
                                     <button onMouseEnter={() => setShowShippingInfo(true)} onMouseLeave={() => setShowShippingInfo(false)} className="cursor-help opacity-40 hover:opacity-100 transition-opacity"><Info className="w-2.5 h-2.5 text-[#5A7A6A]" /></button>
                                 </div>
                                 <AnimatePresence>
-                                    {!isFreeShipping && (
-                                        <motion.span initial={{ opacity: 0, x: 5 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 5 }} className="text-[8px] uppercase tracking-[0.2em] font-medium text-[#7A8A8A]">₹{(2500 - total).toLocaleString()} to unlock</motion.span>
-                                    )}
+                                    <motion.span initial={{ opacity: 0, x: 5 }} animate={{ opacity: 1, x: 0 }} className="text-[8px] uppercase tracking-[0.2em] font-bold text-[#5A7A6A] animate-pulse">
+                                        Launch Gift Unlocked
+                                    </motion.span>
                                 </AnimatePresence>
                             </div>
 
                             <AnimatePresence>
                                 {showShippingInfo && (
                                     <motion.div initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 5 }} className="absolute bottom-full mb-3 left-0 w-full bg-[#2D3A3A] text-white p-4 rounded-2xl text-[9px] tracking-[0.15em] leading-relaxed z-10 shadow-2xl">
-                                        Orders exceeding <span className="text-[#5A7A6A] font-bold">₹2,500</span> qualify for complimentary sanctuary shipping across India.
+                                        Enjoy <span className="text-[#5A7A6A] font-bold">Complimentary Shipping</span> on all orders during our launch month.
                                     </motion.div>
                                 )}
                             </AnimatePresence>
 
                             <div className="h-0.5 bg-[#F3F1ED] rounded-full overflow-hidden">
-                                <motion.div className="h-full bg-[#5A7A6A]" initial={{ width: 0 }} animate={{ width: `${Math.min((total / 2500) * 100, 100)}%` }} transition={{ duration: 1.5, ease: [0.19, 1, 0.22, 1] }} />
+                                <motion.div className="h-full bg-[#5A7A6A]" initial={{ width: "100%" }} animate={{ width: "100%" }} />
                             </div>
                         </div>
 

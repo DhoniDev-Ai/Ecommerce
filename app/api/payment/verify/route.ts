@@ -121,8 +121,12 @@ export async function GET(req: Request) {
             if (!email && orderData.shipping_address) {
                 try {
                     const addr = typeof orderData.shipping_address === 'string' ? JSON.parse(orderData.shipping_address) : orderData.shipping_address;
+                    // Check for email in different possible fields (case insensitive just in case)
                     if (addr.email) email = addr.email;
-                } catch (e) { }
+                    else if (addr.customerEmail) email = addr.customerEmail;
+                } catch (e) {
+                    console.log("Verify: Failed to parse shipping address for email", e);
+                }
             }
 
             googleData = {

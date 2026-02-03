@@ -97,7 +97,7 @@ export function Hero() {
                         priority
                         sizes="100vw"
                         // Mobile: Center | Desktop: Center
-                        className="w-full  h-full object-[45%_center] object-cover md:object-center"
+                        className="w-full  h-full max-sm:object-[45%_center] object-cover object-center "
                     />
 
                     {/* --- IMPROVISED ATMOSPHERIC LAYER --- */}
@@ -174,6 +174,7 @@ export function Hero() {
                                 <Link
                                     href={`/products/${slide.slug}`}
                                     className="group relative inline-flex items-center gap-4 px-8 py-4 md:px-10 md:py-5 text-white rounded-full overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-2xl active:scale-95"
+                                    aria-label="Right"
                                     style={{ backgroundColor: slide.accentColor }}
                                 >
                                     <span className="text-[9px] md:text-[10px] uppercase tracking-[0.3em] font-bold relative z-10">Start Ritual</span>
@@ -211,12 +212,14 @@ export function Hero() {
                 <div className="flex gap-3">
                     <button
                         onClick={prev}
+                        aria-label="Left"
                         className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-white/40 backdrop-blur-md flex items-center cursor-pointer justify-center hover:bg-white transition-all shadow-sm"
                     >
                         <ChevronLeft className="w-4 h-4 md:w-5 md:h-5 text-[#2D3A3A]" />
                     </button>
                     <button
                         onClick={next}
+                        aria-label="Right"
                         className="w-10 cursor-pointer h-10 md:w-12 md:h-12 rounded-full text-white flex items-center justify-center hover:scale-105 transition-all shadow-md"
                         style={{ backgroundColor: slide.accentColor }}
                     >

@@ -52,7 +52,7 @@ function StatusContent() {
 
     // Google Opt-in Render Effect
     useEffect(() => {
-        if (status === "success" && orderData && (window as any).gapi) {
+        if (status === "success" && orderData && orderData.email && (window as any).gapi) {
             (window as any).gapi.load('surveyoptin', function () {
                 (window as any).gapi.surveyoptin.render({
                     "merchant_id": 5718502243,

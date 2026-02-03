@@ -25,15 +25,14 @@ export async function POST(req: Request) {
 
         // 1.5 ENSURE USER EXISTS IN PUBLIC SCHEMA
         // The trigger might fail or lag, so we force an upsert here to satisfy FK constraints.
-        const { error: upsertError } = await supabaseAdmin
-            .from('users')
+        const { error: upsertError } = await (supabaseAdmin
+            .from('users') as any)
             .upsert({
                 id: user.id,
                 email: user.email || customerEmail || null,
                 phone: user.phone || customerPhone || null,
-                alt_phone: null,
                 full_name: user.user_metadata?.full_name || customerName || "Guest Member",
-                role: 'user',
+                // role: 'user', // Removed to avoid Enum Mismatch (Let DB default handle it)
                 updated_at: new Date().toISOString()
             }, { onConflict: 'id' });
 
