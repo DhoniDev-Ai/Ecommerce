@@ -11,7 +11,8 @@ import { cn } from "@/utils/cn";
 export default function LoginPage() {
     const [email, setEmail] = useState("");
     // const [phone, setPhone] = useState(""); // WhatsApp Auth (Paused)
-    // const [otp, setOtp] = useState("");
+    // const [phone, setPhone] = useState(""); // WhatsApp Auth (Paused)
+    const [otp, setOtp] = useState("");
 
     // Auth State
     const [linkSent, setLinkSent] = useState(false);
@@ -50,11 +51,35 @@ export default function LoginPage() {
             if (error) throw error;
 
             setLinkSent(true);
-            setMessage({ type: 'success', text: `Magic link sent to ${email}` });
+            setLinkSent(true);
+            setMessage({ type: 'success', text: `OTP Code sent to ${email}` });
         } catch (err: any) {
             console.error("Auth Error:", err);
             setMessage({ type: 'error', text: err.message || "Failed to send link." });
         } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleVerifyOtp = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setLoading(true);
+        setMessage(null);
+
+        try {
+            const { data, error } = await supabase.auth.verifyOtp({
+                email,
+                token: otp,
+                type: 'email'
+            });
+
+            if (error) throw error;
+
+            // Session is handled by onAuthStateChange listener
+            setMessage({ type: 'success', text: "Login successful!" });
+        } catch (err: any) {
+            console.error("Auth Error:", err);
+            setMessage({ type: 'error', text: err.message || "Invalid Code" });
             setLoading(false);
         }
     };
@@ -118,36 +143,66 @@ export default function LoginPage() {
                                     <Loader2 className="w-4 h-4 animate-spin" />
                                 ) : (
                                     <>
-                                        Send Magic Link <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                                        Send Login Code <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                                     </>
                                 )}
                             </button>
                         </form>
                     ) : (
-                        <div className="space-y-6 bg-white p-8 rounded-[2rem] border border-[#E8E6E2] shadow-sm text-center">
-                            <div className="w-16 h-16 bg-[#5A7A6A]/10 rounded-full flex items-center justify-center mx-auto text-[#5A7A6A] mb-4">
-                                <Mail className="w-8 h-8" />
-                            </div>
-                            <div className="space-y-2">
-                                <h3 className="font-heading text-lg text-[#2D3A3A]">Link Sent</h3>
-                                <p className="text-xs text-[#7A8A8A] leading-relaxed">
-                                    We've sent a secure access link to <br />
-                                    <span className="font-bold text-[#2D3A3A]">{email}</span>
-                                </p>
-                            </div>
-                            <div className="pt-4">
+                        <form onSubmit={handleVerifyOtp} className="space-y-6">
+                            <div className="bg-white p-8 rounded-[2rem] border border-[#E8E6E2] shadow-sm text-center">
+                                <div className="w-16 h-16 bg-[#5A7A6A]/10 rounded-full flex items-center justify-center mx-auto text-[#5A7A6A] mb-4">
+                                    <KeyRound className="w-8 h-8" />
+                                </div>
+                                <div className="space-y-2 mb-6">
+                                    <h3 className="font-heading text-lg text-[#2D3A3A]">OTP Sent</h3>
+                                    <p className="text-xs text-[#7A8A8A] leading-relaxed">
+                                        Enter the 6-digit code sent to <br />
+                                        <span className="font-bold text-[#2D3A3A]">{email}</span>
+                                    </p>
+                                </div>
+
+                                <div className="relative group mb-6">
+                                    <input
+                                        type="text"
+                                        placeholder="000000"
+                                        maxLength={6}
+                                        required
+                                        value={otp}
+                                        onChange={(e) => setOtp(e.target.value)}
+                                        className="w-full text-center py-4 bg-[#F9F8F6] rounded-2xl border border-[#E8E6E2] focus:outline-none focus:border-[#5A7A6A] focus:ring-1 focus:ring-[#5A7A6A] text-2xl font-mono tracking-[0.5em] text-[#2D3A3A] placeholder:text-[#D4D2CE]"
+                                    />
+                                </div>
+
                                 <button
-                                    type="button"
-                                    onClick={() => {
-                                        setLinkSent(false);
-                                        setMessage(null);
-                                    }}
-                                    className="text-[9px] text-[#9AA09A] hover:text-[#5A7A6A] uppercase tracking-widest transition-colors flex items-center justify-center gap-2 mx-auto"
+                                    disabled={loading || otp.length < 6}
+                                    type="submit"
+                                    className="w-full py-4 bg-[#2D3A3A] text-white rounded-xl text-[10px] font-bold uppercase tracking-[0.3em] hover:bg-[#1D2A2A] transition-all flex items-center justify-center gap-3 disabled:opacity-50"
                                 >
-                                    <ArrowRight className="w-3 h-3 rotate-180" /> Use different email
+                                    {loading ? (
+                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                    ) : (
+                                        <>
+                                            Verify & Enter <ArrowRight className="w-4 h-4" />
+                                        </>
+                                    )}
                                 </button>
+
+                                <div className="pt-6">
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setLinkSent(false);
+                                            setMessage(null);
+                                            setOtp("");
+                                        }}
+                                        className="text-[9px] text-[#9AA09A] hover:text-[#5A7A6A] uppercase tracking-widest transition-colors flex items-center justify-center gap-2 mx-auto"
+                                    >
+                                        <ArrowRight className="w-3 h-3 rotate-180" /> Use different email
+                                    </button>
+                                </div>
                             </div>
-                        </div>
+                        </form>
                     )}
 
                     <AnimatePresence>

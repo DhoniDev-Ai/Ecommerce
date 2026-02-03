@@ -93,7 +93,7 @@ function StatusContent() {
                             Ritual <span className="italic font-serif font-light text-[#5A7A6A]">Confirmed.</span>
                         </h1>
                         <p className="text-[#7A8A8A] text-sm leading-relaxed max-w-sm mx-auto">
-                            Your elixirs are being prepared in our Jaipur sanctuary. You will receive a notification once the dispatch ritual begins.
+                            Your elixirs are being prepared in our sanctuary. You will receive a notification once the dispatch ritual begins.
                         </p>
                     </div>
                     <div className="pt-10 flex flex-col sm:flex-row items-center justify-center gap-6">

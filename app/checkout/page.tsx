@@ -11,6 +11,7 @@ import { Header } from "@/components/layout/Header";
 import { validateWhatsApp, validatePincode, validateEmail } from "@/utils/validation";
 import { Toast } from "@/components/ui/Toast";
 import { load } from '@cashfreepayments/cashfree-js';
+import { CheckoutInput } from "@/components/checkout/CheckoutInput";
 
 
 import { Database } from "@/types/database";
@@ -124,7 +125,7 @@ export default function CheckoutPage() {
             if (error) throw error;
 
             setOtpSent(true);
-            setToast({ message: "Magic link sent to your email!", type: 'success' });
+            setToast({ message: "OTP Code sent to your email!", type: 'success' });
         } catch (err: any) {
             console.error("Auth Error:", err);
             setToast({ message: err.message || "Failed to send link.", type: 'error' });
@@ -400,12 +401,26 @@ export default function CheckoutPage() {
 
 
         try {
+            // 1. Get Valid Session (Refresh if needed)
+            let { data: { session } } = await supabase.auth.getSession();
+            if (!session) {
+                const { data: { session: newSession } } = await supabase.auth.refreshSession();
+                session = newSession;
+            }
+
+            if (!session?.access_token) {
+                console.error("Payment: No active session found.");
+                setToast({ message: "Session expired. Please verify email again.", type: 'error' });
+                setProcessing(false);
+                return;
+            }
+
             // Updated API Call with Correct Payload
             const response = await fetch('/api/checkout/create-ritual', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`
+                    'Authorization': `Bearer ${session.access_token}`
                 },
                 body: JSON.stringify({
                     amount: finalTotal,
@@ -615,7 +630,7 @@ export default function CheckoutPage() {
                                     status={getFieldStatus('email', formData.email)}
                                     onChange={handleInputChange} placeholder="hello@ayuniv.com"
                                     icon={<Mail className="w-3 h-3" />}
-                                    disabled={otpSent}
+                                    disabled={otpSent || user}
                                 />
 
 
@@ -633,14 +648,14 @@ export default function CheckoutPage() {
                                                     disabled={authLoading}
                                                     className="bg-[#2D3A3A] text-white px-5 py-3 rounded-full cursor-pointer text-[9px] uppercase font-bold tracking-widest hover:shadow-lg hover:bg-black transition-all disabled:opacity-50 whitespace-nowrap flex items-center gap-2"
                                                 >
-                                                    {authLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Verify Email"}
+                                                    {authLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Send Login Code"}
                                                 </button>
                                             </div>
                                         ) : (
                                             <div className="space-y-4">
                                                 <div className="flex items-center justify-between">
                                                     <p className="text-[10px] text-[#5A7A6A] font-medium">
-                                                        Magic link & Code sent to <span className="font-bold text-[#2D3A3A]">{formData.email}</span>
+                                                        OTP Sent to <span className="font-bold text-[#2D3A3A]">{formData.email}</span>
                                                     </p>
                                                     <button
                                                         onClick={() => setOtpSent(false)}
@@ -650,7 +665,7 @@ export default function CheckoutPage() {
                                                     </button>
                                                 </div>
                                                 <div className="text-[10px] text-[#7A8A8A] italic mb-2">
-                                                    Check your inbox. Click the link OR enter the code below.
+                                                    Enter the 6-digit code below.
                                                 </div>
 
                                                 {/* EMAIL OTP INPUT */}
@@ -856,41 +871,5 @@ export default function CheckoutPage() {
                 </div>
             </main >
         </div >
-    );
-}
-
-// --- REUSABLE INPUT COMPONENT ---
-function CheckoutInput({ label, name, value, status, onChange, placeholder, icon, disabled, className }: any) {
-    return (
-        <div className="space-y-3 group  relative">
-            <label className="text-[9px] uppercase tracking-[0.2em] font-bold text-[#9AA09A] ml-4 flex items-center gap-2 transition-colors group-focus-within:text-[#5A7A6A]">
-                {label} {icon}
-            </label>
-            <div className="relative">
-                {/* Left-Aligned Validation Icon */}
-                <div className="absolute left-6 top-1/2 -translate-y-1/2 pointer-events-none transition-all duration-300 z-10">
-                    {status === 'valid' ? <CheckCircle2 className="w-4 h-4 text-[#5A7A6A] scale-110" /> :
-                        status === 'invalid' ? <AlertCircle className="w-4 h-4 text-red-400 scale-110" /> :
-                            <div className="w-2 h-2 rounded-full bg-[#E8E6E2]" />}
-                </div>
-
-                <input
-                    type="text"
-                    name={name}
-                    value={value}
-                    onChange={onChange}
-                    placeholder={placeholder}
-                    disabled={disabled}
-                    className={cn(
-                        // FIX: pl-14 adds space for icon, pr-4 keeps right side clean
-                        "w-full bg-[#EBF1FA] border rounded-3xl  py-4 pl-14 pr-4 text-sm transition-all duration-300 outline-none placeholder:text-[#D4D2CE]",
-                        status === 'valid' ? "border-[#5A7A6A]/40 ring-1 ring-[#5A7A6A]/10" :
-                            status === 'invalid' ? "border-red-200 bg-red-50/5" :
-                                "border-[#E8E6E2] hover:border-[#D4D2CE] focus:border-[#5A7A6A]",
-                        className
-                    )}
-                />
-            </div>
-        </div>
     );
 }

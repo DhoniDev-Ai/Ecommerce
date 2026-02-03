@@ -53,7 +53,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                                     width={1000}
                                     height={1000}
                                     loading="eager"
-                                    src="/assets/Logo.png" alt="Ayuniv" className="h-20 w-auto" />
+                                    src="/assets/logo.png" alt="Ayuniv" className="h-20 w-auto" />
                             </Link>
                             <Link
                                 href="/products"
