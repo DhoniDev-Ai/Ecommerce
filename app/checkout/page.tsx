@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import {
     ShieldCheck, Loader2, MapPin, Plus, Ticket, CheckCircle2,
     AlertCircle, Minus, Trash2, ShoppingBag, Mail, Sparkles, Flag, ArrowRight, Pencil
@@ -60,7 +60,10 @@ export default function CheckoutPage() {
     // 4. Coupon State
     const [couponCode, setCouponCode] = useState("");
     const [appliedCoupon, setAppliedCoupon] = useState<any>(null);
-    const [couponError, setCouponError] = useState("");
+    const [couponError, setCouponError] = useState<string | null>(null);
+
+    // Locks
+    const isSaving = useRef(false);
 
     // 5. Payment Method State
     const [paymentMethod, setPaymentMethod] = useState<'online' | 'COD'>('online');
@@ -324,8 +327,9 @@ export default function CheckoutPage() {
     };
 
     // --- AUTO-SAVE LOGIC (Enhanced) ---
+    // --- AUTO-SAVE LOGIC (Enhanced with Lock) ---
     const autoSaveData = async () => {
-        if (!user) return;
+        if (!user || isSaving.current) return;
 
         // 1. Save New Address explicitly
         if (selectedAddressId === "new") {
@@ -333,11 +337,13 @@ export default function CheckoutPage() {
                 // Basic validation before save
                 if (formData.fullName.length < 3 || formData.addressLine.length < 5 || !formData.pincode) return;
 
+                isSaving.current = true; // LOCK
+
                 const { data: newAddr, error } = await (supabase.from('addresses') as any)
                     .insert({
                         user_id: user.id,
                         full_name: formData.fullName,
-                        phone: formData.whatsapp, // Use current form phone
+                        phone: formData.whatsapp,
                         address_line_1: formData.addressLine,
                         address_line_2: formData.landmark,
                         city: formData.city,
@@ -351,18 +357,19 @@ export default function CheckoutPage() {
                 if (newAddr) {
                     setSavedAddresses([newAddr, ...savedAddresses]);
                     setSelectedAddressId(newAddr.id);
-                    // No toast needed for auto-save, generic success
                 }
-            } catch (err) { console.error("Auto-save address failed", err); }
+            } catch (err) {
+                console.error("Auto-save address failed", err);
+            } finally {
+                isSaving.current = false; // UNLOCK
+            }
         }
 
-        // 2. Sync Profile (Phone/Name/Email)
+        // 2. Sync Profile (Phone/Name/Email) - separate form address lock
         try {
             await (supabase.from('users') as any).update({
                 full_name: formData.fullName,
-                // Only update phone if it's missing in profile, or if we trust the user input
-                // But auth phone shouldn't change easily. Let's update metadata fields mainly.
-                email: formData.email // Sync email if changed
+                email: formData.email
             }).eq('id', user.id);
         } catch (err) { console.error("Profile sync failed", err); }
     };
@@ -578,7 +585,7 @@ export default function CheckoutPage() {
                                         setIsEditing(true); // New address is always editing
                                     }}
                                     className={cn(
-                                        "p-6 rounded-4xl border border-dashed flex items-center justify-center gap-3 transition-all",
+                                        "p-6 rounded-4xl border border-dashed flex items-center justify-center gap-3 cursor-pointer transition-all",
                                         selectedAddressId === "new" ? "border-[#5A7A6A] bg-[#5A7A6A]/5 text-[#5A7A6A]" : "border-[#E8E6E2] text-[#7A8A8A] hover:bg-white"
                                     )}
                                 >
@@ -615,7 +622,7 @@ export default function CheckoutPage() {
                                     <CheckoutInput
                                         label="Full Name" name="fullName" value={formData.fullName}
                                         status={getFieldStatus('fullName', formData.fullName)}
-                                        onChange={handleInputChange} placeholder="Hardik Jain"
+                                        onChange={handleInputChange} placeholder="Your Name"
                                         icon={<Sparkles className="w-3  h-3 text-[#C68DFF]" />}
                                     />
                                     <CheckoutInput
@@ -707,12 +714,12 @@ export default function CheckoutPage() {
                                     <CheckoutInput
                                         label="Pincode" name="pincode" value={formData.pincode}
                                         status={getFieldStatus('pincode', formData.pincode)}
-                                        onChange={handleInputChange} placeholder="302001"
+                                        onChange={handleInputChange} placeholder="PINCODE"
                                     />
                                     <CheckoutInput
                                         label="City" name="city" value={formData.city}
                                         status={getFieldStatus('city', formData.city)}
-                                        onChange={handleInputChange} placeholder="Jaipur"
+                                        onChange={handleInputChange} placeholder="CITY"
                                     />
 
                                     <div className="space-y-3 group relative">
@@ -743,14 +750,14 @@ export default function CheckoutPage() {
                                         <button
                                             onClick={handleCancelEdit}
                                             disabled={processing}
-                                            className="px-6 py-3 text-[#7A8A8A] text-[10px] uppercase font-bold tracking-widest hover:text-[#2D3A3A] transition-colors"
+                                            className="px-6 py-3 text-[#8a807a] text-[10px] uppercase font-bold tracking-widest cursor-pointer hover:text-[#691e1e] transition-colors"
                                         >
                                             Cancel
                                         </button>
                                         <button
                                             onClick={handleUpdateAddress}
                                             disabled={processing}
-                                            className="px-8 py-3 bg-[#5A7A6A] text-white rounded-full text-[10px] uppercase font-bold tracking-widest hover:shadow-lg transition-all disabled:opacity-50"
+                                            className="px-8 py-3 cursor-pointer bg-[#5A7A6A] text-white rounded-full text-[10px] uppercase font-bold tracking-widest hover:shadow-lg transition-all disabled:opacity-50"
                                         >
                                             {processing ? "Saving..." : "Save Changes"}
                                         </button>

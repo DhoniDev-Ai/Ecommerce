@@ -2,9 +2,9 @@ import { MetadataRoute } from 'next';
 
 export default function manifest(): MetadataRoute.Manifest {
     return {
-        name: 'Ayuniv - Pure Himalayan Wellness',
+        name: 'Ayuniv - Premium Healthcare & Wellness',
         short_name: 'Ayuniv',
-        description: 'Consciously curated Ayurvedic elixirs from the heart .',
+        description: 'Holistic healthcare and wellness solutions for a balanced life.',
         start_url: '/',
         display: 'standalone',
         background_color: '#FDFBF7',

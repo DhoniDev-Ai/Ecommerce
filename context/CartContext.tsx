@@ -143,6 +143,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
         if (cart) {
             cartIdCache.current = cart.id;
             return cart.id;
+        } else {
+            // Create if missing
+            const { data: newCart } = await (supabase.from('carts') as any).insert({ user_id: userId }).select('id').single();
+            if (newCart) {
+                cartIdCache.current = newCart.id;
+                return newCart.id;
+            }
         }
         return null;
     };
