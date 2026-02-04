@@ -21,6 +21,12 @@ interface Post {
     published_at: string;
 }
 
+// Add this before the component
+export const metadata = {
+    title: "Journal | Ayuniv",
+    description: "Explore ancient wisdom for modern wellness. Discover rituals, ingredients, and health tips.",
+};
+
 export default function JournalPage() {
     const [posts, setPosts] = useState<Post[]>([]);
     const [loading, setLoading] = useState(true);

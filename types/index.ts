@@ -89,3 +89,15 @@ export interface Coupon {
   updated_at?: string;
 }
 
+export interface Post {
+  id: string;
+  title: string;
+  slug: string;
+  excerpt: string;
+  content: string;
+  category: string;
+  image_url: string;
+  hero_image_url?: string;
+  published_at: string;
+  related_product_id?: string;
+}
