@@ -113,7 +113,7 @@ export function ChatWidget() {
                 className="fixed  bottom-20 right-6 z-50 w-16 h-16 bg-[#2D3A3A] text-white rounded-full cursor-pointer shadow-2xl flex items-center justify-center border border-[#5A7A6A]/50 group"
             >
                 <Image
-                    src="/ai.webp"
+                    src="/text_ai.webp"
                     alt="Aya"
                     width={64}
                     height={64}
@@ -146,7 +146,7 @@ export function ChatWidget() {
                     <div className="relative z-10 flex items-center gap-3">
                         <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center border border-white/10 overflow-hidden text-[#5A7A6A]">
                             <Image
-                                src="/ai.webp"
+                                src="/text_ai.webp"
                                 alt="Aya"
                                 width={40}
                                 height={40}
@@ -187,7 +187,7 @@ export function ChatWidget() {
                                     <User className="w-4 h-4 text-[#2D3A3A]" />
                                 ) : (
                                     <Image
-                                        src="/ai.webp"
+                                        src="/text_ai.webp"
                                         alt="Aya"
                                         width={32}
                                         height={32}

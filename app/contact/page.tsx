@@ -11,7 +11,7 @@ export default function ContactPage() {
 
     const handleWhatsAppRedirect = () => {
         const encodedMessage = encodeURIComponent(message || "Hi Ayuniv, I would like to know more about...");
-        window.open(`https://wa.me/917737350325?text=${encodedMessage}`, '_blank');
+        window.open(`https://wa.me/917852011211?text=${encodedMessage}`, '_blank');
     };
 
     return (
@@ -54,7 +54,7 @@ export default function ContactPage() {
                             className="lg:col-span-5 space-y-4"
                         >
                             {/* Phone Card */}
-                            {/* <a href="tel:+917737350325" className="block group bg-white rounded-4xl p-8 border border-[#E8E6E2] hover:border-[#5A7A6A]/30 transition-all hover:shadow-[0_8px_30px_rgba(0,0,0,0.04)]">
+                            {/* <a href="tel:+917852011211" className="block group bg-white rounded-4xl p-8 border border-[#E8E6E2] hover:border-[#5A7A6A]/30 transition-all hover:shadow-[0_8px_30px_rgba(0,0,0,0.04)]">
                                 <div className="flex justify-between items-start mb-6">
                                     <div className="w-10 h-10 rounded-full bg-[#F3F1ED] flex items-center justify-center group-hover:bg-[#5A7A6A] transition-colors">
                                         <Phone className="w-4 h-4 text-[#2D3A3A] group-hover:text-white transition-colors" />
@@ -62,7 +62,7 @@ export default function ContactPage() {
                                     <ArrowRight className="w-4 h-4 text-[#9AA09A] -rotate-45 group-hover:rotate-0 transition-transform" />
                                 </div>
                                 <h3 className="text-sm font-bold text-[#2D3A3A] uppercase tracking-widest mb-1">Call Us</h3>
-                                <p className="text-xl text-[#5A6A6A] font-light">+91 77373 50325</p>
+                                <p className="text-xl text-[#5A6A6A] font-light">+91 7852011211</p>
                             </a> */}
 
                             {/* Email Card */}

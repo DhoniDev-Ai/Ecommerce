@@ -97,7 +97,7 @@ export function Hero() {
                         priority
                         sizes="100vw"
                         // Mobile: Center | Desktop: Center
-                        className="w-full  h-full max-sm:object-[45%_center] object-cover object-[25%_bottom] "
+                        className="w-full  h-full max-sm:object-[45%_center] object-cover object-center "
                     />
 
                     {/* --- IMPROVISED ATMOSPHERIC LAYER --- */}

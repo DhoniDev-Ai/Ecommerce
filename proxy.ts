@@ -1,5 +1,3 @@
-
-
 import { type NextRequest } from 'next/server'
 import { updateSession } from '@/utils/supabase/proxy'
 
@@ -14,8 +12,9 @@ export const config = {
          * - _next/static (static files)
          * - _next/image (image optimization files)
          * - favicon.ico (favicon file)
-         * Feel free to modify this pattern to include more paths.
+         * - assets folder (images, fonts, etc)
+         * - public folder content
          */
-        '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+        '/((?!_next/static|_next/image|favicon.ico|assets/|public/|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
     ],
 }

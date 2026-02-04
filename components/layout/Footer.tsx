@@ -105,7 +105,7 @@ export function Footer() {
                                 <Instagram className="w-4 h-4" />
                             </a>
                             <a
-                                href="https://facebook.com/ayuniv_official"
+                                href="https://www.facebook.com/share/1CoD3rQMhV/"
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 aria-label="Follow us on Facebook"
@@ -114,7 +114,7 @@ export function Footer() {
                                 <Facebook className="w-4 h-4" />
                             </a>
                             <a
-                                href="#"
+                                href="https://x.com/Ayuniv_Official"
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 aria-label="Follow us on Twitter"
@@ -123,7 +123,7 @@ export function Footer() {
                                 <Twitter className="w-4 h-4" />
                             </a>
                             <a
-                                href="#"
+                                href="https://www.linkedin.com/company/ayuniv/"
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 aria-label="Connect with us on LinkedIn"
@@ -132,7 +132,7 @@ export function Footer() {
                                 <Linkedin className="w-4 h-4" />
                             </a>
                             <a
-                                href="#"
+                                href="https://pin.it/7CdGAx3zH"
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 aria-label="Follow us on Pinterest"
