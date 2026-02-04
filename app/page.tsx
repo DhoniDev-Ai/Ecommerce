@@ -7,6 +7,7 @@ import { FeaturedProducts } from "@/components/home/FeaturedProducts";
 import { IngredientTransparency } from "@/components/home/IngredientTransparency";
 import { InstagramCommunity } from "@/components/home/InstagramCommunity";
 import { AIAssistantTeaser } from "@/components/home/AIAssistantTeaser";
+import { Testimonials } from "@/components/home/Testimonials";
 import { createClient } from '@/lib/supabase/server';
 import { getProductStats } from "@/actions/store/stats";
 import { Metadata } from "next";
@@ -84,6 +85,7 @@ export default async function Home() {
         <IngredientTransparency />
         <InstagramCommunity />
         <AIAssistantTeaser />
+        <Testimonials />
       </main>
 
       <Footer />

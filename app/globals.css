@@ -243,3 +243,21 @@ html {
   margin-bottom: 2.5rem;
   box-shadow: 0 10px 30px -10px rgba(0,0,0,0.1);
 }
+
+@layer utilities {
+  .animate-infinite-scroll {
+    animation: scroll 40s linear infinite;
+  }
+  .animation-paused {
+    animation-play-state: paused;
+  }
+}
+
+@keyframes scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
