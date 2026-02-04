@@ -12,7 +12,8 @@ import {
     Menu,
     X,
     LogOut,
-    Tag
+    Tag,
+    BookOpen
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import { motion, AnimatePresence } from "framer-motion";
@@ -27,6 +28,7 @@ export function AdminNav() {
         { href: "/admin/products", label: "Products", icon: Package },
         { href: "/admin/coupons", label: "Coupons", icon: Tag },
         { href: "/admin/customers", label: "Customers", icon: Users },
+        { href: "/admin/journal", label: "Journal", icon: BookOpen },
     ];
 
     const isActive = (path: string) => pathname === path;

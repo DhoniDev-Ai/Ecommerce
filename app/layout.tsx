@@ -58,7 +58,7 @@ export const metadata: Metadata = {
     description: "Reclaim your harmony with nature. Pure, preservative-free elixirs and wellness rituals.",
     images: [
       {
-        url: "/assets/og-image.jpg",
+        url: "/assets/Logo_nav.png",
         width: 1200,
         height: 630,
         alt: "Ayuniv Wellness Sanctuary",
@@ -70,7 +70,7 @@ export const metadata: Metadata = {
     title: "Ayuniv | Natural Wellness & Elixirs",
     description: "Pure, cold-pressed wellness elixirs. Nature's wisdom, bottled.",
     creator: "@ayuniv",
-    images: ["/assets/og-image.jpg"],
+    images: ["/assets/Logo_nav.png"],
   },
   robots: {
     index: true,

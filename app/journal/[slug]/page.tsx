@@ -11,6 +11,9 @@ import { cn } from "@/utils/cn";
 import { supabase } from "@/lib/supabase/client";
 import Image from "next/image";
 
+import { Product } from "@/types";
+import { ProductCard } from "@/components/product/ProductCard";
+
 interface Post {
     id: string;
     title: string;
@@ -21,15 +24,15 @@ interface Post {
     image_url: string;
     hero_image_url?: string;
     published_at: string;
+    related_product_id?: string;
 }
-
-
 
 export default function DynamicJournalReader() {
     const params = useParams();
     const slug = params?.slug as string;
     const [post, setPost] = useState<Post | null>(null);
     const [suggestedPosts, setSuggestedPosts] = useState<Post[]>([]);
+    const [relatedProduct, setRelatedProduct] = useState<Product | null>(null);
     const [loading, setLoading] = useState(true);
 
     const { scrollYProgress } = useScroll();
@@ -44,16 +47,31 @@ export default function DynamicJournalReader() {
         async function fetchPost() {
             try {
                 setLoading(true);
-                const { data, error } = await supabase
+                // 1. Fetch Post
+                const { data: postData, error } = await supabase
                     .from('posts')
                     .select('*')
                     .eq('slug', slug)
                     .single();
 
                 if (error) throw error;
-                setPost(data);
 
-                // Fetch suggested posts (other posts, limit 3)
+                // Cast to local interface until DB types are regenerated
+                const typedPost = postData as unknown as Post;
+                setPost(typedPost);
+
+                // 2. Fetch Related Product (if linked)
+                if (typedPost.related_product_id) {
+                    const { data: productData } = await supabase
+                        .from('products')
+                        .select('*')
+                        .eq('id', typedPost.related_product_id)
+                        .single();
+
+                    if (productData) setRelatedProduct(productData as unknown as Product);
+                }
+
+                // 3. Fetch suggested posts (other posts, limit 3)
                 const { data: suggested } = await supabase
                     .from('posts')
                     .select('*')
@@ -62,7 +80,7 @@ export default function DynamicJournalReader() {
 
                 if (suggested) setSuggestedPosts(suggested);
             } catch (err) {
-                //console.error('Error fetching post:', err);
+                console.error('Error fetching post:', err);
                 setPost(null);
             } finally {
                 setLoading(false);
@@ -157,7 +175,7 @@ export default function DynamicJournalReader() {
                             </div>
                         </div>
 
-                        <h1 className="font-heading text-5xl lg:text-7xl text-[#2D3A3A] tracking-tighter leading-[0.95] mb-10">
+                        <h1 className="font-heading text-4xl lg:text-6xl text-[#2D3A3A] tracking-tighter leading-[1.1] mb-10">
                             {mainTitle}{subtitle && ':'} <br />
                             {subtitle && <span className="italic font-serif font-light text-[#5A7A6A]">{subtitle}</span>}
                         </h1>
@@ -180,20 +198,33 @@ export default function DynamicJournalReader() {
                 </div>
 
                 {/* 3. CONTENT CORE */}
-                <div className="mx-auto max-w-3xl px-8 lg:px-12">
+                <div className="mx-auto max-w-5xl px-8 lg:px-12">
                     <div
-                        className="prose prose-zinc prose-lg max-w-none 
-                        prose-p:text-[#6A7A7A] prose-p:font-light prose-p:leading-relaxed prose-p:mb-10 prose-p:text-lg lg:prose-p:text-xl
-                        prose-headings:font-heading prose-headings:text-[#2D3A3A] prose-headings:mt-16 prose-headings:mb-8 prose-headings:text-3xl lg:prose-headings:text-4xl
-                        prose-blockquote:border-l-2 prose-blockquote:border-[#5A7A6A] prose-blockquote:pl-6 prose-blockquote:italic prose-blockquote:text-2xl prose-blockquote:font-serif prose-blockquote:text-[#5A7A6A] prose-blockquote:my-16"
+                        className="prose"
                         dangerouslySetInnerHTML={{ __html: post.content }}
                     />
+
+                    {/* 3.1 SHOP THE RITUAL (Related Product) */}
+                    {relatedProduct && (
+                        <div className="my-24 py-16 px-8 bg-[#F3F1ED] rounded-[2.5rem] flex flex-col items-center text-center">
+                            <span className="text-[10px] uppercase tracking-[0.3em] font-bold text-[#7A8A8A] mb-4">Integrate This Wisom</span>
+                            <h2 className="font-heading text-3xl md:text-4xl text-[#2D3A3A] mb-10 tracking-tight">Shop the <span className="italic font-serif text-[#5A7A6A]">Ritual.</span></h2>
+
+                            <div className="w-full border rounded-4xl p-2 max-w-sm">
+                                <ProductCard
+                                    product={relatedProduct}
+                                    trendingRank={0}
+                                    salesCount={0}
+                                />
+                            </div>
+                        </div>
+                    )}
 
                     <footer className="mt-24 pt-12 border-t border-[#E8E6E2] flex items-center justify-between">
                         <p className="text-[10px] uppercase tracking-widest text-[#9AA09A] font-bold italic">Published on {formatDate(post.published_at)}</p>
                         <div className="flex gap-8">
                             <button className="text-[10px] uppercase tracking-widest font-bold text-[#7A8A8A] hover:text-[#5A7A6A] flex items-center gap-2 transition-colors"><Share2 className="w-3 h-3" /> Share</button>
-                            <button className="text-[10px] uppercase tracking-widest font-bold text-[#7A8A8A] hover:text-[#5A7A6A] flex items-center gap-2 transition-colors"><Bookmark className="w-3 h-3" /> Save</button>
+
                         </div>
                     </footer>
                 </div>

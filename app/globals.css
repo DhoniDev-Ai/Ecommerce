@@ -116,3 +116,130 @@ html {
   outline: 2px solid rgba(90, 122, 106, 0.5);
   outline-offset: 2px;
 }
+
+/* Manual Typography System (replacing @tailwindcss/typography) */
+.prose {
+  color: #52525B;
+  max-width: 100%;
+  line-height: 1.8;
+}
+
+.prose h1 {
+  font-family: var(--font-heading);
+  color: #2D3A3A;
+  font-size: 3rem; /* 48px */
+  margin-top: 2.5rem;
+  margin-bottom: 1.5rem;
+  line-height: 1;
+  letter-spacing: -0.025em;
+}
+
+.prose h2 {
+  font-family: var(--font-heading);
+  color: #2D3A3A;
+  font-size: 2.25rem; /* 36px */
+  margin-top: 3rem;
+  margin-bottom: 1.5rem;
+  line-height: 1.1;
+  letter-spacing: -0.025em;
+  font-weight: 600;
+}
+
+.prose h3 {
+  font-family: var(--font-heading);
+  color: #5A7A6A; /* Primary Color */
+  font-size: 1.5rem; /* 24px */
+  margin-top: 2.5rem;
+  margin-bottom: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.025em;
+}
+
+.prose h4 {
+  color: #7A8B7A;
+  font-size: 1.125rem;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
+  font-weight: 700;
+}
+
+.prose p {
+  margin-bottom: 1.75rem;
+  font-size: 1.125rem; /* 18px */
+  font-weight: 300; /* Light */
+}
+
+.prose ul {
+  list-style-type: disc;
+  padding-left: 1.625rem;
+  margin-top: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.prose ol {
+  list-style-type: decimal;
+  padding-left: 1.625rem;
+  margin-top: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.prose li {
+  margin-bottom: 0.75rem;
+  padding-left: 0.375rem;
+}
+
+.prose strong {
+  color: #2D3A3A;
+  font-weight: 700;
+}
+
+.prose em {
+  font-family: var(--font-juana);
+  font-style: italic;
+  color: #2D3A3A;
+  font-size: 1.2em;
+}
+
+.prose a {
+  color: #5A7A6A;
+  text-decoration-line: underline;
+  text-decoration-color: rgba(90, 122, 106, 0.4);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 4px;
+  transition: all 0.2s ease;
+}
+
+.prose a:hover {
+  color: #2D3A3A;
+  text-decoration-color: #2D3A3A;
+}
+
+.prose blockquote {
+  border-left: 3px solid #5A7A6A;
+  padding-left: 1.5rem;
+  margin-top: 2.5rem;
+  margin-bottom: 2.5rem;
+  font-family: var(--font-juana);
+  font-style: italic;
+  font-size: 1.5rem;
+  color: #5A7A6A;
+  background: linear-gradient(to right, #F3F1ED, transparent);
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+  border-radius: 0 1rem 1rem 0;
+}
+
+.prose hr {
+  border-color: #E8E6E2;
+  margin-top: 3rem;
+  margin-bottom: 3rem;
+}
+
+.prose img {
+  border-radius: 1.5rem;
+  margin-top: 2.5rem;
+  margin-bottom: 2.5rem;
+  box-shadow: 0 10px 30px -10px rgba(0,0,0,0.1);
+}

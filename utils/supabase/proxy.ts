@@ -36,10 +36,17 @@ export async function updateSession(request: NextRequest) {
         }
     )
 
-    // Refresh the Auth Token (this triggers setAll if needed)
-    const {
-        data: { user },
-    } = await supabase.auth.getUser()
+    // Check if we have any Supabase cookies before making an API call
+    const cookieStore = request.cookies;
+    const allCookies = cookieStore.getAll();
+    const hasSupabaseCookies = allCookies.some(cookie =>
+        cookie.name.includes('sb-') || cookie.name.includes('supabase')
+    );
+
+    // Only refresh the Auth Token if we potentially have a session
+    if (hasSupabaseCookies) {
+        await supabase.auth.getUser();
+    }
 
     // Optional: Add Route Protection Logic here if you ever need it
     // if (!user && request.nextUrl.pathname.startsWith('/admin')) { ... }
