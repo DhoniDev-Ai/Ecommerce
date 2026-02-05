@@ -91,6 +91,34 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
         }
     };
 
+    // 4. Fetch Reviews - Move logic OUTSIDE JSX
+    const { data: reviews } = await supabaseAdmin
+        .from('reviews')
+        .select('*')
+        .eq('product_id', product.id)
+        .eq('is_approved', true)
+        .order('created_at', { ascending: false });
+
+    // 5. User Specific Checks
+    let isVerifiedBuyer = false;
+    let currentUserReview = null;
+
+    // Correct way in Next.js Server Component for Auth:
+    const { createClient } = await import('@/lib/supabase/server');
+    const supabase = await createClient();
+    const { data: { user: currentUser } } = await supabase.auth.getUser();
+
+    if (currentUser) {
+        // Check Verified Purchase
+        const { checkVerifiedPurchase } = await import('@/actions/store/reviews');
+        isVerifiedBuyer = await checkVerifiedPurchase(product.id);
+
+        // Check Existing Review
+        if (reviews) {
+            currentUserReview = reviews.find((r: any) => r.user_id === currentUser.id) || null;
+        }
+    }
+
     return (
         <>
             <script
@@ -100,6 +128,9 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
             <ProductDetailClient
                 product={product}
                 relatedProducts={relatedProducts}
+                reviews={reviews || []}
+                isVerifiedBuyer={isVerifiedBuyer}
+                currentUserReview={currentUserReview}
             />
         </>
     );

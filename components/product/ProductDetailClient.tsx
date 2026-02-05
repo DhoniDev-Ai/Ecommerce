@@ -17,13 +17,17 @@ import { useAI } from "@/context/AIContext";
 import { PriceDisplay } from "@/components/product/PriceDisplay";
 import Image from "next/image";
 import { ProductCard } from "@/components/product/ProductCard";
+import { ProductReviews } from "@/components/product/ProductReviews";
 
 interface ProductDetailClientProps {
     product: any;
     relatedProducts: any[];
+    reviews: any[];
+    isVerifiedBuyer: boolean;
+    currentUserReview: any;
 }
 
-export function ProductDetailClient({ product, relatedProducts }: ProductDetailClientProps) {
+export function ProductDetailClient({ product, relatedProducts, reviews, isVerifiedBuyer, currentUserReview }: ProductDetailClientProps) {
     const router = useRouter();
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);
     const [quantity, setQuantity] = useState(1);
@@ -54,14 +58,14 @@ export function ProductDetailClient({ product, relatedProducts }: ProductDetailC
         if (isPaused || !product?.image_urls?.length) return;
         const interval = setInterval(() => {
             setSelectedImageIndex((prev) => (prev + 1) % product.image_urls.length);
-        }, 4000);
+        }, 6000);
         return () => clearInterval(interval);
     }, [product?.image_urls?.length, isPaused]);
 
     const handleThumbnailClick = (index: number) => {
         setSelectedImageIndex(index);
         setIsPaused(true);
-        setTimeout(() => setIsPaused(false), 8000);
+        setTimeout(() => setIsPaused(false), 10000);
     };
 
     // Calculate dynamic pricing
@@ -369,7 +373,7 @@ export function ProductDetailClient({ product, relatedProducts }: ProductDetailC
 
 
                     {/* Lifestyle Editorial Stack */}
-                    <div className="mt-20 space-y-0 -mx-6 lg:-mx-10">
+                    <div className="mt-10 space-y-0 -mx-6 lg:-mx-10">
                         {product.lifestyle_images?.map((src: string, index: number) => (
                             <motion.div key={index} initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} transition={{ duration: 1.5 }} viewport={{ once: true }} className="w-full container mx-auto overflow-hidden group relative">
                                 <Image
@@ -379,13 +383,13 @@ export function ProductDetailClient({ product, relatedProducts }: ProductDetailC
                                     alt=""
                                     className="w-full h-auto object-cover"
                                 />
-                                <div className="absolute inset-0 bg-black/5" />
+                                <div className="absolute inset-0" />
                             </motion.div>
                         ))}
                     </div>
 
                     {/* Recommendations Section */}
-                    <section className="mt-32 border-y border-[#E8E6E2] py-32">
+                    <section className="mt-20 border-y border-[#E8E6E2] py-32">
                         <div className="flex items-end justify-between mb-16">
                             <div>
                                 <p className="text-[10px] uppercase tracking-[0.4em] text-[#7A8B7A] font-bold mb-4">Curated For You</p>
@@ -413,8 +417,17 @@ export function ProductDetailClient({ product, relatedProducts }: ProductDetailC
                     )}
                 </div>
 
-                <Footer />
+                {/* 6. Product Reviews System */}
+                <div id="reviews" className="mt-0">
+                    <ProductReviews
+                        productId={product.id}
+                        reviews={reviews}
+                        currentUserReview={currentUserReview}
+                        isVerifiedBuyer={isVerifiedBuyer}
+                    />
+                </div>
 
+                <Footer />
             </main>
         </div>
     );
