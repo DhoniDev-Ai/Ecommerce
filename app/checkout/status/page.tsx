@@ -21,8 +21,15 @@ function StatusContent() {
         let timeoutId: NodeJS.Timeout;
 
         const verifyPayment = async () => {
+            const controller = new AbortController();
+            const id = setTimeout(() => controller.abort(), 4000); // 4s timeout for client-side responsiveness
+
             try {
-                const res = await fetch(`/api/payment/verify?order_id=${orderId}`);
+                const res = await fetch(`/api/payment/verify?order_id=${orderId}`, {
+                    signal: controller.signal
+                });
+                clearTimeout(id);
+
                 const data = await res.json();
 
                 if (data.status === "SUCCESS") {
@@ -35,9 +42,12 @@ function StatusContent() {
                 } else {
                     setStatus("failed");
                 }
-            } catch (err) {
+            } catch (err: any) {
+                clearTimeout(id);
+                // If aborted or network error, just retry
                 if (attempts < maxAttempts) {
                     attempts++;
+                    console.log("Verify: Retrying due to timeout/error...");
                     timeoutId = setTimeout(verifyPayment, 2000);
                 } else {
                     setStatus("failed");

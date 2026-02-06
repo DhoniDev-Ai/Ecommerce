@@ -268,6 +268,7 @@ export interface Database {
           product_id: string
           rating: number
           comment: string | null
+          author_name?: string | null // Added for denormalized display
           created_at: string
         }
         Insert: {
@@ -276,6 +277,7 @@ export interface Database {
           product_id: string
           rating: number
           comment?: string | null
+          author_name?: string | null
           created_at?: string
         }
         Update: {
@@ -284,6 +286,7 @@ export interface Database {
           product_id?: string
           rating?: number
           comment?: string | null
+          author_name?: string | null
           created_at?: string
         }
         Relationships: []

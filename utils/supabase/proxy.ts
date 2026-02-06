@@ -44,8 +44,19 @@ export async function updateSession(request: NextRequest) {
     );
 
     // Only refresh the Auth Token if we potentially have a session
+    // Only refresh the Auth Token if we potentially have a session
     if (hasSupabaseCookies) {
-        await supabase.auth.getUser();
+        const path = request.nextUrl.pathname;
+        const isProtected = path.startsWith('/admin') || path.startsWith('/dashboard') || path.startsWith('/checkout') || path.startsWith('/api');
+
+        if (isProtected) {
+            // Protected Routes: Use getUser() for strict security (validates against DB)
+            await supabase.auth.getUser();
+        } else {
+            // Public Routes: Use getSession() for speed (validates JWT signature & refreshes token)
+            // This prevents the "Logged Out" flicker without the latency of a DB call.
+            await supabase.auth.getSession();
+        }
     }
 
     // Optional: Add Route Protection Logic here if you ever need it

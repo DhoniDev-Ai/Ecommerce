@@ -110,13 +110,13 @@ export function Header() {
                     <Link href="/" className="-m-1.5 p-1.5 flex cursor-pointer items-center gap-2">
                         <span className="sr-only">Ayuniv</span>
                         <Image
-                            width={1000}
-                            height={1000}
+                            width={200}
+                            height={200}
                             loading="eager"
                             priority
                             src="/assets/logo.png"
                             alt="Ayuniv"
-                            className="h-16 w-auto"
+                            className="h-16 w-auto object-contain"
                         />
                     </Link>
                 </div>
@@ -314,14 +314,14 @@ export function Header() {
                             </Link>
 
                             {userRole === 'admin' && (
-                                                <Link
-                                                    href="/admin"
-                                                    onClick={() => setProfileDropdownOpen(false)}
-                                                    className="block px-4 py-2.5 text-[10px] uppercase tracking-[0.25em] font-bold text-[#2D3A3A]/70 hover:bg-[#5A7A6A]/5 hover:text-[#5A7A6A] transition-colors"
-                                                >
-                                                    Admin Area
-                                                </Link>
-                                            )}
+                                <Link
+                                    href="/admin"
+                                    onClick={() => setProfileDropdownOpen(false)}
+                                    className="block px-4 py-2.5 text-[10px] uppercase tracking-[0.25em] font-bold text-[#2D3A3A]/70 hover:bg-[#5A7A6A]/5 hover:text-[#5A7A6A] transition-colors"
+                                >
+                                    Admin Area
+                                </Link>
+                            )}
 
                             {/* Auth Buttons */}
                             {!user ? (

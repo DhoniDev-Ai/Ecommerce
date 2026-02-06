@@ -9,6 +9,7 @@ import { ChevronLeft, Share2, Clock, ArrowRight } from "lucide-react";
 import Image from "next/image";
 import { ProductCard } from "@/components/product/ProductCard";
 import { Post, Product } from "@/types";
+import { ShareButton } from "@/components/ui/ShareButton";
 
 // We need to redefine interface locally if not available globally, 
 // but ideally we should import. I will assume they match the previous file's logic.
@@ -114,7 +115,7 @@ export default function JournalClient({ post, relatedProduct, suggestedPosts }: 
                     <footer className="mt-24 pt-12 border-t border-[#E8E6E2] flex items-center justify-between">
                         <p className="text-[10px] uppercase tracking-widest text-[#9AA09A] font-bold italic">Published on {formatDate(post.published_at)}</p>
                         <div className="flex gap-8">
-                            <button className="text-[10px] uppercase tracking-widest font-bold text-[#7A8A8A] hover:text-[#5A7A6A] flex items-center gap-2 transition-colors"><Share2 className="w-3 h-3" /> Share</button>
+                            <ShareButton title={post.title} className="text-[#7A8A8A] cursor-pointer hover:text-[#5A7A6A] p-2 hover:bg-[#5A7A6A]/5" text={`Check out this article: ${post.title}`} />
                         </div>
                     </footer>
                 </div>

@@ -77,7 +77,7 @@ export function InvoiceButton({ order, className }: InvoiceButtonProps) {
             let finalY = lastTable && lastTable.finalY ? lastTable.finalY + 10 : startY + 50;
             const subtotal = order.payment.subtotal;
             // Assuming tax is included in price for now, can separate if needed based on input
-            const tax = order.payment.tax || (subtotal * 0.18); // Example calculation if not present, but using stored valid tax
+            const tax = order.payment.tax || (subtotal * 0.05); // Example calculation if not present, but using stored valid tax
             const total = order.payment.total;
 
             doc.text(`Subtotal:`, 140, finalY);

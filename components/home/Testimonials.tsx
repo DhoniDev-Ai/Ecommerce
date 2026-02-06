@@ -38,7 +38,19 @@ const testimonials = [
 ];
 
 
-export function Testimonials() {
+interface Testimonial {
+    id: string | number;
+    name: string;
+    rating: number;
+    text: string;
+}
+
+interface TestimonialsProps {
+    initialTestimonials?: Testimonial[];
+}
+
+export function Testimonials({ initialTestimonials = [] }: TestimonialsProps) {
+    const data = initialTestimonials.length > 0 ? initialTestimonials : testimonials;
     const scrollRef = useRef<HTMLDivElement>(null);
     const [isHovered, setIsHovered] = useState(false);
     const [isClickPaused, setIsClickPaused] = useState(false);
@@ -47,7 +59,7 @@ export function Testimonials() {
 
     const handleClick = () => {
         setIsClickPaused(true);
-        setTimeout(() => setIsClickPaused(false), 8000);
+        setTimeout(() => setIsClickPaused(false), 6000);
     };
 
     return (
@@ -84,7 +96,7 @@ export function Testimonials() {
             >
                 <div className={`flex gap-6 animate-infinite-scroll w-max pl-6 ${isPaused ? 'animation-paused' : ''}`}>
                     {/* Double the list for seamless loop */}
-                    {[...testimonials, ...testimonials].map((testimonial, i) => (
+                    {[...data, ...data].map((testimonial, i) => (
                         <div
                             key={i}
                             className="w-[300px] md:w-[400px] p-8 rounded-4xl bg-white border border-[#E8E6E2] shadow-sm flex flex-col justify-between shrink-0 transition-transform duration-300"

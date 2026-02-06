@@ -147,3 +147,28 @@ export async function deleteReview(productId: string) {
 
     revalidatePath(`/products/${productId}`);
 }
+
+// 4. Get Featured Testimonials (5-Star Reviews)
+export async function getFeaturedTestimonials() {
+    const supabase = await createClient();
+
+    const { data: reviews, error } = await supabase
+        .from('reviews')
+        .select('id, author_name, rating, comment')
+        .eq('rating', 5)
+        .eq('is_approved', true)
+        .order('created_at', { ascending: false })
+        .limit(10);
+
+    if (error) {
+        console.error("Error fetching testimonials:", error);
+        return [];
+    }
+
+    return reviews.map(r => ({
+        id: r.id,
+        name: r.author_name || "Verified Customer",
+        rating: r.rating,
+        text: r.comment || "" // Fallback to empty string for Type safety
+    }));
+}

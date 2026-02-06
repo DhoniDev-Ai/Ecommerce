@@ -9,7 +9,7 @@ import Link from "next/link";
 import {
     ChevronLeft, Plus, Minus, Leaf, Droplets,
     ShieldCheck, Sparkles, ArrowRight, ShoppingBag, Zap,
-    ChevronDown
+    ChevronDown, Star
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import { useCart } from "@/hooks/useCart";
@@ -18,6 +18,7 @@ import { PriceDisplay } from "@/components/product/PriceDisplay";
 import Image from "next/image";
 import { ProductCard } from "@/components/product/ProductCard";
 import { ProductReviews } from "@/components/product/ProductReviews";
+import { ShareButton } from "@/components/ui/ShareButton";
 
 interface ProductDetailClientProps {
     product: any;
@@ -32,7 +33,8 @@ export function ProductDetailClient({ product, relatedProducts, reviews, isVerif
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);
     const [quantity, setQuantity] = useState(1);
     const [isPaused, setIsPaused] = useState(false);
-    const [isExpanded, setIsExpanded] = useState(false);
+    const [isDescExpanded, setIsDescExpanded] = useState(false);
+    const [isGalleryExpanded, setIsGalleryExpanded] = useState(false);
 
     const { addToCart, isAdding, isSuccess } = useCart();
     const { openWithContext } = useAI();
@@ -68,6 +70,16 @@ export function ProductDetailClient({ product, relatedProducts, reviews, isVerif
         setTimeout(() => setIsPaused(false), 10000);
     };
 
+    // Preload images for instant gallery switching
+    useEffect(() => {
+        if (!product?.image_urls) return;
+
+        product.image_urls.forEach((src: string) => {
+            const img = new window.Image();
+            img.src = src;
+        });
+    }, [product?.image_urls]);
+
     // Calculate dynamic pricing
     const currentPrice = product.sale_price || product.price;
 
@@ -93,20 +105,21 @@ export function ProductDetailClient({ product, relatedProducts, reviews, isVerif
                         <motion.div
                             initial={{ opacity: 0, y: 30 }}
                             animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 1, ease: [0.19, 1, 0.22, 1] }}
+                            transition={{ duration: 0.8, ease: [0.19, 1, 0.22, 1] }}
                             className="lg:col-span-7 lg:sticky lg:top-32 h-fit flex justify-center items-center flex-col"
                         >
+
                             {/* Main Image Container */}
                             <div className="relative w-full max-md:max-w-[95%] max-w-[75%] aspect-square rounded-[4rem] overflow-hidden bg-white/80 shadow-[0_40px_100px_rgba(0,0,0,0.02)] flex items-center justify-center p-3 lg:p-8 mb-10">
                                 <AnimatePresence mode="wait">
                                     <motion.img
                                         key={selectedImageIndex}
                                         src={product.image_urls?.[selectedImageIndex] || product.image_urls?.[0]}
-                                        initial={{ opacity: 0, y: 30, scale: 0.95, filter: "blur(12px)" }}
-                                        animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
-                                        exit={{ opacity: 0, y: -30, scale: 0.98, filter: "blur(6px)" }}
+                                        initial={{ opacity: 0, scale: 0.98 }}
+                                        animate={{ opacity: 1, scale: 1 }}
+                                        exit={{ opacity: 0, scale: 0.98 }}
                                         transition={{
-                                            duration: 0.9,
+                                            duration: 0.4,
                                             ease: [0.22, 1, 0.36, 1]
                                         }}
                                         className="max-h-[90%] w-auto object-contain rounded-4xl drop-shadow-[0_50px_60px_rgba(0,0,0,0.08)] will-change-transform"
@@ -125,21 +138,21 @@ export function ProductDetailClient({ product, relatedProducts, reviews, isVerif
                             </div>
 
                             {/* Thumbnails */}
-                            <div className="flex gap-5 justify-center">
-                                {product.image_urls?.map((img: string, index: number) => (
+                            <div className="flex gap-4 justify-center flex-wrap px-4">
+                                {product.image_urls?.slice(0, isGalleryExpanded ? undefined : 3).map((img: string, index: number) => (
                                     <button
                                         key={index}
                                         onClick={() => handleThumbnailClick(index)}
                                         className={cn(
-                                            "group relative w-16 h-16 rounded-2xl overflow-hidden bg-white transition-all duration-700 border",
+                                            "group relative w-16 h-16 rounded-2xl overflow-hidden bg-white transition-all duration-700 border shrink-0",
                                             selectedImageIndex === index
                                                 ? "border-[#5A7A6A] shadow-xl scale-110"
-                                                : "border-transparent opacity-40 hover:opacity-100 hover:scale-105"
+                                                : "border-transparent opacity-60 hover:opacity-100 hover:scale-105"
                                         )}
                                     >
                                         <Image
                                             width={100}
-                                            height={100} src={img} alt="" className="w-full h-full object-contain p-2" />
+                                            height={100} src={img} alt="" className="w-full h-full object-contain p-1" />
                                         {selectedImageIndex === index && (
                                             <motion.div
                                                 layoutId="thumb-glow"
@@ -148,6 +161,26 @@ export function ProductDetailClient({ product, relatedProducts, reviews, isVerif
                                         )}
                                     </button>
                                 ))}
+
+                                {/* +N More Indicator */}
+                                {!isGalleryExpanded && product.image_urls?.length > 3 && (
+                                    <button
+                                        onClick={() => setIsGalleryExpanded(true)}
+                                        className="w-16 h-16 rounded-2xl bg-[#F3F1ED] border border-transparent hover:border-[#5A7A6A]/30 flex items-center justify-center text-[#5A7A6A] font-bold text-xs hover:bg-[#E8E6E2] transition-colors shrink-0"
+                                    >
+                                        +{product.image_urls.length - 3}
+                                    </button>
+                                )}
+
+                                {/* Show Less (Optional, nicely integrated) */}
+                                {isGalleryExpanded && product.image_urls?.length > 3 && (
+                                    <button
+                                        onClick={() => setIsGalleryExpanded(false)}
+                                        className="w-16 h-16 rounded-2xl bg-[#F3F1ED] border border-transparent hover:border-[#5A7A6A]/30 flex items-center justify-center text-[#5A7A6A] font-bold text-[10px] uppercase hover:bg-[#E8E6E2] transition-colors shrink-0"
+                                    >
+                                        Less
+                                    </button>
+                                )}
                             </div>
                         </motion.div>
 
@@ -164,32 +197,59 @@ export function ProductDetailClient({ product, relatedProducts, reviews, isVerif
                                 </p>
 
                                 {/* Smart Title Logic - Hybrid Approach */}
-                                <h1 className="font-heading text-5xl md:text-7xl lg:text-7xl text-[#2D3A3A] leading-[0.82] tracking-tighter mb-8 flex flex-col">
-                                    {product.name.includes("Sea Buckthorn") ? (
-                                        <>
-                                            <span className="block italic font-serif max-md:pb-2">Ayuniv</span>
-                                            <span className="italic font-serif font-light text-[#5A7A6A] ml-12 lg:ml-20 -mt-2 flex flex-col gap-0 leading-[0.9]">
-                                                <span>Sea Buckthorn <span className="hidden md:inline">Pulp</span></span>
-                                                <span className="md:hidden">Pulp</span>
-                                                <div className="flex items-center gap-3 pt-4">
-                                                    <span className="text-3xl align-top font-sans tracking-wide border border-[#5A7A6A] rounded-full px-4 py-1 text-[20px] font-bold">
-                                                        {product.name.includes("500ml") ? "500ml" : "300ml"}
+                                <div className="flex justify-between items-start mb-4">
+                                    <div className="flex-1">
+                                        <h1 className="font-heading text-5xl md:text-7xl lg:text-7xl text-[#2D3A3A] leading-[0.82] tracking-tighter mb-4 flex flex-col">
+                                            {product.name.includes("Sea Buckthorn") ? (
+                                                <>
+                                                    <span className="block italic font-serif max-md:pb-2">Ayuniv</span>
+                                                    <span className="italic font-serif font-light text-[#5A7A6A] ml-12 lg:ml-20 -mt-2 flex flex-col gap-0 leading-[0.9]">
+                                                        <span>Sea Buckthorn <span className="hidden md:inline">Pulp</span></span>
+                                                        <span className="md:hidden">Pulp</span>
+                                                        <div className="flex items-center gap-3 pt-4">
+                                                            <span className="text-3xl align-top font-sans tracking-wide border border-[#5A7A6A] rounded-full px-4 py-1 text-[20px] font-bold">
+                                                                {product.name.includes("500ml") ? "500ml" : "300ml"}
+                                                            </span>
+                                                            <span className="opacity-60 text-4xl lg:text-5xl font-light">(Juice)</span>
+                                                        </div>
                                                     </span>
-                                                    <span className="opacity-60 text-4xl lg:text-5xl font-light">(Juice)</span>
-                                                </div>
-                                            </span>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <span className="block italic font-serif">{product.name.split(' ')[0]}</span>
-                                            {product.name.split(' ').length > 1 && (
-                                                <span className="italic font-serif font-light  text-[#5A7A6A] ml-12 lg:ml-20 mt-3">
-                                                    {product.name.split(' ').slice(1).join(' ')}
-                                                </span>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <span className="block italic font-serif">{product.name.split(' ')[0]}</span>
+                                                    {product.name.split(' ').length > 1 && (
+                                                        <span className="italic font-serif font-light text-[#5A7A6A] ml-12 lg:ml-20 mt-3">
+                                                            {product.name.split(' ').slice(1).join(' ')}
+                                                        </span>
+                                                    )}
+                                                </>
                                             )}
-                                        </>
-                                    )}
-                                </h1>
+                                        </h1>
+
+                                        {/* RATING SUMMARY */}
+                                        {reviews && reviews.length > 0 && (
+                                            <button
+                                                onClick={() => document.getElementById('reviews')?.scrollIntoView({ behavior: 'smooth' })}
+                                                className="flex items-center gap-2 mb-6 group cursor-pointer"
+                                            >
+                                                <div className="flex items-center gap-0.5 text-[#5A7A6A]">
+                                                    {[...Array(5)].map((_, i) => (
+                                                        <Star
+                                                            key={i}
+                                                            className={cn("w-3.5 h-3.5 fill-current", i < Math.round(reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length) ? "text-[#FFD700]" : "text-[#E8E6E2]")}
+                                                        />
+                                                    ))}
+                                                </div>
+                                                <span className="text-[10px] uppercase tracking-widest font-bold text-[#7A8A8A] group-hover:text-[#2D3A3A] transition-colors">
+                                                    {(reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1)} ({reviews.length} reviews)
+                                                </span>
+                                            </button>
+                                        )}
+                                    </div>
+                                    <div className="pt-2">
+                                        <ShareButton title={product.name} className="bg-white cursor-pointer border border-[#E8E6E2]" />
+                                    </div>
+                                </div>
 
 
                                 <div className="flex items-center gap-6 mb-14">
@@ -209,16 +269,16 @@ export function ProductDetailClient({ product, relatedProducts, reviews, isVerif
                                     <div className="relative">
                                         <p className={cn(
                                             "text-xl text-[#6A7A7A] leading-relaxed font-light italic opacity-90 border-l border-[#5A7A6A]/20 pl-8 transition-colors group-hover:border-[#5A7A6A]",
-                                            !isExpanded && "line-clamp-4"
+                                            !isDescExpanded && "line-clamp-4"
                                         )}>
                                             "{product.description}"
                                         </p>
                                         {product.description.length > 200 && (
                                             <button
-                                                onClick={() => setIsExpanded(!isExpanded)}
+                                                onClick={() => setIsDescExpanded(!isDescExpanded)}
                                                 className="text-[#5A7A6A] text-xs font-bold uppercase tracking-widest mt-4 pl-8 hover:underline cursor-pointer"
                                             >
-                                                {isExpanded ? "Read Less" : "Read More"}
+                                                {isDescExpanded ? "Read Less" : "Read More"}
                                             </button>
                                         )}
                                     </div>

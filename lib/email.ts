@@ -12,14 +12,14 @@ const transporter = nodemailer.createTransport({
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS,
     },
+    connectionTimeout: 10000, // 10s timeout
+    socketTimeout: 10000, // 10s timeout
 });
 
 export const EMAIL_SENDER = `"Ayuniv Orders" <${process.env.SMTP_USER}>`;
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "slightjoyhealthcare@gmail.com"; 
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "slightjoyhealthcare@gmail.com";
 
 export async function sendOrderEmails(orderId: string) {
-    //console.log(`Attempting to send emails for Order ${orderId}`);
-    
     // 1. Fetch Order Details with Products
     const { data: orderStart, error } = await supabaseAdmin
         .from('orders')
@@ -34,24 +34,23 @@ export async function sendOrderEmails(orderId: string) {
         `)
         .eq('id', orderId)
         .single();
-    
+
     // Cast to any to bypass strict join typing issues
     const order = orderStart as any;
 
     if (error || !order) {
-        //console.error("Email Error: Could not fetch order", error);
         return;
     }
 
     // 2. Prepare Data
     const customerName = order.users?.full_name || "Valued Customer";
-    
+
     let address = { fullName: "", addressLine: "", city: "", state: "", pincode: "", phone: "", email: "" };
     try {
-        address = typeof order.shipping_address === 'string' 
-            ? JSON.parse(order.shipping_address) 
+        address = typeof order.shipping_address === 'string'
+            ? JSON.parse(order.shipping_address)
             : order.shipping_address;
-    } catch (e) {}
+    } catch (e) { }
 
     // Robust Email Discovery Strategy
     let customerEmail = order.users?.email;
@@ -84,54 +83,52 @@ export async function sendOrderEmails(orderId: string) {
         image_url: item.products?.image_urls?.[0] || ""
     }));
 
-    // 3. Send Customer Email
-    if (customerEmail) {
-        console.log(`Email Service: Sending confirmation to ${customerEmail} for Order #${order.id.slice(0, 8)}`);
-        try {
-            const emailHtml = await render(OrderConfirmationEmail({
-                orderId: order.id,
-                customerName,
-                items,
-                totalAmount: order.total_amount,
-                shippingAddress: address
-            }));
+    // 3. Render Emails in Parallel
+    const [customerHtml, adminHtml] = await Promise.all([
+        customerEmail ? render(OrderConfirmationEmail({
+            orderId: order.id,
+            customerName,
+            items,
+            totalAmount: order.total_amount,
+            shippingAddress: address
+        })) : Promise.resolve(null),
+        render(AdminOrderAlert({
+            orderId: order.id,
+            customerName,
+            email: customerEmail || "No Email",
+            items,
+            totalAmount: order.total_amount,
+            shippingAddress: address,
+            paymentMethod: order.payment_method === 'COD' ? 'COD' : 'Online'
+        }))
+    ]);
 
-            await transporter.sendMail({
+    // 4. Send Emails in Parallel
+    const emailPromises = [];
+
+    if (customerEmail && customerHtml) {
+        console.log(`Email Service: Sending confirmation to ${customerEmail}`);
+        emailPromises.push(
+            transporter.sendMail({
                 from: EMAIL_SENDER,
                 to: customerEmail,
                 subject: `Order Confirmed #${order.id.slice(0, 8)} - Ayuniv`,
-                html: emailHtml,
-            });
-            console.log(`Email Service: Customer email sent successfully`);
-        } catch (e) {
-            console.error("Email Service: Failed to send customer email", e);
-        }
-    } else {
-        console.warn(`Email Service: NO EMAIL FOUND for User ID ${order.user_id}. check public.users table.`);
+                html: customerHtml,
+            }).catch(e => console.error("Email Service: Failed to send customer email", e))
+        );
     }
 
-    // 4. Send Admin Notification
-    try {
-        const adminHtml = await render(AdminOrderAlert({
-                orderId: order.id,
-                customerName,
-                email: customerEmail || "No Email",
-                items,
-                totalAmount: order.total_amount,
-                shippingAddress: address,
-                paymentMethod: order.payment_method === 'COD' ? 'COD' : 'Online'
-        }));
-
-        await transporter.sendMail({
+    emailPromises.push(
+        transporter.sendMail({
             from: EMAIL_SENDER,
             to: ADMIN_EMAIL,
             subject: `New Order: ${customerName} (₹${order.total_amount})`,
             html: adminHtml,
-        });
-        console.log(`Email Service: Admin alert sent to ${ADMIN_EMAIL}`);
-    } catch (e) {
-        console.error("Email Service: Failed to send admin email", e);
-    }
+        }).catch(e => console.error("Email Service: Failed to send admin email", e))
+    );
+
+    await Promise.all(emailPromises);
+    console.log(`Email Service: Completed sending ${emailPromises.length} emails`);
 }
 
 import { OrderCancellationEmail } from '@/components/emails/OrderCancellation';
@@ -152,7 +149,7 @@ export async function sendCancellationEmails(orderId: string, reason: string, re
         `)
         .eq('id', orderId)
         .single();
-    
+
     // Cast to any to bypass strict join typing issues
     const order = orderStart as any;
 
@@ -163,13 +160,13 @@ export async function sendCancellationEmails(orderId: string, reason: string, re
 
     // 2. Prepare Data
     const customerName = order.users?.full_name || "Valued Customer";
-    
+
     let address = { fullName: "", addressLine: "", city: "", state: "", pincode: "", phone: "", email: "" };
     try {
-        address = typeof order.shipping_address === 'string' 
-            ? JSON.parse(order.shipping_address) 
+        address = typeof order.shipping_address === 'string'
+            ? JSON.parse(order.shipping_address)
             : order.shipping_address;
-    } catch (e) {}
+    } catch (e) { }
 
     // Robust Email Discovery Strategy (Copied from sendOrderEmails for consistency)
     let customerEmail = order.users?.email;
@@ -194,7 +191,7 @@ export async function sendCancellationEmails(orderId: string, reason: string, re
         console.error(`Cancellation Email Service: CRITICAL FAILURE - Could not find email for Order ${orderId}`);
     }
     const customerPhone = order.users?.phone || "No Phone";
-    
+
     const items = order.order_items.map((item: any) => ({
         name: item.products?.name || "Unknown Item",
         quantity: item.quantity,

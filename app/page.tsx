@@ -10,6 +10,7 @@ import { AIAssistantTeaser } from "@/components/home/AIAssistantTeaser";
 import { Testimonials } from "@/components/home/Testimonials";
 import { createClient } from '@/lib/supabase/server';
 import { getProductStats } from "@/actions/store/stats";
+import { getFeaturedTestimonials } from "@/actions/store/reviews";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -80,6 +81,9 @@ export default async function Home() {
     }
   };
 
+  // Fetch testimonials
+  const testimonials = await getFeaturedTestimonials();
+
   return (
     <div className="min-h-screen flex flex-col bg-[#FDFBF7]">
       <script
@@ -96,7 +100,7 @@ export default async function Home() {
         <IngredientTransparency />
         <InstagramCommunity />
         <AIAssistantTeaser />
-        <Testimonials />
+        <Testimonials initialTestimonials={testimonials} />
       </main>
 
       <Footer />

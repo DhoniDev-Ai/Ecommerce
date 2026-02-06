@@ -109,22 +109,24 @@ export function ProductReviews({ productId, reviews, currentUserReview, isVerifi
                                         </div>
                                         <div>
                                             <h4 className="font-bold text-[#2D3A3A] text-sm">{review.author_name}</h4>
-                                            <div className="flex items-center gap-2">
+                                            <div className="flex items-center">
                                                 <span className="text-[10px] uppercase tracking-widest text-[#9AA09A]">{formatDate(review.created_at)}</span>
-                                                {/* Always verified in this list as per logic, or check explicitly if needed */}
-                                                <span className="flex items-center gap-1 text-[9px] font-bold text-[#5A7A6A] bg-[#E8F0E8] px-2 py-0.5 rounded-full">
-                                                    <CheckCircle className="w-3 h-3" /> Verified Buyer
-                                                </span>
+
                                             </div>
                                         </div>
                                     </div>
-                                    <div className="flex gap-0.5">
-                                        {[...Array(5)].map((_, i) => (
-                                            <Star
-                                                key={i}
-                                                className={`w-3.5 h-3.5 ${i < review.rating ? "fill-[#5A7A6A] text-[#5A7A6A]" : "text-[#E8E6E2]"}`}
-                                            />
-                                        ))}
+                                    <div className="flex flex-col gap-2">
+                                        <div className="flex gap-0.5">
+                                            {[...Array(5)].map((_, i) => (
+                                                <Star
+                                                    key={i}
+                                                    className={`w-3.5 h-3.5 ${i < review.rating ? "fill-[#5A7A6A] text-[#5A7A6A]" : "text-[#E8E6E2]"}`}
+                                                />
+                                            ))}
+                                        </div>
+                                        <span className="flex items-center gap-1 text-[9px] font-bold text-[#5A7A6A] bg-[#E8F0E8] px-2 py-0.5 rounded-full">
+                                            <CheckCircle className="w-3 h-3" /> Verified Buyer
+                                        </span>
                                     </div>
                                 </div>
                                 <p className="text-[#2D3A3A] leading-relaxed text-sm">{review.comment}</p>
