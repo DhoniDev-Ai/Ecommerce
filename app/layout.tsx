@@ -6,6 +6,7 @@ import { CartSidebar } from "@/components/layout/CartSidebar";
 import { AIProvider } from "@/context/AIContext";
 import { ChatWidget } from "@/components/ai/ChatWidget";
 import { Analytics } from "@vercel/analytics/next"
+import NextTopLoader from 'nextjs-toploader';
 
 const montserrat = Montserrat({
   variable: "--font-montserrat",
@@ -110,6 +111,17 @@ export default function RootLayout({
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+        <NextTopLoader
+          color="#5A7A6A"
+          initialPosition={0.08}
+          crawlSpeed={200}
+          height={3}
+          crawl={true}
+          showSpinner={false}
+          easing="ease"
+          speed={200}
+          shadow="0 0 10px #5A7A6A,0 0 5px #5A7A6A"
         />
         <Analytics />
         <AIProvider>

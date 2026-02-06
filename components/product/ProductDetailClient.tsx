@@ -9,7 +9,7 @@ import Link from "next/link";
 import {
     ChevronLeft, Plus, Minus, Leaf, Droplets,
     ShieldCheck, Sparkles, ArrowRight, ShoppingBag, Zap,
-    ChevronDown, Star
+    ChevronDown, Star, Loader2
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import { useCart } from "@/hooks/useCart";
@@ -340,13 +340,20 @@ export function ProductDetailClient({ product, relatedProducts, reviews, isVerif
                                                     onClick={handleAddToCart}
                                                     disabled={isProcessing}
                                                     className={cn(
-                                                        "flex-2 py-5 rounded-full text-[10px] uppercase tracking-widest font-bold hover:shadow-[0_20px_40px_rgba(45,58,58,0.15)] hover:-translate-y-0.5 transition-all flex items-center cursor-pointer justify-center gap-3 active:scale-95 disabled:opacity-70",
+                                                        "flex-2 py-5 rounded-full text-[10px] uppercase tracking-widest font-bold hover:shadow-[0_20px_40px_rgba(45,58,58,0.15)] hover:-translate-y-0.5 transition-all flex items-center cursor-pointer justify-center gap-3 active:scale-95 disabled:opacity-70 disabled:cursor-wait",
                                                         showSuccess
                                                             ? "bg-[#5A7A6A] text-white scale-105"
                                                             : "bg-[#2D3A3A] text-white"
                                                     )}
                                                 >
-                                                    <ShoppingBag className="w-4 h-4" /> Add to Bag
+                                                    {isProcessing ? (
+                                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                                    ) : showSuccess ? (
+                                                        <ShoppingBag className="w-4 h-4" />
+                                                    ) : (
+                                                        <ShoppingBag className="w-4 h-4" />
+                                                    )}
+                                                    {isProcessing ? "Adding..." : showSuccess ? "Added" : "Add to Bag"}
                                                 </button>
                                             </div>
 
