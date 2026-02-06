@@ -7,45 +7,44 @@ export const dynamic = 'force-dynamic';
 
 export default async function AdminDashboardPage() {
     // Parallel Data Fetching
-    const [ordersRes, activeOrdersRes, customersRes] = await Promise.all([
-        // 1. All Orders (for charts & revenue) - Optimized: Fetch last 30 days only for charts if scale is huge, but fetching all for simple revenue total is fine for now
-        supabaseAdmin.from('orders').select('id, total_amount, status, created_at, payment_status, user:user_id(full_name)').order('created_at', { ascending: false }),
+    const [statsRes, chartOrdersRes, recentOrdersRes, customersRes] = await Promise.all([
+        // 1. KPI Stats via RPC (Fast)
+        supabaseAdmin.rpc('get_admin_stats' as any),
 
-        // 2. Active Orders Count(Not delivered/cancelled)
-        supabaseAdmin.from('orders').select('id', { count: 'exact', head: true }).in('status', ['pending', 'processing', 'shipped']),
+        // 2. Chart Data (Last 30 Days only, minimal fields)
+        supabaseAdmin
+            .from('orders')
+            .select('created_at, total_amount')
+            .eq('payment_status', 'succeeded')
+            .gte('created_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()),
 
-        // 3. Total Customers Count (Count all profiles)
+        // 3. Recent Orders (Limit 5)
+        supabaseAdmin
+            .from('orders')
+            .select('id, total_amount, status, created_at, payment_status, user:user_id(full_name)')
+            .order('created_at', { ascending: false })
+            .limit(5),
+
+        // 4. Total Customers Count (Count only)
         supabaseAdmin.from('users').select('id', { count: 'exact', head: true }),
     ]);
 
-    const allOrders = ordersRes.data || [];
-    const recentOrders = allOrders.slice(0, 4);
+    // Parse RPC Stats
+    const stats: any = statsRes.data || {
+        total_revenue: 0,
+        last_28_days_revenue: 0,
+        today_revenue: 0,
+        active_orders: 0,
+        total_customers: 0,
+        aov: 0
+    };
 
-    // --- STATISTICS CALCULATION ---
-    const succeededOrders = allOrders.filter(o => o.payment_status === 'succeeded');
+    const recentOrders = recentOrdersRes.data || [];
 
-    // 1. Last 28 Days Revenue
-    const totalRevenue = succeededOrders.reduce((acc, order) => acc + (order.total_amount || 0), 0);
-    const cutoffDate = new Date();
-    cutoffDate.setDate(cutoffDate.getDate() - 28);
-
-    const last28DaysRevenue = succeededOrders
-        .filter(o => new Date(o.created_at) >= cutoffDate)
-        .reduce((acc, order) => acc + (order.total_amount || 0), 0);
-
-    // 2. Today's Revenue
-    const today = new Date().toISOString().split('T')[0];
-    const todayRevenue = succeededOrders
-        .filter(o => o.created_at.startsWith(today))
-        .reduce((acc, order) => acc + (order.total_amount || 0), 0);
-
-    // 3. Average Order Value (AOV)
-    const aov = succeededOrders.length > 0 ? totalRevenue / succeededOrders.length : 0;
-
-    // --- CHART DATA PREPARATION (Last 30 Days) ---
+    // --- CHART DATA PREPARATION (Optimized) ---
     const chartDataMap = new Map<string, { date: string, revenue: number, orders: number }>();
 
-    // Initialize last 30 days with 0
+    // Initialize last 30 days
     for (let i = 29; i >= 0; i--) {
         const d = new Date();
         d.setDate(d.getDate() - i);
@@ -54,8 +53,8 @@ export default async function AdminDashboardPage() {
         chartDataMap.set(dateStr, { date: displayDate, revenue: 0, orders: 0 });
     }
 
-    // Populate with actual data
-    succeededOrders.forEach(order => {
+    // Populate with filtered data
+    (chartOrdersRes.data || []).forEach((order: any) => {
         const dateStr = order.created_at.split('T')[0];
         if (chartDataMap.has(dateStr)) {
             const entry = chartDataMap.get(dateStr)!;
@@ -86,10 +85,10 @@ export default async function AdminDashboardPage() {
 
             {/* KPI Cards */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <KPICard title="Revenue (Last 28 Days)" value={`₹${last28DaysRevenue.toLocaleString()}`} change="Since last month" />
-                <KPICard title="Today's Revenue" value={`₹${todayRevenue.toLocaleString()}`} change={today} />
-                <KPICard title="Active Orders" value={(activeOrdersRes.count || 0).toString()} change="Pending fulfillment" />
-                <KPICard title="Avg. Order Value" value={`₹${Math.round(aov).toLocaleString()}`} change="Per succeeded order" />
+                <KPICard title="Revenue (Last 28 Days)" value={`₹${stats.last_28_days_revenue?.toLocaleString() || '0'}`} change="Since last month" />
+                <KPICard title="Today's Revenue" value={`₹${stats.today_revenue?.toLocaleString() || '0'}`} change={new Date().toLocaleDateString('en-GB')} />
+                <KPICard title="Active Orders" value={(stats.active_orders || 0).toString()} change="Pending fulfillment" />
+                <KPICard title="Avg. Order Value" value={`₹${Math.round(stats.aov || 0).toLocaleString()}`} change="Per succeeded order" />
             </div>
 
             <div className="grid lg:grid-cols-3 gap-8">

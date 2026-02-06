@@ -4,7 +4,7 @@ import { ProductFeed } from "@/components/product/ProductFeed";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { Product } from "@/types";
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 3600; // Cache for 1 hour
 
 export default async function ProductsPage() {
     // Server-Side Fetching
