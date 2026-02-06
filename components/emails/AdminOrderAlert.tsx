@@ -96,7 +96,7 @@ export const AdminOrderAlert = ({
 
                         <Section className="text-center mt-[32px]">
                             <Link
-                                href={`https://ayuniv.com/admin/orders`}
+                                href={`https://ayuniv.com/admin/orders/${orderId}`}
                                 className="bg-black text-white rounded px-4 py-3 font-bold text-sm no-underline"
                             >
                                 Process Order in Admin

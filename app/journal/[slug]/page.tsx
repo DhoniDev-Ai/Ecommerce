@@ -1,31 +1,15 @@
-import { supabaseAdmin } from "@/lib/supabase/admin";
+// 1. Fetch data (all cached)
+import { getPostBySlug, getSuggestedPosts, Post } from "@/lib/supabase/journal";
+import { getProductById } from "@/lib/supabase/products";
 import JournalClient from "./JournalClient";
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
-import { Product } from "@/types";
 
-// Define interfaces if they aren't globally available matching the Client
-interface Post {
-    id: string;
-    title: string;
-    slug: string;
-    excerpt: string;
-    content: string;
-    category: string;
-    image_url: string;
-    hero_image_url?: string;
-    published_at: string;
-    related_product_id?: string;
-}
+export const dynamic = 'force-dynamic';
 
-// SEO Metadata Generator
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
     const { slug } = await params;
-    const { data: post } = await supabaseAdmin
-        .from('posts')
-        .select('title, excerpt, image_url')
-        .eq('slug', slug)
-        .single();
+    const post = await getPostBySlug(slug);
 
     if (!post) {
         return {
@@ -48,39 +32,24 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 export default async function JournalPostPage({ params }: { params: Promise<{ slug: string }> }) {
     const { slug } = await params;
 
-    // 1. Fetch Post
-    const { data: postData } = await supabaseAdmin
-        .from('posts')
-        .select('*')
-        .eq('slug', slug)
-        .single();
+    // 1. Fetch Post (Cached)
+    const post = await getPostBySlug(slug);
 
-    if (!postData) {
+    if (!post) {
         return notFound();
     }
 
-    const post = postData as unknown as Post;
+    // 2. Fetch Related Data in Parallel (Cached)
+    const relatedProductPromise = post.related_product_id
+        ? getProductById(post.related_product_id)
+        : Promise.resolve(null);
 
-    // 2. Fetch Related Product (if linked)
-    let relatedProduct: Product | null = null;
-    if (post.related_product_id) {
-        const { data: productData } = await supabaseAdmin
-            .from('products')
-            .select('*')
-            .eq('id', post.related_product_id)
-            .single();
+    const suggestedPostsPromise = getSuggestedPosts(slug);
 
-        if (productData) {
-            relatedProduct = productData as unknown as Product;
-        }
-    }
-
-    // 3. Fetch suggested posts
-    const { data: suggestedPosts } = await supabaseAdmin
-        .from('posts')
-        .select('*')
-        .neq('slug', slug)
-        .limit(3);
+    const [relatedProduct, suggestedPosts] = await Promise.all([
+        relatedProductPromise,
+        suggestedPostsPromise
+    ]);
 
     return (
         <JournalClient

@@ -8,6 +8,7 @@ import Link from "next/link";
 import { cn } from "@/utils/cn";
 import { supabase } from "@/lib/supabase/client";
 import Image from "next/image";
+import { InvoiceButton } from "@/components/dashboard/InvoiceButton";
 
 export default function OrderDetailPage() {
     const params = useParams();
@@ -180,9 +181,10 @@ export default function OrderDetailPage() {
                         ref: orderData.payment_method === 'COD'
                             ? (orderData.status === 'delivered' ? 'Paid' : 'Due on Delivery')
                             : (['success', 'paid', 'succeeded', 'captured'].includes(orderData.payment_status) ? 'Paid' : (isCancelled ? 'Cancelled' : 'Pending')),
-                        subtotal: orderData.total_amount, // Simplified
-                        shipping: 0,
-                        tax: 0,
+                        subtotal: address.breakdown?.subtotal || orderData.total_amount,
+                        shipping: address.breakdown?.shipping || 0,
+                        tax: address.breakdown?.tax || 0,
+                        discount: address.breakdown?.discount || 0,
                         total: orderData.total_amount
                     },
                     items: items
@@ -228,7 +230,6 @@ export default function OrderDetailPage() {
     const completedSteps = order.tracking.filter((s: any) => s.done).length;
     const totalSteps = order.tracking.length;
     const progressPercent = totalSteps > 1 ? ((completedSteps - 1) / (totalSteps - 1)) * 100 : 0;
-
     return (
         <section className="max-w-5xl space-y-12 pb-32">
             {/* Header Nav */}
@@ -236,9 +237,12 @@ export default function OrderDetailPage() {
                 <Link href="/dashboard/orders" className="group flex items-center gap-2 text-[10px] uppercase tracking-[0.4em] text-[#7A8A8A] hover:text-[#5A7A6A] transition-colors">
                     <ChevronLeft className="w-3 h-3 transition-transform group-hover:-translate-x-1" /> Back to Archive
                 </Link>
-                <p className="text-[10px] uppercase tracking-[0.4em] text-[#7A8B7A] font-bold">
-                    Ritual #{order.id.slice(0, 8)}
-                </p>
+                <div className="flex items-center gap-6">
+                    <InvoiceButton order={order} />
+                    <p className="text-[10px] uppercase tracking-[0.4em] text-[#7A8B7A] font-bold">
+                        Ritual #{order.id.slice(0, 8)}
+                    </p>
+                </div>
             </header>
 
             <div className="grid lg:grid-cols-5 gap-12">

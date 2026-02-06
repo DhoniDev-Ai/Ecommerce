@@ -363,6 +363,14 @@ export interface Database {
           code: string
           type: 'percentage' | 'fixed'
           value: number
+          discount_type?: 'percentage' | 'fixed' // Optional alias
+          discount_value?: number // Optional alias
+          min_purchase_amount?: number
+          max_discount_amount?: number
+          expiry_date?: string
+          usage_limit?: number
+          max_uses: number | null
+          times_used: number
           is_active: boolean
           created_at: string
         }
@@ -371,6 +379,14 @@ export interface Database {
           code: string
           type: 'percentage' | 'fixed'
           value: number
+          discount_type?: 'percentage' | 'fixed' // Optional alias
+          discount_value?: number // Optional alias
+          min_purchase_amount?: number
+          max_discount_amount?: number
+          expiry_date?: string
+          usage_limit?: number
+          max_uses?: number | null
+          times_used?: number
           is_active?: boolean
           created_at?: string
         }
@@ -379,6 +395,14 @@ export interface Database {
           code?: string
           type?: 'percentage' | 'fixed'
           value?: number
+          discount_type?: 'percentage' | 'fixed' // Optional alias
+          discount_value?: number // Optional alias
+          min_purchase_amount?: number
+          max_discount_amount?: number
+          expiry_date?: string
+          usage_limit?: number
+          max_uses?: number | null
+          times_used?: number
           is_active?: boolean
           created_at?: string
         }
@@ -389,6 +413,18 @@ export interface Database {
       [_ in never]: never
     }
     Functions: {
+      coupon_check: {
+        Args: {
+          code: string
+        }
+        Returns: any
+      }
+      increment_coupon_usage: {
+        Args: {
+          p_coupon_id: string
+        }
+        Returns: void
+      }
       increment_cart_item: {
         Args: {
           p_user_id: string

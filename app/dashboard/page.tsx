@@ -19,37 +19,37 @@ export default function DashboardOverview() {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) return;
 
-            // 1. Fetch Primary Base (Address)
-            const { data: addr } = await supabase
-                .from('addresses')
-                .select('city')
-                .eq('user_id', user.id)
-                .eq('is_default', true)
-                .single() as { data: { city: string } | null };
+            const [addressResult, activeResult, completedResult] = await Promise.all([
+                // 1. Fetch Primary Base (Address)
+                supabase
+                    .from('addresses')
+                    .select('city')
+                    .eq('user_id', user.id)
+                    .eq('is_default', true)
+                    .single(),
 
-            // 2. Fetch Active Rituals (All non-delivered/non-cancelled)
-            const { data: active } = await supabase
-                .from('orders')
-                .select('*')
-                .limit(4)
-                .eq('user_id', user.id)
-                .neq('status', 'delivered')
-                .neq('status', 'cancelled')
-                .order('created_at', { ascending: false });
+                // 2. Fetch Active Rituals
+                supabase
+                    .from('orders')
+                    .select('*')
+                    .eq('user_id', user.id)
+                    .neq('status', 'delivered')
+                    .neq('status', 'cancelled')
+                    .order('created_at', { ascending: false })
+                    .limit(4),
 
-            // 3. Count Completed Rituals
-            const { count } = await supabase
-                .from('orders')
-                .select('*', { count: 'exact', head: true })
-                .eq('user_id', user.id)
-                .eq('status', 'delivered');
-            //console.log(count);
-            //console.log(user.id);
+                // 3. Count Completed Rituals
+                supabase
+                    .from('orders')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('user_id', user.id)
+                    .eq('status', 'delivered')
+            ]);
 
             setData({
-                activeOrders: active || [],
-                totalCompleted: count || 0,
-                primaryBase: addr?.city || "Not Set",
+                activeOrders: activeResult.data || [],
+                totalCompleted: completedResult.count || 0,
+                primaryBase: addressResult.data?.city || "Not Set",
                 loading: false
             });
         }

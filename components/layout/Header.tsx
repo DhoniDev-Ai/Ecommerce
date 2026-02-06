@@ -313,6 +313,16 @@ export function Header() {
                                 </Button>
                             </Link>
 
+                            {userRole === 'admin' && (
+                                                <Link
+                                                    href="/admin"
+                                                    onClick={() => setProfileDropdownOpen(false)}
+                                                    className="block px-4 py-2.5 text-[10px] uppercase tracking-[0.25em] font-bold text-[#2D3A3A]/70 hover:bg-[#5A7A6A]/5 hover:text-[#5A7A6A] transition-colors"
+                                                >
+                                                    Admin Area
+                                                </Link>
+                                            )}
+
                             {/* Auth Buttons */}
                             {!user ? (
                                 <div className="flex gap-3">

@@ -107,6 +107,13 @@ export async function GET(req: Request) {
 
                     // Send Emails ONLY if Succeeded
                     if (dbPaymentStatus === 'succeeded') {
+                        // --- COUPON INCREMENT LOGIC (Moved from Creation) ---
+                        // Fetch order to check if coupon exists
+                        if (orderData.coupon_id) {
+                            console.log(`Verify: Incrementing Usage for Coupon ${orderData.coupon_id}`);
+                            await (supabaseAdmin as any).rpc('increment_coupon_usage', { p_coupon_id: orderData.coupon_id });
+                        }
+
                         console.log("Verify: Triggering Email Service");
                         try {
                             // Don't await? If we await, user waits. 

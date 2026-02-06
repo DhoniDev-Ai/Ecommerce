@@ -272,6 +272,13 @@ export default function CheckoutPage() {
             setCouponError("Ritual code expired or invalid.");
             return;
         }
+
+        // --- NEW: Check Usage Limits ---
+        if (data.max_uses && (data.times_used || 0) >= data.max_uses) {
+            setCouponError("This ritual code has been fully redeemed.");
+            return;
+        }
+
         setAppliedCoupon(data);
     };
 
@@ -385,7 +392,7 @@ export default function CheckoutPage() {
     const handleProceedToPayment = async () => {
         // AUTH CHECK: Must be verified user (via phone or login)
         if (!user) {
-            setToast({ message: "Please verify your WhatsApp number first.", type: 'error' });
+            setToast({ message: "Please verify your Email first.", type: 'error' });
             return;
         }
 
@@ -785,7 +792,7 @@ export default function CheckoutPage() {
                         </div>
 
                         {/* COUPON INPUT */}
-                        <div className="mb-10  ">
+                        <div className="mb-10">
                             <div className="relative flex gap-2">
                                 <input
                                     value={couponCode}
@@ -795,13 +802,33 @@ export default function CheckoutPage() {
                                 />
                                 <button
                                     onClick={handleApplyCoupon}
-                                    className="bg-[#2D3A3A] text-white px-6 rounded-2xl text-[9px] uppercase font-bold tracking-widest hover:bg-[#5A7A6A] transition-colors"
+                                    className="bg-[#2D3A3A] text-white px-6 rounded-2xl text-[9px] uppercase font-bold cursor-pointer tracking-widest hover:bg-[#5A7A6A] transition-colors"
                                 >
                                     Apply
                                 </button>
                             </div>
-                            {appliedCoupon && <p className="text-[9px] text-[#5A7A6A] mt-2 ml-4 flex items-center gap-1"><Ticket className="w-3 h-3" /> Offer Active: {appliedCoupon.code}</p>}
-                            {couponError && <p className="text-[9px] text-red-400 mt-2  ml-4 flex items-center gap-1"><AlertCircle className="w-3 h-3" /> {couponError}</p>}
+
+                            {couponError && (
+                                <p className="text-red-500 text-[10px] mt-3 font-medium flex items-center gap-2 animate-in slide-in-from-top-2">
+                                    <AlertCircle className="w-3.5 h-3.5" /> {couponError}
+                                </p>
+                            )}
+
+                            {appliedCoupon && (
+                                <div className="mt-4 flex items-center justify-between text-[#5A7A6A] text-[10px] font-bold bg-[#EBF1FA] border border-[#5A7A6A]/20 px-5 py-3 rounded-2xl animate-in fade-in slide-in-from-top-2">
+                                    <span className="flex items-center gap-2">
+                                        <Ticket className="w-3.5 h-3.5" />
+                                        Code Applied: {appliedCoupon.code}
+                                    </span>
+                                    <button
+                                        onClick={() => { setAppliedCoupon(null); setCouponCode(""); }}
+                                        className="p-1.5 hover:bg-[#5A7A6A]/10 text-[#5A7A6A] rounded-full transition-colors"
+                                        title="Remove Coupon"
+                                    >
+                                        <Trash2 className="w-3.5 h-3.5" />
+                                    </button>
+                                </div>
+                            )}
                         </div>
 
                         {/* PAYMENT METHOD SELECTION - ADDED THIS AS IT WAS MISSING IN USER CODE BUT REQUIRED FOR COD */}
@@ -881,7 +908,7 @@ export default function CheckoutPage() {
                             {processing ? <Loader2 className="w-5 h-5 animate-spin" /> : <><ShieldCheck className="w-5 h-5 group-hover:scale-110 transition-transform" /> Initiate Transfer</>}
                         </button>
                     </div>
-                </div>
+                </div >
             </main >
         </div >
     );

@@ -308,7 +308,7 @@ export function ProductDetailClient({ product, relatedProducts, reviews, isVerif
                                         className="w-full py-4 rounded-full border border-[#5A7A6A]/20 text-[#5A7A6A] cursor-pointer bg-white hover:bg-[#5A7A6A]/5 transition-all flex items-center justify-center gap-3 group"
                                     >
                                         <Sparkles className="w-4 h-4 group-hover:rotate-12 transition-transform duration-500" />
-                                        <span className="text-[10px] uppercase tracking-widest font-bold">Consult Ayuniv AI Guide</span>
+                                        <span className="text-[10px] uppercase tracking-widest font-bold">Consult Aya</span>
                                     </button>
                                 </div>
 

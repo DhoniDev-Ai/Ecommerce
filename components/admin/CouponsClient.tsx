@@ -43,8 +43,8 @@ type Coupon = {
     discount_type: 'percentage' | 'fixed';
     discount_value: number;
     min_purchase_amount: number | null;
-    usage_limit: number | null;
-    used_count: number;
+    max_uses: number | null;
+    times_used: number;
     is_active: boolean;
 };
 
@@ -57,7 +57,7 @@ export function CouponsClient({ coupons }: { coupons: Coupon[] }) {
         code: '',
         discount_type: 'percentage' as 'percentage' | 'fixed',
         discount_value: 0,
-        usage_limit: 100,
+        max_uses: 100, // Updated from usage_limit
         min_purchase_amount: 0
     });
 
@@ -69,14 +69,14 @@ export function CouponsClient({ coupons }: { coupons: Coupon[] }) {
             code: newCoupon.code,
             discount_type: newCoupon.discount_type,
             discount_value: newCoupon.discount_value,
-            usage_limit: newCoupon.usage_limit,
+            usage_limit: newCoupon.max_uses, // Map correctly to server expected type if needed, or update server action type
             min_purchase_amount: newCoupon.min_purchase_amount
         });
 
         if (res.success) {
             setToast({ message: "Coupon created successfully", type: "success" });
             setIsCreating(false);
-            setNewCoupon({ code: '', discount_type: 'percentage', discount_value: 0, usage_limit: 100, min_purchase_amount: 0 });
+            setNewCoupon({ code: '', discount_type: 'percentage', discount_value: 0, max_uses: 100, min_purchase_amount: 0 });
         } else {
             setToast({ message: res.error as string, type: "error" });
         }
@@ -131,7 +131,7 @@ export function CouponsClient({ coupons }: { coupons: Coupon[] }) {
                                 options={[{ value: 'percentage', label: 'Percentage (%)' }, { value: 'fixed', label: 'Fixed Amount (₹)' }]}
                             />
                             <Input label="Value" type="number" value={newCoupon.discount_value} onChange={(v: string) => setNewCoupon({ ...newCoupon, discount_value: parseFloat(v) })} required />
-                            <Input label="Usage Limit" type="number" value={newCoupon.usage_limit} onChange={(v: string) => setNewCoupon({ ...newCoupon, usage_limit: parseInt(v) })} />
+                            <Input label="Usage Limit" type="number" value={newCoupon.max_uses} onChange={(v: string) => setNewCoupon({ ...newCoupon, max_uses: parseInt(v) })} />
                         </div>
                         <div className="flex justify-end gap-3">
                             <button type="button" onClick={() => setIsCreating(false)} className="px-6 py-2 text-sm font-bold text-[#7A8A8A] hover:text-[#2D3A3A]">Cancel</button>
@@ -160,7 +160,7 @@ export function CouponsClient({ coupons }: { coupons: Coupon[] }) {
                                     <p className="text-sm text-[#7A8A8A] font-medium">
                                         {coupon.discount_type === 'percentage' ? `${coupon.discount_value}% OFF` : `₹${coupon.discount_value} OFF`}
                                         <span className="mx-2 text-[#E8E6E2]">•</span>
-                                        {coupon.used_count || 0} / {coupon.usage_limit || '∞'} used
+                                        {coupon.times_used || 0} / {coupon.max_uses || '∞'} used
                                     </p>
                                 </div>
                             </div>

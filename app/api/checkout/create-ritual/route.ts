@@ -175,9 +175,12 @@ export async function POST(req: Request) {
             await (supabaseAdmin.from('order_items') as any).insert(orderItemsData);
         }
 
-        // 9. Increment Coupon Usage
-        if (finalCouponId) {
-            await (supabaseAdmin.rpc as any)('increment_coupon_usage', { coupon_id: finalCouponId });
+        // 9. Increment Coupon Usage - MOVED TO VERIFY/WEBHOOK
+        // We only increment when payment is confirmed or if it is COD (handled in verify for COD too now to be safe, or here if we trust COD placement)
+
+        // Actually, for COD, "Placement" is confirmation. So we SHOULD increment for COD here.
+        if (finalCouponId && paymentMethod === 'COD') {
+            await (supabaseAdmin as any).rpc('increment_coupon_usage', { p_coupon_id: finalCouponId });
         }
 
         // 10. Handle Response

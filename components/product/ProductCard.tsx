@@ -41,7 +41,7 @@ export function ProductCard({ product, trendingRank, salesCount }: ProductCardPr
                 "relative aspect-square overflow-hidden rounded-[2.5rem] bg-[#F3F1ED] transition-all duration-500",
                 trendingRank === 1 && "ring-1 ring-[#5A7A6A] ring-offset-4 ring-offset-[#FDFBF7]"
             )}>
-                <Link href={`/products/${product.slug}`} className="block h-full w-full">
+                <Link href={`/products/${product.slug}`} prefetch={true} className="block h-full w-full">
                     <div className="absolute inset-0 flex items-center justify-center p-10 max-sm:p-3">
                         <Image
                             width={1000}

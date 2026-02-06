@@ -23,20 +23,31 @@ export const metadata: Metadata = {
 export default async function Home() {
   const supabase = await createClient(); // Use server client
 
-  // Fetch products on the SERVER before rendering
-  const { data } = await supabase
+  // Fetch products and stats in PARALLEL to reduce wait time
+
+  const productsPromise = supabase
     .from('products')
     .select('*')
-    .eq('is_active', true)
-  // .limit(3); // Don't limit yet, we need to sort by sales first
+    .eq('is_active', true);
 
-  const stats = await getProductStats();
+  // Note: Optimizing getProductStats itself might be needed if orders table is huge
+  const statsPromise = getProductStats();
+
+  const [productsResult, stats] = await Promise.all([
+    productsPromise,
+    statsPromise
+  ]);
+
+
+  const data = productsResult.data;
+
 
   const sortedData = data?.sort((a: any, b: any) => {
     const salesA = stats[a.id] || 0;
     const salesB = stats[b.id] || 0;
     return salesB - salesA; // Descending
   }) || [];
+
 
   const products = sortedData.slice(0, 3).map((p: any) => ({
     id: p.id,
