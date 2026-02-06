@@ -79,8 +79,8 @@ export default async function Home() {
 
       <main className="grow">
         <Hero />
-        <FeaturedProducts products={products} stats={stats} />
         <WellnessGoals />
+        <FeaturedProducts products={products} stats={stats} />
         <TrustSection />
         <IngredientTransparency />
         <InstagramCommunity />
