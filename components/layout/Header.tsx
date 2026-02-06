@@ -11,6 +11,7 @@ import { supabase } from "@/lib/supabase/client";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 import { useCartContext } from "@/context/CartContext";
 import Image from "next/image";
+import { useAuth } from "@/context/AuthContext";
 
 const navigation = [
     { name: "Collection", href: "/products" },
@@ -23,41 +24,14 @@ const navigation = [
 export function Header() {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [isScrolled, setIsScrolled] = useState(false);
-    const [user, setUser] = useState<SupabaseUser | null>(null);
     const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
     const pathname = usePathname();
     const router = useRouter();
     const dropdownRef = useRef<HTMLDivElement>(null);
     const { openCart, itemCount } = useCartContext();
 
-    const [userRole, setUserRole] = useState<string | null>(null);
-
-    // Listen for auth state changes
-    useEffect(() => {
-        // Get initial session
-        supabase.auth.getSession().then(async ({ data: { session } }) => {
-            setUser(session?.user ?? null);
-            if (session?.user) {
-                const { data } = await supabase.from('users').select('role').eq('id', session.user.id).single();
-                setUserRole(data?.role || null);
-            }
-        });
-
-        // Listen for changes
-        const {
-            data: { subscription },
-        } = supabase.auth.onAuthStateChange(async (_event, session) => {
-            setUser(session?.user ?? null);
-            if (session?.user) {
-                const { data } = await supabase.from('users').select('role').eq('id', session.user.id).single();
-                setUserRole(data?.role || null);
-            } else {
-                setUserRole(null);
-            }
-        });
-
-        return () => subscription.unsubscribe();
-    }, []);
+    // Consume Auth Context
+    const { user, userRole, signOut } = useAuth();
 
     // Handle scroll
     useEffect(() => {
@@ -87,7 +61,7 @@ export function Header() {
 
     // Handle logout
     const handleLogout = async () => {
-        await supabase.auth.signOut();
+        await signOut();
         setProfileDropdownOpen(false);
         router.push("/");
     };

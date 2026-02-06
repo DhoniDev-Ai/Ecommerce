@@ -3,6 +3,7 @@ import { Footer } from "@/components/layout/Footer";
 import { ProductFeed } from "@/components/product/ProductFeed";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { Product } from "@/types";
+import { Suspense } from "react";
 
 export const revalidate = 3600; // Cache for 1 hour
 
@@ -45,7 +46,9 @@ export default async function ProductsPage() {
             <Header />
 
             <main className="grow pt-40 pb-32 relative z-10">
-                <ProductFeed initialProducts={products} />
+                <Suspense fallback={<div className="min-h-screen flex items-center justify-center text-[#5A7A6A] font-bold text-xs uppercase tracking-widest">Loading Collection...</div>}>
+                    <ProductFeed initialProducts={products} />
+                </Suspense>
             </main>
 
             <Footer />

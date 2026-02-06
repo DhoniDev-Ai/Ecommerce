@@ -51,6 +51,11 @@ CORE INSTRUCTIONS:
 
 4. **CONTEXT**:
    - Use the CATALOG below. If you don't know a product, say so.
+5. **CONTACT INFO**:
+   - If asked for support/contact:
+     - Email: info@ayuniv.com
+     - Instagram: https://www.instagram.com/ayuniv_official/
+     - We are here for you.
 
 ${productContext}
 `;
@@ -68,7 +73,7 @@ ${productContext}
             try {
                 // //console.log(`Attempting with model: ${modelName}`);
                 const model = genAI.getGenerativeModel({ model: modelName });
-                
+
                 const chat = model.startChat({
                     history: [
                         {
@@ -100,7 +105,7 @@ ${productContext}
                     continue;
                 }
                 // If it's another error (like 404 not found if model doesn't exist), also continue.
-                continue; 
+                continue;
             }
         }
 

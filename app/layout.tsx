@@ -4,6 +4,7 @@ import "./globals.css";
 import { CartProvider } from "@/context/CartContext";
 import { CartSidebar } from "@/components/layout/CartSidebar";
 import { AIProvider } from "@/context/AIContext";
+import { AuthProvider } from "@/context/AuthContext";
 import { ChatWidget } from "@/components/ai/ChatWidget";
 import { Analytics } from "@vercel/analytics/next"
 import NextTopLoader from 'nextjs-toploader';
@@ -124,13 +125,15 @@ export default function RootLayout({
           shadow="0 0 10px #5A7A6A,0 0 5px #5A7A6A"
         />
         <Analytics />
-        <AIProvider>
-          <CartProvider>
-            {children}
-            <ChatWidget />
-            <CartSidebar />
-          </CartProvider>
-        </AIProvider>
+        <AuthProvider>
+          <AIProvider>
+            <CartProvider>
+              {children}
+              <ChatWidget />
+              <CartSidebar />
+            </CartProvider>
+          </AIProvider>
+        </AuthProvider>
       </body>
     </html>
   );
