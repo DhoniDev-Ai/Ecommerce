@@ -9,7 +9,7 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
 export async function POST(req: Request) {
     try {
-        const { messages } = await req.json();
+        const { messages, orderContext } = await req.json();
         const lastMessage = messages[messages.length - 1];
 
         // 1. Fetch Dynamic Context
@@ -56,6 +56,10 @@ CORE INSTRUCTIONS:
      - Email: info@ayuniv.com
      - Instagram: https://www.instagram.com/ayuniv_official/
      - We are here for you.
+6. **USER DATA (SECURE)**:
+   ${orderContext ? orderContext : "User is currently a Guest (not logged in)."}
+   - If User asks about heir orders and the data is here, answer securely.
+   - If User is Guest, ask them to "Please sign in to view your order history."
 
 ${productContext}
 `;

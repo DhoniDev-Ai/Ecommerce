@@ -79,7 +79,7 @@ export function AIAssistantTeaser() {
                                             <Sparkles className="w-4 h-4 text-[#5A7A6A]" />
                                         </div>
                                         <div className="bg-white text-[#2D3A3A] text-xs py-3 px-5 rounded-2xl rounded-tl-none max-w-[85%] shadow-sm border border-[#F3F1ED] font-light leading-relaxed">
-                                            I'd recommend our <span className="font-bold">Sunrise Citrus</span> blend. It uses turmeric and ginger for a sustained, natural lift.
+                                            I'd recommend our <span className="font-bold">Cholesterol Care</span> blend. It uses turmeric and ginger for a sustained, natural lift.
                                         </div>
                                     </motion.div>
 

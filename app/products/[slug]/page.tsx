@@ -54,6 +54,19 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
         openGraph: {
             title: `${product.name} - Ayuniv Wellness`,
             description: product.meta_description || product.description,
+            url: `https://ayuniv.com/products/${product.slug}`,
+            images: product.image_urls?.[0] ? [{
+                url: product.image_urls[0],
+                width: 1200,
+                height: 1200,
+                alt: product.name
+            }] : [],
+            type: 'website',
+        },
+        twitter: {
+            card: 'summary_large_image',
+            title: `${product.name} - Ayuniv Wellness`,
+            description: product.meta_description || product.description,
             images: product.image_urls?.[0] ? [product.image_urls[0]] : [],
         }
     };

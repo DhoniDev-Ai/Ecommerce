@@ -37,7 +37,7 @@ export default function ShippingPolicy() {
                                 Every order is handled with individual intention. We require **1-2 business days** to prepare and package your selection before it leaves our Jaipur studio.
                             </p>
                             <div className="p-4 bg-[#f8f6f2] border-l-2 border-[#2d3a3a] text-sm">
-                                <p><strong>The Sacred Hour:</strong> Orders placed after 8:00 PM IST will begin their processing ritual the following business morning.</p>
+                                <p><strong>The Sacred Hour:</strong> Orders placed after 12:00 PM IST will begin their processing ritual the following business morning.</p>
                             </div>
                         </div>
                     </section>

@@ -287,31 +287,44 @@ export function ProductDetailClient({ product, relatedProducts, reviews, isVerif
 
                                 {/* Variant Selector (Specific for Sea Buckthorn) */}
                                 {product.name.includes("Sea Buckthorn") && (
-                                    <div className="flex items-center gap-6 mb-10">
-                                        <span className="text-[10px] uppercase tracking-widest text-[#9AA09A] font-bold">Select Size:</span>
-                                        <div className="flex gap-3">
+                                    <div className="mb-10 p-5 rounded-4xl bg-[#F8F6F3] border border-[#E8E6E2]">
+                                        <div className="flex items-center justify-between mb-4">
+                                            <span className="text-[10px] uppercase tracking-widest text-[#5A7A6A] font-bold">Select Size Ritual:</span>
+                                            <span className="text-[9px] text-[#9AA09A] font-serif italic">Pure Himalayan Pulp</span>
+                                        </div>
+                                        <div className="flex bg-white p-1.5 rounded-full border border-[#E8E6E2] relative shadow-inner">
                                             {[
-                                                { size: "300ml", slug: "ayuniv-sea-buckthorn-pulp-300ml" },
-                                                { size: "500ml", slug: "ayuniv-sea-buckthorn-pulp-500ml" }
+                                                { size: "300ml", slug: "ayuniv-sea-buckthorn-Juice-300ml" },
+                                                { size: "500ml", slug: "ayuniv-sea-buckthorn-Juice-500ml" }
                                             ].map((variant) => {
-                                                const isActive = product.name.includes(variant.size) || (variant.size === "300ml" && !product.name.includes("500ml"));
+                                                const isActive = product.slug === variant.slug;
 
                                                 return (
                                                     <Link
                                                         key={variant.size}
-
                                                         href={`/products/${variant.slug}`}
                                                         className={cn(
-                                                            "px-6 py-2 rounded-full text-xs font-bold transition-all border uppercase tracking-wider",
+                                                            "flex-1 py-2.5 rounded-full text-xs font-bold transition-all uppercase tracking-widest text-center relative z-10",
                                                             isActive
-                                                                ? "bg-[#2D3A3A] text-white border-[#2D3A3A]"
-                                                                : "bg-transparent text-[#5A7A6A] border-[#5A7A6A]/20 hover:border-[#5A7A6A]"
+                                                                ? "text-white shadow-md"
+                                                                : "text-[#7A8A8A] hover:text-[#5A7A6A]"
                                                         )}
                                                     >
                                                         {variant.size}
                                                     </Link>
                                                 )
                                             })}
+                                            {/* Sliding Pill Background with simplified logic */}
+                                            <motion.div
+                                                layout
+                                                className="absolute top-1.5 bottom-1.5 rounded-full bg-[#2D3A3A]"
+                                                initial={false}
+                                                animate={{
+                                                    left: product.slug.includes("500ml") ? "50%" : "4px",
+                                                    width: "calc(50% - 4px)"
+                                                }}
+                                                transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                                            />
                                         </div>
                                     </div>
                                 )}
@@ -323,6 +336,35 @@ export function ProductDetailClient({ product, relatedProducts, reviews, isVerif
                                             {goal}
                                         </span>
                                     ))}
+                                </div>
+
+                                {/* BUNDLE SELECTOR */}
+                                <div className="mb-10">
+                                    <span className="text-[10px] uppercase tracking-widest text-[#9AA09A] font-bold block mb-4">Quantity Bundles:</span>
+                                    <div className="grid grid-cols-4 gap-3">
+                                        {[
+                                            { qty: 2, label: "Double", sub: "Save 5%", highlight: true },
+                                            { qty: 3, label: "Triple", sub: "Most Loved" },
+                                            { qty: 8, label: "Family", sub: "Best Value" }
+                                        ].map((b) => (
+                                            <button
+                                                key={b.qty}
+                                                onClick={() => setQuantity(b.qty)}
+                                                className={cn(
+                                                    "relative cursor-pointer flex flex-col items-center justify-center p-3 rounded-2xl border transition-all duration-300",
+                                                    quantity === b.qty
+                                                        ? "border-[#5A7A6A] bg-[#5A7A6A]/5 shadow-md scale-105 z-10"
+                                                        : "border-[#E8E6E2] bg-white hover:border-[#5A7A6A]/50 hover:shadow-sm"
+                                                )}
+                                            >
+                                                <span className={cn("font-heading text-xl mb-1", quantity === b.qty ? "text-[#2D3A3A]" : "text-[#7A8A8A]")}>{b.qty}</span>
+                                                <span className="text-[8px] uppercase tracking-widest font-bold text-[#9AA09A]">{b.label}</span>
+                                                {b.highlight && quantity === b.qty && (
+                                                    <span className="absolute -top-2 bg-[#5A7A6A] text-white text-[8px] px-2 py-0.5 rounded-full font-bold shadow-sm">POPULAR</span>
+                                                )}
+                                            </button>
+                                        ))}
+                                    </div>
                                 </div>
 
                                 {/* ACTION SUITE */}
@@ -474,16 +516,18 @@ export function ProductDetailClient({ product, relatedProducts, reviews, isVerif
                     </section>
 
                     {/* FAQ Section */}
-                    {product.faq && product.faq.length > 0 && (
-                        <div className="my-24  max-w-3xl mx-auto">
-                            <h2 className="font-heading text-3xl text-[#2D3A3A] mb-12 text-center">Frequently Asked <span className="italic font-serif text-[#5A7A6A]">Questions.</span></h2>
-                            <div className="space-y-4">
-                                {product.faq.map((item: any, i: number) => (
-                                    <FAQItem key={i} question={item.question} answer={item.answer} />
-                                ))}
+                    {
+                        product.faq && product.faq.length > 0 && (
+                            <div className="my-24  max-w-3xl mx-auto">
+                                <h2 className="font-heading text-3xl text-[#2D3A3A] mb-12 text-center">Frequently Asked <span className="italic font-serif text-[#5A7A6A]">Questions.</span></h2>
+                                <div className="space-y-4">
+                                    {product.faq.map((item: any, i: number) => (
+                                        <FAQItem key={i} question={item.question} answer={item.answer} />
+                                    ))}
+                                </div>
                             </div>
-                        </div>
-                    )}
+                        )
+                    }
                 </div>
 
                 {/* 6. Product Reviews System */}

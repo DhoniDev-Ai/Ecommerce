@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Sparkles, X, Send, User, Bot, Minimize2 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useAI } from "@/context/AIContext";
+import { useAuth } from "@/context/AuthContext";
 import { cn } from "@/utils/cn";
 import ReactMarkdown from "react-markdown";
 import Image from "next/image";
@@ -40,6 +41,29 @@ export function ChatWidget() {
             setUnreadCount(0);
         }
     }, [isOpen]);
+
+    // Fetch Order Context if logged in
+    const { user } = useAuth();
+    const { setOrderContext, orderContext } = useAI();
+
+    useEffect(() => {
+        if (isOpen && user && !orderContext) {
+            const fetchOrders = async () => {
+                const { getRecentOrders } = await import("@/actions/store/orders");
+                const orders: any[] = await getRecentOrders(user.id);
+
+                if (orders.length > 0) {
+                    const ctx = `User's Recent Orders:\n${orders.map((o: any) =>
+                        `- Order #${o.id} (${o.date}): ${o.status}, Total: ₹${o.total}\n  Items: ${o.items}`
+                    ).join("\n")}`;
+                    setOrderContext(ctx);
+                } else {
+                    setOrderContext("User has no recent orders.");
+                }
+            };
+            fetchOrders();
+        }
+    }, [isOpen, user, orderContext, setOrderContext]);
 
     // Track unread messages
     useEffect(() => {

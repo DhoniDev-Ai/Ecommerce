@@ -407,7 +407,7 @@ export default function OrderDetailPage() {
                     <motion.div
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        className="bg-white rounded-[2rem] p-8 max-w-md w-full shadow-2xl space-y-6"
+                        className="bg-white rounded-4xl p-8 max-w-md w-full shadow-2xl space-y-6"
                     >
                         <div className="text-center space-y-2">
                             <h3 className="text-xl font-heading text-[#2D3A3A]">Stop the Ritual?</h3>

@@ -8,6 +8,7 @@ import { AuthProvider } from "@/context/AuthContext";
 import { ChatWidget } from "@/components/ai/ChatWidget";
 import { Analytics } from "@vercel/analytics/next"
 import NextTopLoader from 'nextjs-toploader';
+import { AuthPopup } from "@/components/auth/AuthPopup";
 
 const montserrat = Montserrat({
   variable: "--font-montserrat",
@@ -131,6 +132,7 @@ export default function RootLayout({
               {children}
               <ChatWidget />
               <CartSidebar />
+              <AuthPopup />
             </CartProvider>
           </AIProvider>
         </AuthProvider>

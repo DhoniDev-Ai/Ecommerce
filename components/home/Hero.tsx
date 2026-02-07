@@ -10,7 +10,7 @@ import Image from "next/image";
 const SLIDES = [
     {
         id: 1,
-        slug: "ayuniv-sea-buckthorn-pulp-300ml",
+        slug: "ayuniv-sea-buckthorn-Juice-300ml",
         category: "Immunity Archive",
         title: "Sea Buckthorn",
         subtitle: "The Himalayan Wild Berry",

@@ -14,6 +14,8 @@ interface AIContextType {
     sendMessage: (content: string) => Promise<void>;
     isLoading: boolean;
     openWithContext: (initialMessage: string) => void;
+    orderContext: string | null;
+    setOrderContext: (context: string | null) => void;
 }
 
 const AIContext = createContext<AIContextType | undefined>(undefined);
@@ -24,6 +26,8 @@ export function AIProvider({ children }: { children: ReactNode }) {
         { role: 'assistant', content: "Hay! I am Aya. How can I help you find your balance today? 🌿" }
     ]);
     const [isLoading, setIsLoading] = useState(false);
+
+    const [orderContext, setOrderContext] = useState<string | null>(null);
 
     const sendMessage = async (content: string) => {
         // Add user message immediately
@@ -36,7 +40,8 @@ export function AIProvider({ children }: { children: ReactNode }) {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    messages: [...messages, userMsg].map(m => ({ role: m.role, content: m.content }))
+                    messages: [...messages, userMsg].map(m => ({ role: m.role, content: m.content })),
+                    orderContext: orderContext // Pass the context
                 })
             });
 
@@ -62,7 +67,7 @@ export function AIProvider({ children }: { children: ReactNode }) {
     };
 
     return (
-        <AIContext.Provider value={{ isOpen, setIsOpen, messages, sendMessage, isLoading, openWithContext }}>
+        <AIContext.Provider value={{ isOpen, setIsOpen, messages, sendMessage, isLoading, openWithContext, orderContext, setOrderContext }}>
             {children}
         </AIContext.Provider>
     );
