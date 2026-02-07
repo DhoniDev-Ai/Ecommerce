@@ -1,6 +1,7 @@
 "use client";
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback, useMemo, useRef } from "react";
 import { supabase } from "@/lib/supabase/client";
+import { useAuth } from "@/context/AuthContext";
 
 interface CartContextType {
     isOpen: boolean;
@@ -21,7 +22,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
     const [isOpen, setIsOpen] = useState(false);
     const [cartItems, setCartItems] = useState<any[]>([]);
     const [isHydrated, setIsHydrated] = useState(false);
-    const [user, setUser] = useState<any>(null);
+
+    // Use Central Auth
+    const { user } = useAuth();
 
     // Ref to prevent multiple syncs running at once
     const isSyncing = useRef(false);
@@ -41,17 +44,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
             }
         }
         setIsHydrated(true);
-
-        // Setup Auth Listener
-        supabase.auth.getUser().then(({ data: { user } }) => {
-            if (user) setUser(user);
-        });
-
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-            setUser(session?.user ?? null);
-        });
-
-        return () => subscription.unsubscribe();
     }, []);
 
     // 2. TRIGGER SYNC: When logged in and hydration is finished
@@ -179,8 +171,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
                 // Fetch current DB quantity to ensure accurate upsert
                 const { data: dbItem } = await (supabase.from('cart_items') as any)
                     .select('quantity')
-                    .match({ cart_id: cartId, product_id: productId })
-                    .single();
+                    .eq('cart_id', cartId)
+                    .eq('product_id', productId)
+                    .maybeSingle();
 
                 const newQty = (dbItem?.quantity || 0) + quantity;
                 const finalPrice = (product.is_on_sale && product.sale_price) ? product.sale_price : product.price;

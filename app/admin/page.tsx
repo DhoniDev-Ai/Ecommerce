@@ -1,21 +1,20 @@
 import { supabaseAdmin } from '@/lib/supabase/admin';
 import Link from 'next/link';
 import { AdminCharts } from '@/components/admin/AdminCharts';
-import { getProductStats } from "@/actions/store/stats";
+import { getProductStats, getDashboardStats } from "@/actions/store/stats";
 
 export const dynamic = 'force-dynamic';
 
 export default async function AdminDashboardPage() {
     // Parallel Data Fetching
-    const [statsRes, chartOrdersRes, recentOrdersRes, customersRes] = await Promise.all([
-        // 1. KPI Stats via RPC (Fast)
-        supabaseAdmin.rpc('get_admin_stats' as any),
+    const [statsData, chartOrdersRes, recentOrdersRes, customersRes] = await Promise.all([
+        // 1. KPI Stats via JS Aggregation (Accurate)
+        getDashboardStats(),
 
-        // 2. Chart Data (Last 30 Days only, minimal fields)
+        // 2. Chart Data (Last 30 Days)
         supabaseAdmin
             .from('orders')
-            .select('created_at, total_amount')
-            .eq('payment_status', 'succeeded')
+            .select('created_at, total_amount, status, payment_status, payment_method')
             .gte('created_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()),
 
         // 3. Recent Orders (Limit 5)
@@ -29,8 +28,8 @@ export default async function AdminDashboardPage() {
         supabaseAdmin.from('users').select('id', { count: 'exact', head: true }),
     ]);
 
-    // Parse RPC Stats
-    const stats: any = statsRes.data || {
+    // Parse Stats
+    const stats = statsData || {
         total_revenue: 0,
         last_28_days_revenue: 0,
         today_revenue: 0,
@@ -53,13 +52,21 @@ export default async function AdminDashboardPage() {
         chartDataMap.set(dateStr, { date: displayDate, revenue: 0, orders: 0 });
     }
 
-    // Populate with filtered data
+    // Populate with filtered data (Matching getDashboardStats logic)
     (chartOrdersRes.data || []).forEach((order: any) => {
-        const dateStr = order.created_at.split('T')[0];
-        if (chartDataMap.has(dateStr)) {
-            const entry = chartDataMap.get(dateStr)!;
-            entry.revenue += order.total_amount;
-            entry.orders += 1;
+        const isPaidOrCod =
+            order.payment_status === 'succeeded' ||
+            (order.payment_method === 'COD' && order.status !== 'cancelled' && order.status !== 'failed') ||
+            order.status === 'succeeded' || // Fallback
+            order.status === 'delivered';
+
+        if (isPaidOrCod) {
+            const dateStr = order.created_at.split('T')[0];
+            if (chartDataMap.has(dateStr)) {
+                const entry = chartDataMap.get(dateStr)!;
+                entry.revenue += order.total_amount;
+                entry.orders += 1;
+            }
         }
     });
 

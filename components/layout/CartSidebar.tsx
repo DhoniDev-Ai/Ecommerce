@@ -3,29 +3,29 @@ import { useState, useEffect, useMemo } from "react";
 import { X, Plus, Minus, Trash2, ShoppingBag, Info, AlertCircle } from "lucide-react";
 import { motion, AnimatePresence } from "@/lib/framer";
 import { cn } from "@/utils/cn";
-import { useCartContext } from "@/context/CartContext";
+import { supabase } from "@/lib/supabase/client";
 import Link from "next/link";
 import Image from "next/image";
-
-/**
- * 1. The Shadow Skeleton Component
- * Mimics the exact layout of a cart item for a seamless transition.
- */
-const CartItemSkeleton = () => (
-    <div className="flex gap-6 items-center animate-pulse opacity-60">
-        <div className="w-16 h-16 bg-[#E8E6E2] rounded-2xl shrink-0" />
-        <div className="flex-1 space-y-3">
-            <div className="h-2 w-3/4 bg-[#E8E6E2] rounded-full" />
-            <div className="h-6 w-20 bg-[#E8E6E2] rounded-full" />
-        </div>
-        <div className="w-12 h-3 bg-[#E8E6E2] rounded-full" />
-    </div>
-);
+import { useCartContext } from "@/context/CartContext";
 
 export function CartSidebar() {
-    const { isOpen, closeCart, cartItems, removeFromCart, updateQuantity, cartTotal } = useCartContext();
+    const { isOpen, closeCart, cartItems, addToCart, removeFromCart, updateQuantity, cartTotal } = useCartContext(); // Added addToCart
     const [showShippingInfo, setShowShippingInfo] = useState(false);
     const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+    const [recommendedProducts, setRecommendedProducts] = useState<any[]>([]);
+
+    useEffect(() => {
+        async function fetchRecommendations() {
+            const { data } = await supabase
+                .from('products')
+                .select('id, name, price, image_urls, slug, sale_price')
+                .eq('is_active', true)
+                .limit(3);
+
+            if (data) setRecommendedProducts(data);
+        }
+        fetchRecommendations();
+    }, []);
 
     // Reset confirm delete when cart closes
     useEffect(() => {
@@ -116,7 +116,7 @@ export function CartSidebar() {
                                             <span className="w-6 text-center text-[10px] font-bold">{item.quantity}</span>
                                             <button onClick={() => handleQuantity(item.id, item.quantity, 1)} className="p-1 opacity-40 hover:opacity-100 cursor-pointer"><Plus className="w-2.5 h-2.5" /></button>
                                         </div>
-                                        <button onClick={() => setConfirmDeleteId(item.id)} className="text-[#9AA09A] hover:text-red-400 ld:opacity-0 group-hover:opacity-100 transition-all cursor-pointer"><Trash2 className="w-3 h-3" /></button>
+                                        <button onClick={() => setConfirmDeleteId(item.id)} className="text-[#5A6A6A] hover:text-red-400 ld:opacity-0 group-hover:opacity-100 transition-all cursor-pointer"><Trash2 className="w-3 h-3" /></button>
                                     </div>
                                 </div>
                                 <div className="text-right flex flex-col items-end">
@@ -126,6 +126,40 @@ export function CartSidebar() {
                         ))
                     )}
                 </div>
+
+                {/* Recommendations Section */}
+                {recommendedProducts.length > 0 && (
+                    <div className="px-10 py-6 border-t border-[#E8E6E2]/40 bg-[#F8F6F3]">
+                        <p className="text-[9px] uppercase tracking-[0.3em] font-bold text-[#7A8A8A] mb-4">You Might Also Like</p>
+                        <div className="space-y-4">
+                            {recommendedProducts.filter(p => !cartItems.some(item => item.id === p.id)).slice(0, 2).map((product) => (
+                                <div key={product.id} className="flex items-center gap-4 group">
+                                    <div className="w-12 h-12 bg-white rounded-xl p-1 shrink-0 border border-[#E8E6E2]">
+                                        <Image
+                                            width={100}
+                                            height={100}
+                                            src={product.image_urls?.[0]}
+                                            alt={product.name}
+                                            className="w-full h-full object-contain"
+                                        />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <Link href={`/products/${product.slug}`} onClick={closeCart}>
+                                            <h4 className="text-xs font-heading text-[#2D3A3A] truncate group-hover:text-[#5A7A6A] transition-colors">{product.name}</h4>
+                                        </Link>
+                                        <p className="text-[10px] font-bold text-[#5A6A6A]">₹{product.sale_price || product.price}</p>
+                                    </div>
+                                    <button
+                                        onClick={() => addToCart(product, 1)}
+                                        className="w-8 h-8 rounded-full border border-[#5A7A6A]/20 flex items-center justify-center text-[#5A7A6A] hover:bg-[#5A7A6A] hover:text-white transition-colors cursor-pointer"
+                                    >
+                                        <Plus className="w-3 h-3" />
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
 
                 {/* Footer remained consistent with your design */}
                 {cartItems.length > 0 && (

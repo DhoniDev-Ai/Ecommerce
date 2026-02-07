@@ -6,6 +6,7 @@ export default async function CouponsPage() {
     const { data: coupons, error } = await supabaseAdmin
         .from('coupons')
         .select('*')
+        .eq('is_active', true)
         .order('created_at', { ascending: false });
 
     if (error) {

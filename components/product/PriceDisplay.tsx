@@ -30,7 +30,7 @@ export function PriceDisplay({ price, salePrice, comparisonPrice, isOnSale: expl
             <div className="flex items-center gap-3">
                 {isDiscounted && effectiveCompare && (
                     <span className={cn(
-                        "text-[#9AA09A] line-through decoration-[#5A7A6A]/30 text-xs font-light",
+                        "text-[#5A6A6A] line-through decoration-[#5A7A6A]/30 text-xs font-light",
                         comparisonClassName
                     )}>
                         ₹{effectiveCompare.toLocaleString()}

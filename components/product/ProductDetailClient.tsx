@@ -55,6 +55,16 @@ export function ProductDetailClient({ product, relatedProducts, reviews, isVerif
     const isProcessing = product ? isAdding(product.id) : false;
     const showSuccess = product ? isSuccess(product.id) : false;
 
+    const [showStickyCTA, setShowStickyCTA] = useState(false);
+
+    // Social Proof: Random "viewing now" count
+    const [viewingCount, setViewingCount] = useState(0);
+
+    useEffect(() => {
+        // Hydration safe random number between 12 and 48
+        setViewingCount(Math.floor(Math.random() * (48 - 12 + 1)) + 12);
+    }, []);
+
     // Gallery auto-rotation logic
     useEffect(() => {
         if (isPaused || !product?.image_urls?.length) return;
@@ -63,6 +73,18 @@ export function ProductDetailClient({ product, relatedProducts, reviews, isVerif
         }, 6000);
         return () => clearInterval(interval);
     }, [product?.image_urls?.length, isPaused]);
+
+    // Handle scroll for sticky CTA
+    useEffect(() => {
+        const handleScroll = () => {
+            const scrollY = window.scrollY;
+            const threshold = 600; // Show after scrolling past roughly the hero section
+            setShowStickyCTA(scrollY > threshold);
+        };
+
+        window.addEventListener("scroll", handleScroll, { passive: true });
+        return () => window.removeEventListener("scroll", handleScroll);
+    }, []);
 
     const handleThumbnailClick = (index: number) => {
         setSelectedImageIndex(index);
@@ -184,6 +206,19 @@ export function ProductDetailClient({ product, relatedProducts, reviews, isVerif
                             </div>
                         </motion.div>
 
+                        {/* SMART URGENCY */}
+                        {viewingCount > 0 && (
+                            <div className="flex items-center gap-2 mb-6">
+                                <span className="relative flex h-2 w-2">
+                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                                </span>
+                                <p className="text-[10px] font-medium text-[#7A8A8A] tracking-wider uppercase">
+                                    <span className="font-bold text-[#2D3A3A]">{viewingCount} people</span> are viewing this ritual
+                                </p>
+                            </div>
+                        )}
+
                         {/* RIGHT: Product Narrative */}
                         <div className="lg:col-span-5 pt-8 flex justify-center items-start">
                             <motion.div
@@ -290,7 +325,7 @@ export function ProductDetailClient({ product, relatedProducts, reviews, isVerif
                                     <div className="mb-10 p-5 rounded-4xl bg-[#F8F6F3] border border-[#E8E6E2]">
                                         <div className="flex items-center justify-between mb-4">
                                             <span className="text-[10px] uppercase tracking-widest text-[#5A7A6A] font-bold">Select Size Ritual:</span>
-                                            <span className="text-[9px] text-[#9AA09A] font-serif italic">Pure Himalayan Pulp</span>
+                                            <span className="text-[9px] text-[#5A6A6A] font-serif italic">Pure Himalayan Pulp</span>
                                         </div>
                                         <div className="flex bg-white p-1.5 rounded-full border border-[#E8E6E2] relative shadow-inner">
                                             {[
@@ -340,7 +375,7 @@ export function ProductDetailClient({ product, relatedProducts, reviews, isVerif
 
                                 {/* BUNDLE SELECTOR */}
                                 <div className="mb-10">
-                                    <span className="text-[10px] uppercase tracking-widest text-[#9AA09A] font-bold block mb-4">Quantity Bundles:</span>
+                                    <span className="text-[10px] uppercase tracking-widest text-[#5A6A6A] font-bold block mb-4">Quantity Bundles:</span>
                                     <div className="grid grid-cols-4 gap-3">
                                         {[
                                             { qty: 2, label: "Double", sub: "Save 5%", highlight: true },
@@ -358,7 +393,7 @@ export function ProductDetailClient({ product, relatedProducts, reviews, isVerif
                                                 )}
                                             >
                                                 <span className={cn("font-heading text-xl mb-1", quantity === b.qty ? "text-[#2D3A3A]" : "text-[#7A8A8A]")}>{b.qty}</span>
-                                                <span className="text-[8px] uppercase tracking-widest font-bold text-[#9AA09A]">{b.label}</span>
+                                                <span className="text-[8px] uppercase tracking-widest font-bold text-[#5A6A6A]">{b.label}</span>
                                                 {b.highlight && quantity === b.qty && (
                                                     <span className="absolute -top-2 bg-[#5A7A6A] text-white text-[8px] px-2 py-0.5 rounded-full font-bold shadow-sm">POPULAR</span>
                                                 )}
@@ -448,7 +483,7 @@ export function ProductDetailClient({ product, relatedProducts, reviews, isVerif
                                     {product.ingredient_details?.map((item: any, i: number) => (
                                         <div key={i} className="flex justify-between items-end border-b border-[#E8E6E2] pb-4 group">
                                             <span className="text-[#5A6A6A] font-light md:text-xl  text-lg group-hover:text-[#5A7A6A] transition-colors">{item.name}</span>
-                                            <span className="md:text-[10px] text-[8px] uppercase tracking-widest text-[#9AA09A] font-bold">{item.certification}</span>
+                                            <span className="md:text-[10px] text-[8px] uppercase tracking-widest text-[#5A6A6A] font-bold">{item.certification}</span>
                                         </div>
                                     ))}
                                 </div>
@@ -464,8 +499,8 @@ export function ProductDetailClient({ product, relatedProducts, reviews, isVerif
                                         { label: 'Serving', val: product.nutrition_facts?.serving_size, unit: '' }
                                     ].map((stat, i) => (
                                         <div key={i} className="p-6 bg-white rounded-3xl text-center shadow-sm">
-                                            <p className="md:text-[10px] text-[8px] text-[#9AA09A] uppercase font-bold mb-2 tracking-widest">{stat.label}</p>
-                                            <p className="md:text-3xl text-xl font-light text-[#2D3A3A]">{stat.val}<span className="text-xs ml-1 text-[#9AA09A]">{stat.unit}</span></p>
+                                            <p className="md:text-[10px] text-[8px] text-[#5A6A6A] uppercase font-bold mb-2 tracking-widest">{stat.label}</p>
+                                            <p className="md:text-3xl text-xl font-light text-[#2D3A3A]">{stat.val}<span className="text-xs ml-1 text-[#5A6A6A]">{stat.unit}</span></p>
                                         </div>
                                     ))}
                                 </div>
@@ -542,6 +577,78 @@ export function ProductDetailClient({ product, relatedProducts, reviews, isVerif
 
                 <Footer />
             </main>
+
+            {/* MOBILE STICKY CTA */}
+            <AnimatePresence>
+                {showStickyCTA && (
+                    <motion.div
+                        initial={{ y: "100%" }}
+                        animate={{ y: "0%" }}
+                        exit={{ y: "100%" }}
+                        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                        className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-[#E8E6E2] p-4 lg:hidden shadow-[0_-10px_40px_rgba(0,0,0,0.05)] safe-area-pb"
+                    >
+                        <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 bg-[#F3F1ED] rounded-xl p-1 shrink-0">
+                                <Image
+                                    width={100}
+                                    height={100}
+                                    src={product.image_urls?.[0]}
+                                    alt={product.name}
+                                    className="w-full h-full object-contain"
+                                />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <h3 className="font-heading text-sm text-[#2D3A3A] truncate">{product.name}</h3>
+                                <p className="text-xs font-bold text-[#5A7A6A]">₹{currentPrice.toLocaleString()}</p>
+                            </div>
+
+                            {/* DYNAMIC ACTION BUTTON */}
+                            {showSuccess ? (
+                                <div className="flex items-center bg-[#2D3A3A] rounded-full p-1 shadow-lg">
+                                    <button
+                                        onClick={() => addToCart(product, -1)}
+                                        className="w-8 h-8 flex items-center justify-center text-white/50 hover:text-white transition-colors"
+                                    >
+                                        <Minus className="w-3 h-3" />
+                                    </button>
+                                    <span className="w-6 text-center text-xs font-bold text-white">
+                                        {/* Since showSuccess is true, we assume at least 1, but ideally get real qty from cart context if possible, 
+                                            or just reuse local quantity state if synced? 
+                                            Better to just use + / - to add/remove 1 unit blindly or open cart?
+                                            Let's blindly add/remove for now which triggers cart open */}
+                                        <ShoppingBag className="w-3 h-3 inline" />
+                                    </span>
+                                    <button
+                                        onClick={() => addToCart(product, 1)}
+                                        className="w-8 h-8 flex items-center justify-center text-white/50 hover:text-white transition-colors"
+                                    >
+                                        <Plus className="w-3 h-3" />
+                                    </button>
+                                </div>
+                            ) : (
+                                <button
+                                    onClick={handleAddToCart}
+                                    disabled={isProcessing || product.stock_quantity <= 0}
+                                    className={cn(
+                                        "px-6 py-3 rounded-full text-[10px] uppercase tracking-widest font-bold flex items-center gap-2 transition-all active:scale-95",
+                                        product.stock_quantity > 0
+                                            ? "bg-[#2D3A3A] text-white shadow-lg shadow-[#2D3A3A]/20"
+                                            : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                                    )}
+                                >
+                                    {isProcessing ? (
+                                        <Loader2 className="w-3 h-3 animate-spin" />
+                                    ) : (
+                                        <ShoppingBag className="w-3 h-3" />
+                                    )}
+                                    {product.stock_quantity > 0 ? "Add to Bag" : "No Stock"}
+                                </button>
+                            )}
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }

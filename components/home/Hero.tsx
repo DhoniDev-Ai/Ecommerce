@@ -27,7 +27,7 @@ const SLIDES = [
         title: "She Care",
         subtitle: "Harmonal Balance",
         description: "A gentle, potent Ayurvedic blend for hormonal balance crafted with Shatavari.",
-        bgImage: "/assets/Tm/she-care-1st.webp",
+        bgImage: "/assets/Tm/She-Care-1st.webp",
         color: "text-[#2D3A3A]",
         accentColor: "#5A7A6A",
         borderColor: "rgba(90, 122, 106, 0.3)"
@@ -181,6 +181,16 @@ export function Hero() {
                                     <ArrowRight className="w-4 h-4 relative z-10 group-hover:translate-x-1 transition-transform" />
                                 </Link>
                             </motion.button>
+
+                            {/* Mobile Description (Inline) */}
+                            <motion.p
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1, transition: { delay: 0.6 } }}
+                                exit={{ opacity: 0 }}
+                                className={cn("mt-6 text-xs leading-relaxed font-medium md:hidden max-w-xs drop-shadow-sm", slide.color)}
+                            >
+                                {slide.description}
+                            </motion.p>
                         </motion.div>
                     </AnimatePresence>
                 </div>

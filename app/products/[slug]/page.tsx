@@ -140,7 +140,27 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
             price: product.sale_price || product.price,
             availability: product.stock_quantity > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
             itemCondition: 'https://schema.org/NewCondition',
-        }
+        },
+        ...(reviews.length > 0 && {
+            aggregateRating: {
+                '@type': 'AggregateRating',
+                ratingValue: (reviews.reduce((acc: number, r: any) => acc + r.rating, 0) / reviews.length).toFixed(1),
+                reviewCount: reviews.length,
+            },
+            review: reviews.slice(0, 5).map((r: any) => ({
+                '@type': 'Review',
+                reviewRating: {
+                    '@type': 'Rating',
+                    ratingValue: r.rating,
+                },
+                author: {
+                    '@type': 'Person',
+                    name: r.author_name || 'Verified Buyer',
+                },
+                datePublished: r.created_at,
+                reviewBody: r.comment,
+            })),
+        })
     };
 
     return (

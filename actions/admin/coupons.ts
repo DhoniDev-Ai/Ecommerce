@@ -36,7 +36,7 @@ export async function deleteCoupon(id: string) {
     try {
         const { error } = await supabaseAdmin
             .from('coupons')
-            .delete()
+            .update({ is_active: false })
             .eq('id', id);
 
         if (error) throw error;

@@ -20,6 +20,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [userRole, setUserRole] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
+    const lastFetchedRoleUserId = useState<{ current: string | null }>({ current: null })[0]; // Ref workaround for strict mode
+
     useEffect(() => {
         // 1. Check active session immediately
         const initAuth = async () => {
@@ -28,7 +30,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 setSession(session);
                 setUser(session?.user ?? null);
 
-                if (session?.user) {
+                if (session?.user && lastFetchedRoleUserId.current !== session.user.id) {
+                    lastFetchedRoleUserId.current = session.user.id;
                     const { data } = await supabase.from('users').select('role').eq('id', session.user.id).single();
                     setUserRole(data?.role || null);
                 }
@@ -48,12 +51,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setIsLoading(false); // Ensure loading is done
 
             if (session?.user) {
-                // Only fetch role if it changed or we don't have it
-                if (!userRole) {
+                // Only fetch role if user CHANGED
+                if (lastFetchedRoleUserId.current !== session.user.id) {
+                    lastFetchedRoleUserId.current = session.user.id;
                     const { data } = await supabase.from('users').select('role').eq('id', session.user.id).single();
                     setUserRole(data?.role || null);
                 }
             } else {
+                lastFetchedRoleUserId.current = null;
                 setUserRole(null);
             }
         });
