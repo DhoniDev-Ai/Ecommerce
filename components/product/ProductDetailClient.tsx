@@ -152,7 +152,7 @@ export function ProductDetailClient({ product, relatedProducts, reviews, isVerif
                                     >
                                         <Image
                                             width={100}
-                                            height={100} src={img} alt="" className="w-full h-full object-contain p-1" />
+                                            height={100} src={img} alt="" className="w-full h-full object-contain rounded-2xl p-1" />
                                         {selectedImageIndex === index && (
                                             <motion.div
                                                 layoutId="thumb-glow"
@@ -166,7 +166,7 @@ export function ProductDetailClient({ product, relatedProducts, reviews, isVerif
                                 {!isGalleryExpanded && product.image_urls?.length > 3 && (
                                     <button
                                         onClick={() => setIsGalleryExpanded(true)}
-                                        className="w-16 h-16 rounded-2xl bg-[#F3F1ED] border border-transparent hover:border-[#5A7A6A]/30 flex items-center justify-center text-[#5A7A6A] font-bold text-xs hover:bg-[#E8E6E2] transition-colors shrink-0"
+                                        className="w-16 cursor-pointer h-16 rounded-2xl bg-[#F3F1ED] border border-transparent hover:border-[#5A7A6A]/30 flex items-center justify-center text-[#5A7A6A] font-bold text-xs hover:bg-[#E8E6E2] transition-colors shrink-0"
                                     >
                                         +{product.image_urls.length - 3}
                                     </button>
@@ -176,7 +176,7 @@ export function ProductDetailClient({ product, relatedProducts, reviews, isVerif
                                 {isGalleryExpanded && product.image_urls?.length > 3 && (
                                     <button
                                         onClick={() => setIsGalleryExpanded(false)}
-                                        className="w-16 h-16 rounded-2xl bg-[#F3F1ED] border border-transparent hover:border-[#5A7A6A]/30 flex items-center justify-center text-[#5A7A6A] font-bold text-[10px] uppercase hover:bg-[#E8E6E2] transition-colors shrink-0"
+                                        className="w-16 h-16 rounded-2xl bg-[#F3F1ED] border border-transparent cursor-pointer hover:border-[#5A7A6A]/30 flex items-center justify-center text-[#5A7A6A] font-bold text-[10px] uppercase hover:bg-[#E8E6E2] transition-colors shrink-0"
                                     >
                                         Less
                                     </button>
@@ -208,7 +208,7 @@ export function ProductDetailClient({ product, relatedProducts, reviews, isVerif
                                                         <span className="md:hidden">Pulp</span>
                                                         <div className="flex items-center gap-3 pt-4">
                                                             <span className="text-3xl align-top font-sans tracking-wide border border-[#5A7A6A] rounded-full px-4 py-1 text-[20px] font-bold">
-                                                                {product.name.includes("500ml") ? "500ml" : "300ml"}
+                                                                {product.slug.includes("500ml") ? "500ml" : "300ml"}
                                                             </span>
                                                             <span className="opacity-60 text-4xl lg:text-5xl font-light">(Juice)</span>
                                                         </div>
@@ -382,7 +382,7 @@ export function ProductDetailClient({ product, relatedProducts, reviews, isVerif
                                 {/* Trust Infrastructure */}
                                 <div className="mt-20 grid grid-cols-3 gap-10 border-t border-[#E8E6E2] pt-12 lg:opacity-50 hover:opacity-100 transition-opacity duration-700">
                                     {[
-                                        { icon: Leaf, text: "Himalayan Sourced" },
+                                        { icon: Leaf, text: "Naturally Sourced" },
                                         { icon: Droplets, text: "Bio-Active Pure" },
                                         { icon: ShieldCheck, text: "Clinical Grade" }
                                     ].map((item, i) => (
@@ -464,9 +464,11 @@ export function ProductDetailClient({ product, relatedProducts, reviews, isVerif
                             </div>
                             <Link href="/products" className="hidden sm:flex items-center gap-2 text-xs text-[#5A7A6A] hover:underline uppercase tracking-widest font-bold">View Collection <ArrowRight className="w-4 h-4" /></Link>
                         </div>
-                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
+                        <div className="flex overflow-x-auto gap-6 pb-8 snap-x snap-mandatory no-scrollbar -mx-4 px-4 lg:mx-0 lg:px-0">
                             {relatedProducts.map((rel) => (
-                                <ProductCard key={rel.id} product={rel} />
+                                <div key={rel.id} className="w-[220px] md:w-[320px] flex-none snap-center">
+                                    <ProductCard product={rel} />
+                                </div>
                             ))}
                         </div>
                     </section>

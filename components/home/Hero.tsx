@@ -15,7 +15,7 @@ const SLIDES = [
         title: "Sea Buckthorn",
         subtitle: "The Himalayan Wild Berry",
         description: "Wild-harvested Himalayan berries. A concentrated burst of Omega-3,6,7 & 9.",
-        bgImage: "/assets/Tm/12.png",
+        bgImage: "/assets/Tm/Sea-buckthoron-1.png",
         color: "text-[#2D3A3A]",
         accentColor: "#E67E22",
         borderColor: "rgba(230, 126, 34, 0.3)"
@@ -27,7 +27,7 @@ const SLIDES = [
         title: "She Care",
         subtitle: "Harmonal Balance",
         description: "A gentle, potent Ayurvedic blend for hormonal balance crafted with Shatavari.",
-        bgImage: "/assets/Tm/24.png",
+        bgImage: "/assets/Tm/she-care-1st.webp",
         color: "text-[#2D3A3A]",
         accentColor: "#5A7A6A",
         borderColor: "rgba(90, 122, 106, 0.3)"

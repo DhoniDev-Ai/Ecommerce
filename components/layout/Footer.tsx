@@ -229,7 +229,7 @@ export function Footer() {
                 {/* Bottom Bar */}
                 <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
                     <p className="text-xs text-white/30 font-light">
-                        © {new Date().getFullYear()} SlightJoy Healthcare. All rights reserved.
+                        Ayuniv is a company of SlightJoy Healthcare © copyright 2026 Ayuniv
                     </p>
 
                     <div className="flex gap-8">

@@ -121,7 +121,7 @@ export function ProductCard({ product, trendingRank, salesCount }: ProductCardPr
 
             {/* Refined Text Info */}
             <div className="mt-3 max-sm:mt-2 flex flex-col items-center text-center px-2">
-                <h3 className="font-heading max-sm:text-sm    sm:text-lg  text-[#2D3A3A] leading-tight transition-colors group-hover:text-[#5A7A6A]">
+                <h3 className="font-heading max-sm:text-sm sm:text-lg text-[#2D3A3A] leading-tight transition-colors group-hover:text-[#5A7A6A] line-clamp-2">
                     <Link href={`/products/${product.slug}`}>{product.name}</Link>
                 </h3>
                 {/* Safe render check: Ensure salesCount is truthy AND > 5 to avoid rendering '0' */}

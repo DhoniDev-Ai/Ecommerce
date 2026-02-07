@@ -21,30 +21,19 @@ async function getProduct(slug: string) {
 
 import { unstable_cache } from "next/cache";
 
-async function getRelatedProducts(category: string, currentId: string) {
+async function getAllProducts(currentId: string) {
     return unstable_cache(
         async () => {
-            const { data: related } = await supabaseAdmin
-                .from('products')
-                .select('*')
-                .eq('category', category)
-                .eq('is_active', true)
-                .neq('id', currentId)
-                .limit(4);
-
-            if (related && related.length > 0) return related;
-
-            // Fallback
-            const { data: anyProducts } = await supabaseAdmin
+            const { data: allProducts } = await supabaseAdmin
                 .from('products')
                 .select('*')
                 .eq('is_active', true)
                 .neq('id', currentId)
-                .limit(4);
+                .order('created_at', { ascending: false });
 
-            return anyProducts || [];
+            return allProducts || [];
         },
-        [`related-${category}-${currentId}`],
+        ['all-products-excluding-' + currentId],
         { revalidate: 3600, tags: ['products'] }
     )();
 }
@@ -86,8 +75,8 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
     }
 
     // 3. Parallelize dependent fetches
-    // We need product.id/category for these, so they start after product is found
-    const relatedPromise = getRelatedProducts(product.category, product.id);
+    // We need product.id for these, so they start after product is found
+    const relatedPromise = getAllProducts(product.id);
 
     const reviewsPromise = supabaseAdmin
         .from('reviews')
