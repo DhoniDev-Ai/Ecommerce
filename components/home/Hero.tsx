@@ -164,23 +164,35 @@ export function Hero() {
                                 </motion.span>
                             </div>
 
-                            {/* CTA Button */}
-                            <motion.button
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1, transition: { delay: 0.5 } }}
-                                exit={{ opacity: 0 }}
-                                className="pt-2 cursor-pointer md:pt-4"
-                            >
-                                <Link
-                                    href={`/products/${slide.slug}`}
-                                    className="group relative inline-flex items-center gap-4 px-8 py-4 md:px-10 md:py-5 text-white rounded-full overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-2xl active:scale-95"
-                                    aria-label="Right"
-                                    style={{ backgroundColor: slide.accentColor }}
+                            {/* CTA Buttons */}
+                            <div className="flex flex-wrap gap-4 pt-2 md:pt-4">
+                                <motion.div
+                                    initial={{ opacity: 0, x: -20 }}
+                                    animate={{ opacity: 1, x: 0, transition: { delay: 0.5 } }}
                                 >
-                                    <span className="text-[9px] md:text-[10px] uppercase tracking-[0.3em] font-bold relative z-10">Start Ritual</span>
-                                    <ArrowRight className="w-4 h-4 relative z-10 group-hover:translate-x-1 transition-transform" />
-                                </Link>
-                            </motion.button>
+                                    <Link
+                                        href={`/products/${slide.slug}`}
+                                        className="group relative inline-flex items-center gap-4 px-8 py-4 md:px-10 md:py-5 text-white rounded-full overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-2xl active:scale-95"
+                                        style={{ backgroundColor: slide.accentColor }}
+                                    >
+                                        <span className="text-[9px] md:text-[10px] uppercase tracking-[0.3em] font-bold relative z-10">Start Ritual</span>
+                                        <ArrowRight className="w-4 h-4 relative z-10 group-hover:translate-x-1 transition-transform" />
+                                    </Link>
+                                </motion.div>
+
+                                <motion.div
+                                    initial={{ opacity: 0, x: -20 }}
+                                    animate={{ opacity: 1, x: 0, transition: { delay: 0.6 } }}
+                                >
+                                    <Link
+                                        href="/quiz"
+                                        className="group relative inline-flex items-center gap-3 px-6 py-4 md:px-8 md:py-5 rounded-full overflow-hidden cursor-pointer transition-all duration-300 border border-[#2D3A3A]/10 hover:bg-white/50 hover:shadow-lg active:scale-95 backdrop-blur-sm"
+                                    >
+                                        <Sparkles className={cn("w-4 h-4", slide.color)} />
+                                        <span className={cn("text-[9px] md:text-[10px] uppercase tracking-[0.3em] font-bold relative z-10", slide.color)}>Discover Dosha</span>
+                                    </Link>
+                                </motion.div>
+                            </div>
 
                             {/* Mobile Description (Inline) */}
                             <motion.p

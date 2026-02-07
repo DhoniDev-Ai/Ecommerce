@@ -206,18 +206,7 @@ export function ProductDetailClient({ product, relatedProducts, reviews, isVerif
                             </div>
                         </motion.div>
 
-                        {/* SMART URGENCY */}
-                        {viewingCount > 0 && (
-                            <div className="flex items-center gap-2 mb-6">
-                                <span className="relative flex h-2 w-2">
-                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
-                                </span>
-                                <p className="text-[10px] font-medium text-[#7A8A8A] tracking-wider uppercase">
-                                    <span className="font-bold text-[#2D3A3A]">{viewingCount} people</span> are viewing this ritual
-                                </p>
-                            </div>
-                        )}
+
 
                         {/* RIGHT: Product Narrative */}
                         <div className="lg:col-span-5 pt-8 flex justify-center items-start">
@@ -227,6 +216,19 @@ export function ProductDetailClient({ product, relatedProducts, reviews, isVerif
                                 transition={{ delay: 0.3, duration: 0.8 }}
                                 className="w-full max-w-xl"
                             >
+                                {/* SMART URGENCY (Moved Inside Column) */}
+                                {viewingCount > 0 && (
+                                    <div className="flex items-center gap-3 mb-6 bg-red-50/50 w-fit px-3 py-1.5 rounded-full border border-red-100/50">
+                                        <span className="relative flex h-2 w-2">
+                                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                            <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                                        </span>
+                                        <p className="text-[10px] font-medium text-[#7A8A8A] tracking-wider uppercase">
+                                            <span className="font-bold text-[#2D3A3A]">{viewingCount} people</span> are viewing this ritual
+                                        </p>
+                                    </div>
+                                )}
+
                                 <p className="text-[10px] uppercase tracking-[0.6em] text-[#7A8B7A] mb-8 font-bold">
                                     {product.category} — Ritual
                                 </p>
