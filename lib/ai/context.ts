@@ -2,20 +2,23 @@ import { supabase } from "@/lib/supabase/client";
 
 export async function getProductContext() {
     try {
-        const { data: products, error } = await supabase
-            .from('products')
-            .select('name, description, ingredients, benefits, wellness_goals, price, category, slug, image_urls')
-            .order('name');
+        const [productsRes, postsRes] = await Promise.all([
+            supabase.from('products').select('name, description, ingredients, benefits, wellness_goals, price, category, slug, image_urls').order('name'),
+            supabase.from('posts').select('title, slug, excerpt, content').limit(5)
+        ]);
 
-        if (error) {
-            //console.error("Error fetching AI context:", error);
+        const products = productsRes.data;
+        const posts = postsRes.data;
+
+        if (productsRes.error) {
+            //console.error("Error fetching AI context:", productsRes.error);
             return "Catalog currently unavailable.";
         }
 
         if (!products || products.length === 0) return "No products found in catalog.";
 
         // Format into a digestible string for the LLM
-        const contextString = products.map(p => `
+        const productString = products.map(p => `
 Product: ${p.name}
 Slug: ${p.slug}
 Category: ${p.category}
@@ -28,9 +31,22 @@ Goals: ${Array.isArray(p.wellness_goals) ? p.wellness_goals.join(", ") : p.welln
 -------------------
 `).join("\n");
 
+        const blogString = posts && posts.length > 0 ? `
+\n\n=================================
+AYUNIV JOURNAL (Valid Knowledge Base)
+=================================
+${posts.map(p => `
+Title: ${p.title}
+Link: /journal/${p.slug}
+Summary: ${p.excerpt}
+Extract: ${p.content?.slice(0, 500)}...
+`).join("\n-------------------\n")}
+` : "";
+
         return `
 CURRENT PRODUCT CATALOG:
-${contextString}
+${productString}
+${blogString}
 
 =================================
 AYUNIV POLICY CONTEXT (Use for Q&A)

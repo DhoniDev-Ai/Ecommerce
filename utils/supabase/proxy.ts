@@ -70,5 +70,33 @@ export async function updateSession(request: NextRequest) {
     // Optional: Add Route Protection Logic here if you ever need it
     // if (!user && request.nextUrl.pathname.startsWith('/admin')) { ... }
 
-    return supabaseResponse
+    // 4. Security & Redirections
+    const path = request.nextUrl.pathname;
+    const isAdmin = path.startsWith('/admin');
+    const isDashboard = path.startsWith('/dashboard');
+
+    if (isAdmin || isDashboard) {
+        const { data: { user } } = await supabase.auth.getUser();
+
+        if (!user) {
+            const url = request.nextUrl.clone();
+            url.pathname = '/login';
+            url.searchParams.set('redirect', path);
+            return NextResponse.redirect(url);
+        }
+
+        if (isAdmin) {
+            const { data: userData } = await supabase
+                .from('users')
+                .select('role')
+                .eq('id', user.id)
+                .single();
+
+            if (userData?.role !== 'admin') {
+                return NextResponse.redirect(new URL('/', request.url));
+            }
+        }
+    }
+
+    return supabaseResponse;
 }
