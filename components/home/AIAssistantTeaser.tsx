@@ -8,11 +8,11 @@ import { useAI } from "@/context/AIContext";
 export function AIAssistantTeaser() {
     const { setIsOpen } = useAI();
     return (
-        <section className="relative py-24 lg:py-32 bg-[#FDFBF7] overflow-hidden">
+        <section className="relative py-14 lg:py-32 bg-[#FDFBF7] overflow-hidden">
             {/* Texture Overlay */}
             <div className="absolute inset-0 z-0 opacity-[0.03] pointer-events-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
 
-            <div className="relative z-10 mx-auto max-w-5xl px-8 lg:px-12">
+            <div className="relative z-10 mx-auto max-w-5xl px-4 lg:px-12">
                 {/* Main Container - The "Digital Sanctuary" */}
                 <div className="relative rounded-[4rem] bg-[#F3F5F3] p-10 lg:p-20 overflow-hidden shadow-2xl shadow-[#5A7A6A]/5">
 
@@ -20,7 +20,7 @@ export function AIAssistantTeaser() {
                     <div className="absolute top-[-20%] right-[-10%] w-[40vw] h-[40vw] rounded-full blur-[100px] bg-[#E8F0E8]/80" />
                     <div className="absolute bottom-[-10%] left-[-10%] w-[30vw] h-[30vw] rounded-full blur-[100px] bg-[#FFEDE0]/40" />
 
-                    <div className="relative z-10 grid lg:grid-cols-2 gap-16 items-center">
+                    <div className="relative z-10 grid lg:grid-cols-2 gap-16 max-md:gap-14 max-sm:gap-12 items-center">
 
                         {/* Left: Persuasive Content */}
                         <motion.div
@@ -60,7 +60,7 @@ export function AIAssistantTeaser() {
                             transition={{ duration: 0.8, delay: 0.2 }}
                             className="relative"
                         >
-                            <div className="bg-white/40 backdrop-blur-xl border border-white/60 rounded-[2.5rem] p-8 shadow-xl">
+                            <div className="bg-white/40 backdrop-blur-xl border border-white/60 rounded-[2.5rem] p-8 max-md:p-6 shadow-xl">
                                 {/* Chat UI Mockup */}
                                 <div className="space-y-6">
                                     <div className="flex justify-end">
@@ -94,7 +94,7 @@ export function AIAssistantTeaser() {
                             </div>
 
                             {/* Decorative Brand Metadata */}
-                            <p className="absolute -bottom-10 right-4 text-[9px] uppercase tracking-[0.2em] text-[#9AA09A]">
+                            <p className="absolute -bottom-9 right-4 text-[9px] uppercase tracking-[0.2em] text-[#9AA09A]">
                                 Personalised Ayuniv Guidance — 2026
                             </p>
                         </motion.div>

@@ -236,6 +236,22 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
 export const useCartContext = () => {
     const context = useContext(CartContext);
-    if (!context) throw new Error("useCartContext must be used within a CartProvider");
+    if (!context) {
+        // Fallback to prevent 500 Error during SSR/Hydration mismatch
+        // console.warn("CartContext missing. Using fallback.");
+        return {
+            isOpen: false,
+            openCart: () => { },
+            closeCart: () => { },
+            cartItems: [],
+            addToCart: () => { },
+            removeFromCart: () => { },
+            updateQuantity: () => { },
+            clearCart: () => { },
+            itemCount: 0,
+            cartTotal: 0
+        };
+        // throw new Error("useCartContext must be used within a CartProvider");
+    }
     return context;
 };

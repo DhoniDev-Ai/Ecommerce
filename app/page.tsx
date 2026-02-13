@@ -50,7 +50,7 @@ export default async function Home() {
   }) || [];
 
 
-  const products = sortedData.slice(0, 3).map((p: any) => ({
+  const products = sortedData.slice(0, 4).map((p: any) => ({
     id: p.id,
     slug: p.slug,
     name: p.name,

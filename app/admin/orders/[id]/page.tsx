@@ -6,6 +6,7 @@ import { ArrowLeft, MapPin, CreditCard, Package } from 'lucide-react';
 import { OrderStatusSelect } from '@/components/admin/OrderStatusSelect';
 
 export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export default async function OrderDetailPage({ params }: { params: { id: string } }) {
     const { id } = await params;

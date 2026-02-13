@@ -9,9 +9,23 @@ type OrderStatus = Database['public']['Tables']['orders']['Row']['status'];
 
 export async function updateOrderStatus(orderId: string, newStatus: OrderStatus) {
     try {
+        // 1. Fetch order details to check payment method
+        const { data: order } = await supabaseAdmin
+            .from('orders')
+            .select('payment_method')
+            .eq('id', orderId)
+            .single();
+
+        let updateData: any = { status: newStatus };
+
+        // 2. COD Logic: If Delivered, mark Payment as Succeeded
+        if (newStatus === 'delivered' && order?.payment_method === 'COD') {
+            updateData.payment_status = 'succeeded';
+        }
+
         const { error } = await supabaseAdmin
             .from('orders')
-            .update({ status: newStatus })
+            .update(updateData)
             .eq('id', orderId);
 
         if (error) throw error;

@@ -51,7 +51,8 @@ export function ProductForm({ initialData }: { initialData?: Product }) {
         faq: initialData?.faq || [],
 
         // SEO
-        meta_description: initialData?.meta_description || ''
+        meta_description: initialData?.meta_description || '',
+        meta_title: initialData?.meta_title || ''
     });
 
     // --- Handlers ---
@@ -330,6 +331,7 @@ export function ProductForm({ initialData }: { initialData?: Product }) {
             <section className="bg-white p-10 rounded-[2.5rem] border border-[#E8E6E2]/60 space-y-8">
                 <h2 className="font-heading text-2xl text-[#2D3A3A] mb-6 border-b pb-4">SEO Metadata</h2>
                 <div className="space-y-6">
+                    <Input label="Meta Title" value={formData.meta_title || ''} onChange={v => handleChange('meta_title', v)} />
                     <Input type="textarea" rows={3} label="Meta Description" value={formData.meta_description || ''} onChange={v => handleChange('meta_description', v)} />
                     <p className="text-xs text-[#7A8A8A]">If left empty, the product description will be used automatically.</p>
                 </div>

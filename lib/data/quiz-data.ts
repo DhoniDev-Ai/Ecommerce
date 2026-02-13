@@ -65,6 +65,15 @@ export const DOSHA_QUIZ_DATA: QuizQuestion[] = [
             { text: "Cool and dry (I dislike heat)", dosha: 'Pitta' },
             { text: "Warm and dry (I dislike cold/damp)", dosha: 'Kapha' }
         ]
+    },
+    {
+        id: 7,
+        question: "How would you describe your natural body frame?",
+        options: [
+            { text: "Slim, thin, or lanky", dosha: 'Vata' },
+            { text: "Medium, athletic, or balanced", dosha: 'Pitta' },
+            { text: "Sturdy, broad, or heavy", dosha: 'Kapha' }
+        ]
     }
 ];
 

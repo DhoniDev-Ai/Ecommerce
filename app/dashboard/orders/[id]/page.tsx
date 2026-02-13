@@ -262,7 +262,7 @@ export default function OrderDetailPage() {
                             <div className="absolute left-[19px] top-3 bottom-3 w-px">
                                 <motion.div
                                     initial={{ height: 0 }}
-                                    animate={{ height: `${Math.max(0, Math.min(100, progressPercent))}%` }}
+                                    animate={{ height: `${Math.max(0, Math.min(90, progressPercent))}%` }}
                                     transition={{ duration: 1.5, ease: "easeInOut" }}
                                     className="w-full bg-[#5A7A6A]"
                                 />
@@ -310,7 +310,7 @@ export default function OrderDetailPage() {
                     <div className="space-y-4">
                         <p className="text-[10px] uppercase tracking-[0.3em] text-[#7A8A8A] font-bold ml-6">Your Selection</p>
                         {order.items.map((item: any, i: number) => (
-                            <Link href={`/products/${item.slug || '#'}`} key={i} className="group block bg-white rounded-[2.5rem] p-6 flex items-center justify-between border border-[#E8E6E2]/40 hover:border-[#5A7A6A]/30 transition-all">
+                            <Link href={`/products/${item.slug || '#'}`} key={i} className="group bg-white rounded-[2.5rem] p-6 flex items-center justify-between border border-[#E8E6E2]/40 hover:border-[#5A7A6A]/30 transition-all">
                                 <div className="flex items-center gap-6">
                                     <div className="w-20 h-20 bg-[#FDFBF7] rounded-2xl border border-[#E8E6E2] p-2 flex items-center justify-center group-hover:scale-105 transition-transform">
                                         <Image
@@ -367,8 +367,16 @@ export default function OrderDetailPage() {
                             </div>
                             <div className="flex justify-between text-xs text-[#7A8A8A]">
                                 <span>Wellness Tax</span>
-                                <span>₹{order.payment.tax.toLocaleString()}</span>
+                                <span>{order.payment.tax === 0 ? "Included" : `₹${order.payment.tax.toLocaleString()}`}</span>
                             </div>
+
+                            {/* Calculated Discount Display */}
+                            {(order.payment.subtotal + order.payment.shipping + order.payment.tax - order.payment.total) > 1 && (
+                                <div className="flex justify-between text-xs text-[#5A7A6A] font-medium">
+                                    <span>Discount {Math.round(((order.payment.subtotal + order.payment.shipping + order.payment.tax - order.payment.total) / order.payment.subtotal) * 100)}%</span>
+                                    <span>- ₹{(order.payment.subtotal + order.payment.shipping + order.payment.tax - order.payment.total).toLocaleString()}</span>
+                                </div>
+                            )}
                             <div className="h-px bg-[#F3F1ED] my-2" />
                             <div className="flex justify-between text-lg font-heading text-[#2D3A3A]">
                                 <span>Total</span>

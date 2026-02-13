@@ -27,6 +27,7 @@ export function AdminNav() {
         { href: "/admin/orders", label: "Orders", icon: ShoppingBag },
         { href: "/admin/products", label: "Products", icon: Package },
         { href: "/admin/coupons", label: "Coupons", icon: Tag },
+        { href: "/admin/affiliates", label: "Affiliates", icon: Tag },
         { href: "/admin/customers", label: "Customers", icon: Users },
         { href: "/admin/journal", label: "Journal", icon: BookOpen },
     ];

@@ -53,8 +53,8 @@ export function FeaturedProducts({ products, stats = {} }: FeaturedProductsProps
                 </div>
 
                 {/* Responsive Products Grid - Asymmetric staggered effect on desktop */}
-                <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-3 gap-10 lg:gap-16">
-                    {products.slice(0, 3).map((product, index) => (
+                <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-4 gap-10 lg:gap-16">
+                    {products.slice(0, 4).map((product, index) => (
                         <motion.div
                             key={product.id}
                             initial={{ opacity: 0, y: 30 }}

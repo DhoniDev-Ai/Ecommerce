@@ -15,7 +15,7 @@ export async function GET(req: Request) {
         // 1. Fetch Order from DB first (Optimization)
         const { data: order, error: fetchError } = await supabaseAdmin
             .from('orders')
-            .select('id, payment_method, status, payment_status, shipping_address, users(email)')
+            .select('id, payment_method, status, payment_status, total_amount, coupon_id, shipping_address, users(email)')
             .eq('id', orderId)
             .single();
 
@@ -50,6 +50,13 @@ export async function GET(req: Request) {
                     await sendOrderEmails(orderId);
                 } catch (e) {
                     console.error("COD Email Error:", e);
+                }
+
+                // Award Affiliate Commission (COD)
+                try {
+                    await awardAffiliateCommission(orderData);
+                } catch (e) {
+                    console.error("Affiliate Commission Error (COD):", e);
                 }
             }
 
@@ -116,13 +123,17 @@ export async function GET(req: Request) {
 
                         console.log("Verify: Triggering Email Service");
                         try {
-                            // Don't await? If we await, user waits. 
-                            // For critical order types, awaiting is safer to ensure delivery 
-                            // but we can catch errors so it doesn't fail the request.
                             await sendOrderEmails(orderId);
                             console.log("Verify: Email Service Completed");
                         } catch (emailErr) {
                             console.error("Verify: Email Logic Failed", emailErr);
+                        }
+
+                        // Award Affiliate Commission (Online)
+                        try {
+                            await awardAffiliateCommission(orderData);
+                        } catch (e) {
+                            console.error("Affiliate Commission Error (Online):", e);
                         }
                     }
                 }
@@ -161,4 +172,66 @@ export async function GET(req: Request) {
         console.error("Verification Error:", err);
         return NextResponse.json({ error: err.message }, { status: 500 });
     }
+}
+
+async function awardAffiliateCommission(order: any) {
+    if (!order.coupon_id) return;
+
+    // 1. Find Affiliate
+    const { data: affiliate } = await supabaseAdmin
+        .from('affiliates')
+        .select('id, user_id, total_earnings, commission_rate')
+        .eq('coupon_id', order.coupon_id)
+        .single();
+
+    if (!affiliate) return;
+
+    // 2. Calculate Commission
+    let shipping = 0;
+    // Helper to get nested property safely
+    const getShipping = (addr: any) => {
+        if (!addr) return 0;
+        if (typeof addr === 'string') {
+            try { return JSON.parse(addr).breakdown?.shipping || 0; } catch { return 0; }
+        }
+        return addr.breakdown?.shipping || 0;
+    };
+
+    shipping = getShipping(order.shipping_address);
+
+    // Net Sale = Total - Shipping
+    const netSale = (order.total_amount || 0) - shipping;
+    if (netSale <= 0) return;
+
+    const rate = affiliate.commission_rate || 5.00;
+    const commissionAmount = Math.floor(netSale * (rate / 100));
+    const finalComm = Math.round(commissionAmount);
+
+    if (finalComm <= 0) return;
+
+    // 3. Record Commission
+    const { error: commError } = await supabaseAdmin
+        .from('affiliate_commissions')
+        .insert({
+            affiliate_id: affiliate.id,
+            order_id: order.id,
+            amount: finalComm,
+            commission_rate: rate,
+            status: 'pending' // Always pending initially
+        });
+
+    if (commError) {
+        // If unique constraint violation (order_id + affiliate_id), we might skip
+        if (commError.code === '23505') return; // Already exists
+        console.error("Commission Error:", commError);
+        return;
+    }
+
+    // 4. Update Affiliate Earnings
+    await supabaseAdmin
+        .from('affiliates')
+        .update({ total_earnings: (affiliate.total_earnings || 0) + finalComm })
+        .eq('id', affiliate.id);
+
+    console.log(`Commission of ₹${finalComm} awarded to Affiliate ${affiliate.id} (Rate: ${rate}%)`);
 }

@@ -108,8 +108,8 @@ export function Testimonials({ initialTestimonials = [] }: TestimonialsProps) {
                                     ))}
                                 </div>
                                 <Quote className="w-8 h-8 text-[#E8E6E2] mb-4 opacity-50" />
-                                <p className="text-[#2D3A3A] text-sm md:text-base leading-relaxed font-light">
-                                    "{testimonial.text}"
+                                <p className="text-[#2D3A3A] h-32 max-md:h-34 text-sm md:text-base leading-relaxed font-light line-clamp-5 overflow-hidden text-ellipsis">
+                                    {testimonial.text}
                                 </p>
                             </div>
                             <div className="flex items-center gap-3">

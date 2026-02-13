@@ -11,6 +11,7 @@ const footerLinks = {
         { name: "Our Story", href: "/about" },
         { name: "Ingredients", href: "/#Ingredients" },
         { name: "Journal", href: "/journal" },
+        { name: "Affiliate Program", href: "/affiliate" },
     ],
     support: [
         { name: "Contact", href: "/contact" },
@@ -228,7 +229,7 @@ export function Footer() {
 
                 {/* Bottom Bar */}
                 <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-                    <p className="text-xs text-white/30 font-light">
+                    <p className="text-xs text-center text-white/30 font-light">
                         Ayuniv is a company of SlightJoy Healthcare © copyright 2026 Ayuniv
                     </p>
 

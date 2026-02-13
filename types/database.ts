@@ -36,6 +36,7 @@ export interface Database {
           sale_badge_text?: string
           faq?: Json
           meta_description?: string
+          meta_title?: string
         }
         Insert: {
           id?: string
@@ -63,6 +64,7 @@ export interface Database {
           sale_badge_text?: string
           faq?: Json
           meta_description?: string
+          meta_title?: string
         }
         Update: {
           id?: string
@@ -90,6 +92,7 @@ export interface Database {
           sale_badge_text?: string
           faq?: Json
           meta_description?: string
+          meta_title?: string
         }
         Relationships: []
       }
@@ -366,8 +369,8 @@ export interface Database {
           code: string
           type: 'percentage' | 'fixed'
           value: number
-          discount_type?: 'percentage' | 'fixed' // Optional alias
-          discount_value?: number // Optional alias
+          discount_type?: 'percentage' | 'fixed'
+          discount_value?: number
           min_purchase_amount?: number
           max_discount_amount?: number
           expiry_date?: string
@@ -382,8 +385,8 @@ export interface Database {
           code: string
           type: 'percentage' | 'fixed'
           value: number
-          discount_type?: 'percentage' | 'fixed' // Optional alias
-          discount_value?: number // Optional alias
+          discount_type?: 'percentage' | 'fixed'
+          discount_value?: number
           min_purchase_amount?: number
           max_discount_amount?: number
           expiry_date?: string
@@ -398,8 +401,8 @@ export interface Database {
           code?: string
           type?: 'percentage' | 'fixed'
           value?: number
-          discount_type?: 'percentage' | 'fixed' // Optional alias
-          discount_value?: number // Optional alias
+          discount_type?: 'percentage' | 'fixed'
+          discount_value?: number
           min_purchase_amount?: number
           max_discount_amount?: number
           expiry_date?: string
@@ -410,6 +413,101 @@ export interface Database {
           created_at?: string
         }
         Relationships: []
+      }
+      affiliates: {
+        Row: {
+          id: string
+          user_id: string
+          coupon_id: string
+          status: 'active' | 'suspended' | 'pending'
+          payout_info: Json
+          total_earnings: number
+          commission_rate: number
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          coupon_id: string
+          status?: 'active' | 'suspended' | 'pending'
+          payout_info?: Json
+          total_earnings?: number
+          commission_rate?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          coupon_id?: string
+          status?: 'active' | 'suspended' | 'pending'
+          payout_info?: Json
+          total_earnings?: number
+          commission_rate?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "affiliates_coupon_id_fkey"
+            columns: ["coupon_id"]
+            referencedRelation: "coupons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "affiliates_user_id_fkey"
+            columns: ["user_id"]
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      affiliate_commissions: {
+        Row: {
+          id: string
+          affiliate_id: string
+          order_id: string
+          amount: number
+          commission_rate: number
+          status: 'pending' | 'paid' | 'cancelled'
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          affiliate_id: string
+          order_id: string
+          amount: number
+          commission_rate?: number
+          status?: 'pending' | 'paid' | 'cancelled'
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          affiliate_id?: string
+          order_id?: string
+          amount?: number
+          commission_rate?: number
+          status?: 'pending' | 'paid' | 'cancelled'
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "affiliate_commissions_affiliate_id_fkey"
+            columns: ["affiliate_id"]
+            referencedRelation: "affiliates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "affiliate_commissions_order_id_fkey"
+            columns: ["order_id"]
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          }
+        ]
       }
     }
     Views: {

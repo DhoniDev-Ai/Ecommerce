@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, X, Send, User, Bot, Minimize2 } from "lucide-react";
+import { Sparkles, X, Send, User, Bot, Minimize2, Phone } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useAI } from "@/context/AIContext";
 import { useAuth } from "@/context/AuthContext";
@@ -10,6 +10,7 @@ import ReactMarkdown from "react-markdown";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { VoiceInterface } from "./VoiceInterface";
 
 export function ChatWidget() {
     const { isOpen, setIsOpen, messages, sendMessage, isLoading } = useAI();
@@ -118,6 +119,8 @@ export function ChatWidget() {
         }
     };
 
+    const [isVoiceMode, setIsVoiceMode] = useState(false);
+
     if (pathname?.startsWith('/admin')) {
         return null;
     }
@@ -131,8 +134,6 @@ export function ChatWidget() {
                 variants={buttonVariants}
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
-                // drag
-                // dragMomentum={false}
                 onClick={() => setIsOpen(true)}
                 className="fixed  bottom-20 right-6 z-50 w-16 h-16 bg-[#2D3A3A] text-white rounded-full cursor-pointer shadow-2xl flex items-center justify-center border border-[#5A7A6A]/50 group"
             >
@@ -142,7 +143,7 @@ export function ChatWidget() {
                     width={64}
                     height={64}
                     className="w-full h-full object-[25%_top] rounded-full object-cover opacity-90 group-hover:opacity-100 transition-opacity"
-                    priority // Load priority for the trigger avatar
+                    priority
                 />
 
                 {/* Notification Badge */}
@@ -164,6 +165,17 @@ export function ChatWidget() {
                 variants={chatVariants}
                 className="fixed bottom-6 right-6 z-50 w-[90vw] md:w-[400px] h-[600px] max-h-[80vh] bg-white/80 backdrop-blur-2xl border border-white/20 rounded-[2.5rem] shadow-2xl flex flex-col overflow-hidden origin-bottom-right"
             >
+                {/* Voice Interface Overlay */}
+                <AnimatePresence>
+                    {isVoiceMode && (
+                        <VoiceInterface
+                            onClose={() => setIsVoiceMode(false)}
+                            onSendMessage={sendMessage}
+                            messages={messages}
+                        />
+                    )}
+                </AnimatePresence>
+
                 {/* Header */}
                 <div className="p-6 bg-[#2D3A3A] text-white flex justify-between items-center relative overflow-hidden shrink-0">
                     <div className="absolute inset-0 bg-[#5A7A6A] opacity-20 bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
@@ -182,12 +194,22 @@ export function ChatWidget() {
                             <p className="text-[10px] uppercase tracking-widest opacity-60">Wellness Guide</p>
                         </div>
                     </div>
-                    <button
-                        onClick={() => setIsOpen(false)}
-                        className="relative z-10 w-8 h-8 rounded-full bg-white/10 flex items-center cursor-pointer justify-center hover:bg-white/20 transition-colors"
-                    >
-                        <Minimize2 className="w-4 h-4" />
-                    </button>
+                    <div className="flex items-center gap-2 relative z-10">
+                        {/* Voice Mode Disabled for now */}
+                        {/* <button
+                            onClick={() => setIsVoiceMode(true)}
+                            className="w-8 h-8 rounded-full bg-white/10 flex items-center cursor-pointer justify-center hover:bg-white/20 transition-colors group"
+                            title="Call Aya"
+                        >
+                            <Phone className="w-4 h-4 group-hover:text-green-300 transition-colors" />
+                        </button> */}
+                        <button
+                            onClick={() => setIsOpen(false)}
+                            className="w-8 h-8 rounded-full bg-white/10 flex items-center cursor-pointer justify-center hover:bg-white/20 transition-colors"
+                        >
+                            <Minimize2 className="w-4 h-4" />
+                        </button>
+                    </div>
                 </div>
 
                 {/* Messages Area */}
@@ -254,7 +276,7 @@ export function ChatWidget() {
                                                                 <img src={src} alt={name} className="w-full h-full object-contain mix-blend-multiply" />
                                                             </div>
                                                             <div className="min-w-0 flex-1">
-                                                                <h4 className="font-heading  max-sm:text-[9px] sm:text-xs  text-[#2D3A3A] truncate mb-1 group-hover:text-[#5A7A6A] transition-colors">{name || "Product"}</h4>
+                                                                <h4 className="font-heading  max-sm:text-[9px] sm:text-xs  text-[#2D3A3A] truncate mb-1 group-hover:text-[#5A7A6A] transition-colors">{name.slice(0, 20) + "..." || "Product"}</h4>
                                                                 <div className="flex items-center gap-2">
                                                                     <span className="text-[10px] font-bold text-[#5A7A6A] bg-[#5A7A6A]/10 px-1 py-0.5 rounded-md">{price}</span>
 
@@ -314,7 +336,7 @@ export function ChatWidget() {
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
                             placeholder="Ask Aya anything..."
-                            className="w-full bg-[#F3F1ED] rounded-full pl-6 pr-14 py-4 text-sm focus:outline-none focus:ring-1 focus:ring-[#5A7A6A] transition-all placeholder:text-[#9AA09A] text-[#2D3A3A]"
+                            className="w-full bg-[#F3F1ED] rounded-full pl-6 pr-14 py-4 text-sm focus:outline-none focus:border-[#5A7A6A] focus:ring-1 focus:ring-[#5A7A6A] transition-all placeholder:text-[#9AA09A] text-[#2D3A3A]"
                         />
                         <button
                             type="submit"

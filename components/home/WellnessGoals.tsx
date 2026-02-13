@@ -7,8 +7,8 @@ const goals = [
         description: "Boost natural energy and stay active throughout the day.",
         color: "from-amber-50 to-orange-50",
         accent: "#D4A574",
-    },
-    {
+    }
+    , {
         id: "immunity",
         title: "Immunity",
         description: "Support your body’s natural defenses every day.",
@@ -28,13 +28,13 @@ const goals = [
         description: "Cleanse your body naturally and feel lighter inside.",
         color: "from-cyan-50 to-sky-50",
         accent: "#5A8A9A",
-    },
+    }
 ];
 
 export function WellnessGoals() {
     return (
         <section id="WellnessGoals" className="py-20 bg-linear-to-b from-[#FDFBF7] to-[#F8F6F2]">
-            <div className="mx-auto max-w-7xl px-8 lg:px-12">
+            <div className="mx-auto max-w-7xl px-8 overflow-hidden lg:px-12">
                 {/* Section Header - Asymmetric */}
                 <div className="grid lg:grid-cols-2 gap-8 mb-20">
                     <div>
@@ -55,16 +55,16 @@ export function WellnessGoals() {
                     </div>
                 </div>
 
-                {/* Goals Grid */}
-                <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {/* Goals Grid - Horizontal Scroll on Mobile, Grid on Desktop */}
+                <div className="flex md:grid md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 overflow-x-auto snap-x snap-mandatory pb-8 md:pb-0 -mx-10 px-7  md:mx-0 md:px-0 scrollbar-hide">
                     {goals.map((goal) => (
                         <Link
                             key={goal.id}
                             href={`/products?goal=${goal.id}`}
-                            className="group relative"
+                            className="group relative max-w-[300px] sm:min-w-[275px] md:min-w-0 snap-center md:snap-align-none block shrink-0"
                         >
                             <div
-                                className={`relative p-8 rounded-4xl bg-linear-to-br ${goal.color} transition-all duration-500 hover:shadow-2xl hover:shadow-black/5 hover:-translate-y-2 overflow-hidden`}
+                                className={`relative h-full p-8 rounded-4xl bg-linear-to-br ${goal.color} transition-all duration-500 hover:shadow-2xl hover:shadow-black/5 hover:-translate-y-2 overflow-hidden flex flex-col justify-between`}
                             >
                                 {/* Decorative circle */}
                                 <div

@@ -49,10 +49,10 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     }
 
     return {
-        title: `${product.name} | Ayuniv Rituals`,
+        title: product.meta_title || `${product.name} | Ayuniv Rituals`,
         description: product.meta_description || product.description,
         openGraph: {
-            title: `${product.name} - Ayuniv Wellness`,
+            title: product.meta_title || `${product.name} - Ayuniv Wellness`,
             description: product.meta_description || product.description,
             url: `https://ayuniv.com/products/${product.slug}`,
             images: product.image_urls?.[0] ? [{
@@ -65,7 +65,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
         },
         twitter: {
             card: 'summary_large_image',
-            title: `${product.name} - Ayuniv Wellness`,
+            title: product.meta_title || `${product.name} - Ayuniv Wellness`,
             description: product.meta_description || product.description,
             images: product.image_urls?.[0] ? [product.image_urls[0]] : [],
         }
