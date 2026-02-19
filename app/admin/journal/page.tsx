@@ -7,7 +7,7 @@ import Image from "next/image";
 import Link from "next/link";
 import {
     ChevronLeft, Eye, Save, Image as ImageIcon, Link as LinkIcon,
-    Plus, Pencil, Trash2, X, ArrowLeft, Search
+    Plus, Pencil, Trash2, X, ArrowLeft, Search, Upload, Loader2
 } from "lucide-react";
 
 interface Post {
@@ -50,6 +50,37 @@ export default function AdminJournalPage() {
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState("");
     const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+    const [uploadingCard, setUploadingCard] = useState(false);
+    const [uploadingHero, setUploadingHero] = useState(false);
+
+    // --- IMAGE UPLOAD ---
+    const uploadImage = async (file: File, target: "card" | "hero") => {
+        const isCard = target === "card";
+        isCard ? setUploadingCard(true) : setUploadingHero(true);
+
+        try {
+            const ext = file.name.split(".").pop();
+            const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+            const filePath = `journal/${fileName}`;
+
+            const { error: uploadError } = await supabase.storage
+                .from("journal-images")
+                .upload(filePath, file, { cacheControl: "3600", upsert: false });
+
+            if (uploadError) throw uploadError;
+
+            const { data: { publicUrl } } = supabase.storage
+                .from("journal-images")
+                .getPublicUrl(filePath);
+
+            if (isCard) setImageUrl(publicUrl);
+            else setHeroImageUrl(publicUrl);
+        } catch (err: any) {
+            alert("Upload failed: " + err.message);
+        } finally {
+            isCard ? setUploadingCard(false) : setUploadingHero(false);
+        }
+    };
 
     // --- FETCH POSTS ---
     const fetchPosts = async () => {
@@ -404,35 +435,54 @@ export default function AdminJournalPage() {
                             </div>
                         </div>
 
-                        {/* 2. Media */}
-                        <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-4">
-                            <h2 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">Media</h2>
-                            <div className="space-y-3">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Card Image URL</label>
-                                    <div className="flex gap-2">
-                                        <div className="relative grow">
-                                            <ImageIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                                            <input
-                                                type="text"
-                                                value={imageUrl}
-                                                onChange={(e) => setImageUrl(e.target.value)}
-                                                className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500/20 text-sm"
-                                                placeholder="https://..."
-                                            />
+                        {/* 2. Media — Upload */}
+                        <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-5">
+                            <h2 className="text-xs font-bold uppercase tracking-widest text-gray-400">Media</h2>
+
+                            {/* Card Image */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Card Image</label>
+                                {imageUrl ? (
+                                    <div className="relative group rounded-xl overflow-hidden border border-gray-200 aspect-video">
+                                        <Image src={imageUrl} alt="Card" fill className="object-cover" />
+                                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
+                                            <label className="cursor-pointer bg-white/90 text-gray-800 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-white transition-colors">
+                                                Replace
+                                                <input type="file" accept="image/*" className="hidden" onChange={(e) => { if (e.target.files?.[0]) uploadImage(e.target.files[0], "card"); }} />
+                                            </label>
+                                            <button onClick={() => setImageUrl("")} className="bg-red-500/90 text-white px-3 py-1.5 rounded-full text-xs font-bold hover:bg-red-600 transition-colors">Remove</button>
                                         </div>
                                     </div>
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Hero Image URL (Optional)</label>
-                                    <input
-                                        type="text"
-                                        value={heroImageUrl}
-                                        onChange={(e) => setHeroImageUrl(e.target.value)}
-                                        className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500/20 text-sm"
-                                        placeholder="Defaults to Card Image if empty"
-                                    />
-                                </div>
+                                ) : (
+                                    <label className={`flex flex-col items-center justify-center gap-2 border-2 border-dashed rounded-xl py-8 cursor-pointer transition-colors ${uploadingCard ? 'border-green-300 bg-green-50' : 'border-gray-200 hover:border-green-400 hover:bg-green-50/50'}`}>
+                                        {uploadingCard ? <Loader2 className="w-6 h-6 text-green-600 animate-spin" /> : <Upload className="w-6 h-6 text-gray-400" />}
+                                        <span className="text-xs text-gray-500 font-medium">{uploadingCard ? "Uploading..." : "Click to upload card image"}</span>
+                                        <input type="file" accept="image/*" className="hidden" onChange={(e) => { if (e.target.files?.[0]) uploadImage(e.target.files[0], "card"); }} />
+                                    </label>
+                                )}
+                            </div>
+
+                            {/* Hero Image */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Hero Image <span className="text-gray-400 font-normal">(Optional — defaults to card image)</span></label>
+                                {heroImageUrl ? (
+                                    <div className="relative group rounded-xl overflow-hidden border border-gray-200 aspect-video">
+                                        <Image src={heroImageUrl} alt="Hero" fill className="object-cover" />
+                                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
+                                            <label className="cursor-pointer bg-white/90 text-gray-800 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-white transition-colors">
+                                                Replace
+                                                <input type="file" accept="image/*" className="hidden" onChange={(e) => { if (e.target.files?.[0]) uploadImage(e.target.files[0], "hero"); }} />
+                                            </label>
+                                            <button onClick={() => setHeroImageUrl("")} className="bg-red-500/90 text-white px-3 py-1.5 rounded-full text-xs font-bold hover:bg-red-600 transition-colors">Remove</button>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <label className={`flex flex-col items-center justify-center gap-2 border-2 border-dashed rounded-xl py-6 cursor-pointer transition-colors ${uploadingHero ? 'border-green-300 bg-green-50' : 'border-gray-200 hover:border-green-400 hover:bg-green-50/50'}`}>
+                                        {uploadingHero ? <Loader2 className="w-5 h-5 text-green-600 animate-spin" /> : <Upload className="w-5 h-5 text-gray-400" />}
+                                        <span className="text-xs text-gray-500 font-medium">{uploadingHero ? "Uploading..." : "Click to upload hero image"}</span>
+                                        <input type="file" accept="image/*" className="hidden" onChange={(e) => { if (e.target.files?.[0]) uploadImage(e.target.files[0], "hero"); }} />
+                                    </label>
+                                )}
                             </div>
                         </div>
 

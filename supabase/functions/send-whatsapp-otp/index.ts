@@ -24,7 +24,7 @@ serve(async (req) => {
         const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
         const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-        // 1. Generate OTP (6 digits)
+        // 1. Generate OTP (8 digits)
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
         // 2. Store in DB

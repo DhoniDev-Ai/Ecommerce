@@ -139,7 +139,7 @@ export default function CheckoutPage() {
 
     const handleVerifyEmailOtp = async () => {
         if (!otp || otp.length < 6) {
-            setToast({ message: "Please enter a valid 6-digit code.", type: 'error' });
+            setToast({ message: "Please enter a valid 8-digit code.", type: 'error' });
             return;
         }
         setAuthLoading(true);
@@ -685,7 +685,7 @@ export default function CheckoutPage() {
                                                     </button>
                                                 </div>
                                                 <div className="text-[10px] text-[#7A8A8A] italic mb-2">
-                                                    Enter the 6-digit code below.
+                                                    Enter the 8-digit code below.
                                                 </div>
 
                                                 {/* EMAIL OTP INPUT */}
@@ -695,7 +695,7 @@ export default function CheckoutPage() {
                                                         name="otp"
                                                         value={otp}
                                                         onChange={(e: React.ChangeEvent<HTMLInputElement>) => setOtp(e.target.value)}
-                                                        placeholder="Enter 6-digit code"
+                                                        placeholder="Enter 8-digit code"
                                                         className="tracking-[0.5em] text-center font-mono bg-white"
                                                     />
                                                     <button

@@ -157,7 +157,7 @@ export default function LoginPage() {
                                 <div className="space-y-2 mb-6">
                                     <h3 className="font-heading text-lg text-[#2D3A3A]">OTP Sent</h3>
                                     <p className="text-xs text-[#7A8A8A] leading-relaxed">
-                                        Enter the 6-digit code sent to <br />
+                                        Enter the 8-digit code sent to <br />
                                         <span className="font-bold text-[#2D3A3A]">{email}</span>
                                     </p>
                                 </div>
