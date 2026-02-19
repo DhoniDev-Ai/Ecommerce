@@ -6,7 +6,7 @@ const isProd = process.env.NODE_ENV === 'production';
 const nextConfig: NextConfig = {
   images: {
     // Only disable optimization locally to bypass the IP error
-    unoptimized: !isProd, 
+    unoptimized: !isProd,
     remotePatterns: [
       {
         protocol: 'https',

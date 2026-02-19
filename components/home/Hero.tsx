@@ -15,10 +15,11 @@ const SLIDES = [
         title: "Sea Buckthorn",
         subtitle: "The Himalayan Wild Berry",
         description: "Wild-harvested Himalayan berries. A concentrated burst of Omega-3,6,7 & 9.",
-        bgImage: "/assets/Tm/Sea-buckthoron-1.png",
-        color: "text-[#2D3A3A]",
+        bgImage: "/wer/sea-1.png",
+        color: "text-white",
         accentColor: "#E67E22",
-        borderColor: "rgba(230, 126, 34, 0.3)"
+        borderColor: "rgba(230, 126, 34, 0.3)",
+        textShadow: "0 2px 12px rgba(0,0,0,0.5), 0 1px 3px rgba(0,0,0,0.3)"
     },
     {
         id: 2,
@@ -27,10 +28,11 @@ const SLIDES = [
         title: "She Care",
         subtitle: "Harmonal Balance",
         description: "A gentle, potent Ayurvedic blend for hormonal balance crafted with Shatavari.",
-        bgImage: "/assets/Tm/She-Care-1st.webp",
+        bgImage: "/wer/she1.png",
         color: "text-[#2D3A3A]",
         accentColor: "#5A7A6A",
-        borderColor: "rgba(90, 122, 106, 0.3)"
+        borderColor: "rgba(90, 122, 106, 0.3)",
+        textShadow: "0 1px 8px rgba(255,255,255,0.4)"
     },
     {
         id: 3,
@@ -39,10 +41,11 @@ const SLIDES = [
         title: "Heart Guard",
         subtitle: "Healthy Circulation",
         description: "Supports healthy cholesterol levels, improves blood circulation, and promotes overall heart wellness naturally",
-        bgImage: "/assets/Tm/26.png",
+        bgImage: "/wer/cho-1.png",
         color: "text-[#3E2723]",
         accentColor: "#8B5A2B",
-        borderColor: "rgba(139, 90, 43, 0.3)"
+        borderColor: "rgba(139, 90, 43, 0.3)",
+        textShadow: "0 1px 0px rgba(255,255,255,0.4)"
     }
 ];
 
@@ -104,11 +107,8 @@ export function Hero() {
 
                     {/* 1. Mobile-Specific Depth Stack */}
                     <div className="md:hidden absolute inset-0 z-10 pointer-events-none">
-                        {/* A. The Color Anchor: Matches your brand #FDFBF7 perfectly */}
-                        <div className="absolute inset-x-0 bottom-0 h-[70vh] bg-linear-to-t from-[#FDFBF7]/80 via-[#FDFBF7]/40 to-transparent" />
-
-                        {/* B. The Optical Blur: Softens background contrast so text pops */}
-
+                        {/* A. Strong bottom gradient so text is always readable */}
+                        <div className="absolute inset-x-0 bottom-0 h-[75vh] bg-linear-to-t from-black/70 via-black/40 to-transparent" />
                     </div>
 
                     {/* 2. Desktop-Only Side Anchor */}
@@ -121,7 +121,7 @@ export function Hero() {
             <div className="relative z-10 w-full h-full max-w-[1920px] mx-auto px-6 md:px-12 lg:px-20 grid grid-cols-1 lg:grid-cols-12">
 
 
-                <div className="lg:col-span-5 flex flex-col justify-start max-sm:justify-start  sm:pb-0 sm:pt-24 md:pt-30 pb-24  h-full pointer-events-none">
+                <div className="lg:col-span-5 flex flex-col justify-end max-sm:justify-end sm:justify-start sm:pb-0 sm:pt-24 md:pt-30 pb-24 h-full pointer-events-none">
                     <AnimatePresence mode="wait">
                         <motion.div key={slide.id} className="space-y-4 md:space-y-6 relative z-20 pointer-events-auto">
 
@@ -134,31 +134,33 @@ export function Hero() {
                                 style={{ borderColor: slide.borderColor }}
                             >
 
-                                <span className={cn("text-[8px] md:text-[9px] uppercase tracking-[0.3em] font-bold", slide.color)}>
+                                <span className={cn("text-[8px] md:text-[9px] uppercase tracking-[0.3em] font-bold max-md:text-white", slide.color)}>
                                     {slide.category}
                                 </span>
                             </motion.div>
 
                             {/* Headline */}
-                            <div className="overflow-hidden">
+                            <div className="overflow-hidden -my-2">
                                 <motion.h1
                                     variants={textReveal}
                                     initial="initial"
                                     animate="animate"
                                     exit="exit"
-                                    className={cn("font-heading text-4xl md:text-5xl lg:text-[4.5rem] xl:text-[5rem] leading-[0.9] tracking-tighter", slide.color)}
+                                    className={cn("font-heading text-4xl md:text-5xl lg:text-[4.5rem] xl:text-[5rem] leading-[0.9] tracking-tighter max-md:text-white py-2", slide.color)}
+                                    style={{ textShadow: "0 1px 2px rgba(0,0,0,0.5), 0 1px 3px rgba(0,0,0,0.3)" }}
                                 >
                                     {slide.title}
                                 </motion.h1>
                             </div>
 
-                            <div className="overflow-hidden">
+                            <div className="overflow-hidden -my-2">
                                 <motion.span
                                     variants={textReveal}
                                     initial="initial"
                                     animate="animate"
                                     exit="exit"
-                                    className="italic font-serif font-light opacity-80 block text-2xl md:text-3xl lg:text-[3.5rem] leading-none"
+                                    className={cn("italic font-serif font-light opacity-90 block text-2xl md:text-3xl lg:text-[3.5rem] leading-none max-md:text-white/90 py-2", slide.color)}
+                                    style={{ textShadow: "0 2px 4px rgba(0,0,0,0.5), 0 1px 3px rgba(0,0,0,0.3)" }}
                                 >
                                     {slide.subtitle}
                                 </motion.span>
@@ -188,8 +190,8 @@ export function Hero() {
                                         href="/quiz"
                                         className="group relative inline-flex items-center gap-3 px-6 py-4 md:px-8 md:py-5 rounded-full overflow-hidden cursor-pointer transition-all duration-300 border border-[#2D3A3A]/10 hover:bg-white/50 hover:shadow-lg active:scale-95 backdrop-blur-sm"
                                     >
-                                        <Sparkles className={cn("w-4 h-4", slide.color)} />
-                                        <span className={cn("text-[9px] md:text-[10px] uppercase tracking-[0.3em] font-bold relative z-10", slide.color)}>Discover Dosha</span>
+                                        <Sparkles className={cn("w-4 h-4 max-md:text-white", slide.color)} />
+                                        <span className={cn("text-[9px] md:text-[10px] uppercase tracking-[0.3em] font-bold relative z-10 max-md:text-white", slide.color)}>Discover Dosha</span>
                                     </Link>
                                 </motion.div>
                             </div>
@@ -199,7 +201,8 @@ export function Hero() {
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1, transition: { delay: 0.6 } }}
                                 exit={{ opacity: 0 }}
-                                className={cn("mt-6 text-xs leading-relaxed font-medium md:hidden max-w-xs drop-shadow-sm", slide.color)}
+                                className="mt-6 text-xs leading-relaxed font-medium md:hidden max-w-xs text-white/90"
+                                style={{ textShadow: "0 4px 6px rgba(0,0,0,0.4)" }}
                             >
                                 {slide.description}
                             </motion.p>
