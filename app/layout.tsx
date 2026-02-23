@@ -9,6 +9,8 @@ import { ChatWidget } from "@/components/ai/ChatWidget";
 import { Analytics } from "@vercel/analytics/next"
 import NextTopLoader from 'nextjs-toploader';
 import { AuthPopup } from "@/components/auth/AuthPopup";
+import { SmoothScroll } from "@/components/providers/SmoothScroll";
+import { SpeedInsights } from "@vercel/speed-insights/next"
 
 const montserrat = Montserrat({
   variable: "--font-montserrat",
@@ -127,14 +129,17 @@ export default function RootLayout({
         />
         <Analytics />
         <AuthProvider>
-          <AIProvider>
-            <CartProvider>
-              {children}
-              <ChatWidget />
-              <CartSidebar />
-              <AuthPopup />
-            </CartProvider>
-          </AIProvider>
+          <SmoothScroll>
+            <AIProvider>
+              <CartProvider>
+                <SpeedInsights />
+                {children}
+                <ChatWidget />
+                <CartSidebar />
+                <AuthPopup />
+              </CartProvider>
+            </AIProvider>
+          </SmoothScroll>
         </AuthProvider>
       </body>
     </html>

@@ -52,9 +52,21 @@ body {
   font-size:xx-large;
 }
 
-/* Smooth scrolling */
-html {
-  scroll-behavior: smooth;
+/* Lenis Smooth Scroll */
+html.lenis, html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
 }
 
 /* Selection color */
