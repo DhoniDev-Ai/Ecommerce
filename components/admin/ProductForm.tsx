@@ -8,6 +8,7 @@ import { Plus, X, Upload, Loader2, Save } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
 import { cn } from "@/utils/cn";
 import Image from "next/image";
+import imageCompression from 'browser-image-compression';
 
 type Product = Database['public']['Tables']['products']['Row'];
 type ProductInsert = Database['public']['Tables']['products']['Insert'];
@@ -80,12 +81,21 @@ export function ProductForm({ initialData }: { initialData?: Product }) {
         if (!e.target.files || e.target.files.length === 0) return;
 
         setLoading(true);
-        const file = e.target.files[0];
-        const fileExt = file.name.split('.').pop();
-        const fileName = `${field === 'lifestyle_images' ? 'lifestyle_' : ''}${Math.random().toString(36).substring(2)}.${fileExt}`;
-        const filePath = `product-images/${fileName}`;
+        let file = e.target.files[0];
 
         try {
+            // Compress the image before uploading
+            const options = {
+                maxSizeMB: 0.8, // Limit file size to 800KB max
+                maxWidthOrHeight: 1920, // Max dimension
+                useWebWorker: true,
+            };
+            file = await imageCompression(file, options);
+
+            const fileExt = file.name.split('.').pop() || 'webp';
+            const fileName = `${field === 'lifestyle_images' ? 'lifestyle_' : ''}${Math.random().toString(36).substring(2)}.${fileExt}`;
+            const filePath = `product-images/${fileName}`;
+
             const { error: uploadError } = await supabase.storage
                 .from('product-images')
                 .upload(filePath, file);

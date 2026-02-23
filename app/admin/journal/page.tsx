@@ -9,6 +9,7 @@ import {
     ChevronLeft, Eye, Save, Image as ImageIcon, Link as LinkIcon,
     Plus, Pencil, Trash2, X, ArrowLeft, Search, Upload, Loader2
 } from "lucide-react";
+import imageCompression from 'browser-image-compression';
 
 interface Post {
     id: string;
@@ -54,12 +55,20 @@ export default function AdminJournalPage() {
     const [uploadingHero, setUploadingHero] = useState(false);
 
     // --- IMAGE UPLOAD ---
-    const uploadImage = async (file: File, target: "card" | "hero") => {
+    const uploadImage = async (rawFile: File, target: "card" | "hero") => {
         const isCard = target === "card";
         isCard ? setUploadingCard(true) : setUploadingHero(true);
 
         try {
-            const ext = file.name.split(".").pop();
+            // Compress the image before uploading
+            const options = {
+                maxSizeMB: 0.8, // Limit file size to 800KB max
+                maxWidthOrHeight: 1920, // Max dimension
+                useWebWorker: true,
+            };
+            const file = await imageCompression(rawFile, options);
+
+            const ext = file.name.split(".").pop() || 'jpg';
             const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
             const filePath = `journal/${fileName}`;
 
