@@ -30,7 +30,7 @@ export function InvoiceButton({ order, className }: InvoiceButtonProps) {
             doc.setFontSize(8);
             doc.text("SlightJoy Healthcare", pageWidth - 20, 20, { align: "right" });
             doc.text("GSTIN: 29AAAAA0000A1Z5", pageWidth - 20, 25, { align: "right" }); // Example GST
-            doc.text("info@ayuniv.com", pageWidth - 20, 30, { align: "right" });
+            doc.text("info@ayuniv.in", pageWidth - 20, 30, { align: "right" });
 
             // Line
             doc.setDrawColor(200, 200, 200);

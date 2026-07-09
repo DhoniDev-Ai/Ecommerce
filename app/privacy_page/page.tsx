@@ -58,7 +58,7 @@ export default function PrivacyPage() {
 
                     <Section title="5. Your Sovereignty">
                         <p>
-                            You hold dominion over your data. You may request to see what we hold, correct it, or ask for its erasure from our records, subject to legal requirements. Contact our guardians at <a href="mailto:info@ayuniv.com" className="text-[#5A7A6A] underline decoration-dotted underline-offset-4">info@ayuniv.com</a>.
+                            You hold dominion over your data. You may request to see what we hold, correct it, or ask for its erasure from our records, subject to legal requirements. Contact our guardians at <a href="mailto:info@ayuniv.in" className="text-[#5A7A6A] underline decoration-dotted underline-offset-4">info@ayuniv.in</a>.
                         </p>
                     </Section>
 

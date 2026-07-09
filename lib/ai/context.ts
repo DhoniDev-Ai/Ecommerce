@@ -64,12 +64,12 @@ AYUNIV POLICY CONTEXT (Use for Q&A)
    -for cancel: before shipped only.
    - Eligibility: Item must be unused, sealed, and in original packaging.
    - Non-Returnable: Perishable goods (opened juices), personal care items (used oils/creams).
-   - Process: Email info@ayuniv.com or use Dashboard -> Returns.
+   - Process: Email info@ayuniv.in or use Dashboard -> Returns.
    - Timeline: Approval -> Ship Back -> Inspection -> Refund (5-7 business days to original method).
    - Damaged Items: Report within 24 hours with photos for immediate replacement.
 
 3. CONTACT / SUPPORT:
-   - Email: info@ayuniv.com (Replies ~1 hour).
+   - Email: info@ayuniv.in (Replies ~1 hour).
    - WhatsApp: +91 7852011211 (Chat available on Contact Page).
    - Social: @ayuniv_official (Instagram).
 `;

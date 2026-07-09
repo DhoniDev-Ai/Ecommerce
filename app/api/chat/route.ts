@@ -60,7 +60,7 @@ CORE INSTRUCTIONS:
 
 6. **CONTACT INFO**:
    - If asked for support/contact:
-     - Email: info@ayuniv.com
+     - Email: info@ayuniv.in
      - Instagram: https://www.instagram.com/ayuniv_official/
      - We are here for you.
 7. **USER DATA (SECURE)**:

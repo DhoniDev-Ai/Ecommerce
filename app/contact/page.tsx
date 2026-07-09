@@ -66,7 +66,7 @@ export default function ContactPage() {
                             </a> */}
 
                             {/* Email Card */}
-                            <a href="mailto:info@ayuniv.com" className="block group bg-white rounded-4xl p-8 border border-[#E8E6E2] hover:border-[#5A7A6A]/30 transition-all hover:shadow-[0_8px_30px_rgba(0,0,0,0.04)]">
+                            <a href="mailto:info@ayuniv.in" className="block group bg-white rounded-4xl p-8 border border-[#E8E6E2] hover:border-[#5A7A6A]/30 transition-all hover:shadow-[0_8px_30px_rgba(0,0,0,0.04)]">
                                 <div className="flex justify-between items-start mb-6">
                                     <div className="w-10 h-10 rounded-full bg-[#F3F1ED] flex items-center justify-center group-hover:bg-[#5A7A6A] transition-colors">
                                         <Mail className="w-4 h-4 text-[#2D3A3A] group-hover:text-white transition-colors" />

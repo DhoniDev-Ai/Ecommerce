@@ -74,11 +74,11 @@ export function Footer() {
 
                         {/* Contact Info */}
                         <div className="space-y-4 pt-4">
-                            <a href="mailto:info@ayuniv.com" className="flex items-center gap-3 text-sm text-white/70 hover:text-[#5A7A6A] transition-colors group">
+                            <a href="mailto:info@ayuniv.in" className="flex items-center gap-3 text-sm text-white/70 hover:text-[#5A7A6A] transition-colors group">
                                 <span className="p-2 bg-white/5 rounded-full group-hover:bg-white/10 transition-colors">
                                     <Mail className="w-4 h-4" />
                                 </span>
-                                info@ayuniv.com
+                                info@ayuniv.in
                             </a>
                             <a href="tel:+917852011211" className="flex items-center gap-3 text-sm text-white/70 hover:text-[#5A7A6A] transition-colors group">
                                 <span className="p-2 bg-white/5 rounded-full group-hover:bg-white/10 transition-colors">

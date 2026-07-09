@@ -89,7 +89,7 @@ export default function ShippingPolicy() {
                         </div>
                         <div className="pl-10 space-y-4 text-[#5a6a6a] leading-relaxed">
                             <p>
-                                Should your items arrive in a compromised state, please document the condition immediately and email <span className="text-[#2d3a3a] border-b border-[#2d3a3a]/30 font-medium">info@ayuniv.com</span> within 24 hours. We will initiate a replacement ritual without delay.
+                                Should your items arrive in a compromised state, please document the condition immediately and email <span className="text-[#2d3a3a] border-b border-[#2d3a3a]/30 font-medium">info@ayuniv.in</span> within 24 hours. We will initiate a replacement ritual without delay.
                             </p>
                         </div>
                     </section>
