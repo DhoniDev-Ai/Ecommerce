@@ -119,10 +119,7 @@ export default function CheckoutPage() {
         setAuthLoading(true);
         try {
             const { error } = await supabase.auth.signInWithOtp({
-                email: formData.email,
-                options: {
-                    emailRedirectTo: `${window.location.origin}/checkout`, // Redirect back to checkout
-                }
+                email: formData.email
             });
 
             if (error) throw error;

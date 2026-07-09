@@ -42,10 +42,7 @@ export default function LoginPage() {
             if (!email.includes('@') || !email.includes('.')) throw new Error("Please enter a valid email address.");
 
             const { error } = await supabase.auth.signInWithOtp({
-                email,
-                options: {
-                    emailRedirectTo: `${window.location.origin}/auth/callback`,
-                }
+                email
             });
 
             if (error) throw error;
