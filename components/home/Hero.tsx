@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence, useInView } from "framer-motion";
-import { ArrowRight, ChevronLeft, ChevronRight, Sparkles, MapPin } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/utils/cn";
 import Image from "next/image";
@@ -11,259 +11,159 @@ const SLIDES = [
     {
         id: 1,
         slug: "ayuniv-sea-buckthorn-Juice-300ml",
-        category: "Immunity Archive",
         title: "Sea Buckthorn",
-        subtitle: "The Himalayan Wild Berry",
-        description: "Wild-harvested Himalayan berries. A concentrated burst of Omega-3,6,7 & 9.",
-        bgImage: "/wer/sea-1.png",
-        color: "text-white",
+        bgImage: "/banners/Sea_bhukthron.png", 
         accentColor: "#E67E22",
-        borderColor: "rgba(230, 126, 34, 0.3)",
-        textShadow: "0 2px 12px rgba(0,0,0,0.5), 0 1px 3px rgba(0,0,0,0.3)"
     },
     {
         id: 2,
         slug: "she-care-juice",
-        category: "Vitality Collection",
         title: "She Care",
-        subtitle: "Harmonal Balance",
-        description: "A gentle, potent Ayurvedic blend for hormonal balance crafted with Shatavari.",
-        bgImage: "/wer/she1.png",
-        color: "text-[#2D3A3A]",
+        bgImage: "/banners/She_Care.png", 
         accentColor: "#5A7A6A",
-        borderColor: "rgba(90, 122, 106, 0.3)",
-        textShadow: "0 1px 8px rgba(255,255,255,0.4)"
     },
     {
         id: 3,
         slug: "cholesterol-care-juice",
-        category: "Heart Series",
         title: "Heart Guard",
-        subtitle: "Healthy Circulation",
-        description: "Supports healthy cholesterol levels, improves blood circulation, and promotes overall heart wellness naturally",
-        bgImage: "/wer/cho-1.png",
-        color: "text-[#3E2723]",
+        bgImage: "/banners/Cholestrol.png", 
         accentColor: "#8B5A2B",
-        borderColor: "rgba(139, 90, 43, 0.3)",
-        textShadow: "0 1px 0px rgba(255,255,255,0.4)"
     }
 ];
 
 export function Hero() {
     const [current, setCurrent] = useState(0);
+    const [direction, setDirection] = useState(1);
     const ref = useRef(null);
     const isInView = useInView(ref, { once: false });
 
     useEffect(() => {
         if (!isInView) return;
-        const timer = setInterval(() => { next(); }, 7000);
+        const timer = setInterval(() => { next(); }, 6000);
         return () => clearInterval(timer);
     }, [isInView, current]);
 
-    const next = () => setCurrent((prev) => (prev + 1) % SLIDES.length);
-    const prev = () => setCurrent((prev) => (prev === 0 ? SLIDES.length - 1 : prev - 1));
+    const next = () => {
+        setDirection(1);
+        setCurrent((prev) => (prev + 1) % SLIDES.length);
+    };
+    
+    const prev = () => {
+        setDirection(-1);
+        setCurrent((prev) => (prev === 0 ? SLIDES.length - 1 : prev - 1));
+    };
 
     const slide = SLIDES[current];
 
-    // --- ANIMATIONS ---
-    const bgVariants = {
-        initial: { scale: 1, opacity: 0 },
-        animate: { scale: 1, opacity: 1, transition: { duration: 1.2 } },
-        exit: { opacity: 0, transition: { duration: 0.8 } }
-    };
-
-    const textReveal = {
-        initial: { y: "100%" },
-        animate: { y: "0%", transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] as [number, number, number, number], delay: 0.2 } },
-        exit: { y: "-100%", transition: { duration: 0.4 } }
+    // --- SLIDE ANIMATIONS ---
+    const variants = {
+        enter: (direction: number) => {
+            return {
+                x: direction > 0 ? "100%" : "-100%",
+                opacity: 1
+            };
+        },
+        center: {
+            zIndex: 1,
+            x: 0,
+            opacity: 1
+        },
+        exit: (direction: number) => {
+            return {
+                zIndex: 0,
+                x: direction < 0 ? "100%" : "-100%",
+                opacity: 1
+            };
+        }
     };
 
     return (
-        <section ref={ref} className="relative h-screen w-full overflow-hidden bg-[#FDFBF7]">
+        <section ref={ref} className="w-full bg-[#FDFBF7] pt-20 pb-4 md:pt-24 md:pb-8 px-4 sm:px-6 lg:px-8">
+            {/* STRICT 16:9 Aspect Ratio Container */}
+            <div className="relative mx-auto max-w-[1400px] w-full rounded-2xl md:rounded-3xl overflow-hidden shadow-xl aspect-video bg-[#FDFBF7] group">
+                
+                {/* 1. CLICKABLE IMAGE LAYER */}
+                <Link href={`/products/${slide.slug}`} className="block absolute inset-0 z-10 cursor-pointer">
+                    <span className="sr-only">View {slide.title}</span>
+                </Link>
 
-            {/* 1. BACKGROUND LAYER */}
-            <AnimatePresence mode="popLayout" initial={false}>
-
-                <motion.div
-                    key={slide.id}
-                    variants={bgVariants}
-                    initial="initial"
-                    animate="animate"
-                    exit="exit"
-                    className="absolute  inset-0 z-0"
-                >
-                    <Image
-                        width={1000}
-                        height={1000}
-                        src={slide.bgImage}
-                        alt={slide.title}
-                        priority
-                        sizes="100vw"
-                        // Mobile: Center | Desktop: Center
-                        className="w-full  h-full max-sm:object-[45%_center] object-cover object-center "
-                    />
-
-                    {/* --- IMPROVISED ATMOSPHERIC LAYER --- */}
-
-                    {/* 1. Mobile-Specific Depth Stack */}
-                    <div className="md:hidden absolute inset-0 z-10 pointer-events-none">
-                        {/* A. Strong bottom gradient so text is always readable */}
-                        <div className="absolute inset-x-0 bottom-0 h-[75vh] bg-linear-to-t from-black/70 via-black/40 to-transparent" />
-                    </div>
-
-                    {/* 2. Desktop-Only Side Anchor */}
-                    {/* <div className="hidden md:block absolute inset-0 bg-linear-to-r from-[#FDFBF7]/40 via-transparent to-transparent pointer-events-none z-10" /> */}
-                </motion.div>
-
-            </AnimatePresence>
-
-            {/* 2. MAIN CONTENT LAYER */}
-            <div className="relative z-10 w-full h-full max-w-[1920px] mx-auto px-6 md:px-12 lg:px-20 grid grid-cols-1 lg:grid-cols-12">
-
-
-                <div className="lg:col-span-5 flex flex-col justify-end max-sm:justify-end sm:justify-start sm:pb-0 sm:pt-24 md:pt-30 pb-24 h-full pointer-events-none">
-                    <AnimatePresence mode="wait">
-                        <motion.div key={slide.id} className="space-y-4 md:space-y-6 relative z-20 pointer-events-auto">
-
-                            {/* Category Badge */}
-                            <motion.div
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0, transition: { duration: 0.6 } }}
-                                exit={{ opacity: 0, y: -10 }}
-                                className="inline-flex items-center gap-3 px-3 py-1.5 md:px-4 md:py-2 rounded-full bg-white/40 backdrop-blur-xl border w-fit shadow-sm"
-                                style={{ borderColor: slide.borderColor }}
-                            >
-
-                                <span className={cn("text-[8px] md:text-[9px] uppercase tracking-[0.3em] font-bold max-md:text-white", slide.color)}>
-                                    {slide.category}
-                                </span>
-                            </motion.div>
-
-                            {/* Headline */}
-                            <div className="overflow-hidden -my-2">
-                                <motion.h1
-                                    variants={textReveal}
-                                    initial="initial"
-                                    animate="animate"
-                                    exit="exit"
-                                    className={cn("font-heading text-4xl md:text-5xl lg:text-[4.5rem] xl:text-[5rem] leading-[0.9] tracking-tighter max-md:text-white py-2", slide.color)}
-                                    style={{ textShadow: "0 1px 2px rgba(0,0,0,0.5), 0 1px 3px rgba(0,0,0,0.3)" }}
-                                >
-                                    {slide.title}
-                                </motion.h1>
-                            </div>
-
-                            <div className="overflow-hidden -my-2">
-                                <motion.span
-                                    variants={textReveal}
-                                    initial="initial"
-                                    animate="animate"
-                                    exit="exit"
-                                    className={cn("italic font-serif font-light opacity-90 block text-2xl md:text-3xl lg:text-[3.5rem] leading-none max-md:text-white/90 py-2", slide.color)}
-                                    style={{ textShadow: "0 2px 4px rgba(0,0,0,0.5), 0 1px 3px rgba(0,0,0,0.3)" }}
-                                >
-                                    {slide.subtitle}
-                                </motion.span>
-                            </div>
-
-                            {/* CTA Buttons */}
-                            <div className="flex flex-wrap gap-4 pt-2 md:pt-4">
-                                <motion.div
-                                    initial={{ opacity: 0, x: -20 }}
-                                    animate={{ opacity: 1, x: 0, transition: { delay: 0.5 } }}
-                                >
-                                    <Link
-                                        href={`/products/${slide.slug}`}
-                                        className="group relative inline-flex items-center gap-4 px-8 py-4 md:px-10 md:py-5 text-white rounded-full overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-2xl active:scale-95"
-                                        style={{ backgroundColor: slide.accentColor }}
-                                    >
-                                        <span className="text-[9px] md:text-[10px] uppercase tracking-[0.3em] font-bold relative z-10">Start Ritual</span>
-                                        <ArrowRight className="w-4 h-4 relative z-10 group-hover:translate-x-1 transition-transform" />
-                                    </Link>
-                                </motion.div>
-
-                                <motion.div
-                                    initial={{ opacity: 0, x: -20 }}
-                                    animate={{ opacity: 1, x: 0, transition: { delay: 0.6 } }}
-                                >
-                                    <Link
-                                        href="/quiz"
-                                        className="group relative inline-flex items-center gap-3 px-6 py-4 md:px-8 md:py-5 rounded-full overflow-hidden cursor-pointer transition-all duration-300 border border-[#2D3A3A]/10 hover:bg-white/50 hover:shadow-lg active:scale-95 backdrop-blur-sm"
-                                    >
-                                        <Sparkles className={cn("w-4 h-4 max-md:text-white", slide.color)} />
-                                        <span className={cn("text-[9px] md:text-[10px] uppercase tracking-[0.3em] font-bold relative z-10 max-md:text-white", slide.color)}>Discover Dosha</span>
-                                    </Link>
-                                </motion.div>
-                            </div>
-
-                            {/* Mobile Description (Inline) */}
-                            <motion.p
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1, transition: { delay: 0.6 } }}
-                                exit={{ opacity: 0 }}
-                                className="mt-6 text-xs leading-relaxed font-medium md:hidden max-w-xs text-white/90"
-                                style={{ textShadow: "0 4px 6px rgba(0,0,0,0.4)" }}
-                            >
-                                {slide.description}
-                            </motion.p>
+                <div className="absolute inset-0 overflow-hidden rounded-2xl md:rounded-3xl z-0">
+                    <AnimatePresence initial={false} custom={direction}>
+                        <motion.div
+                            key={slide.id}
+                            custom={direction}
+                            variants={variants}
+                            initial="enter"
+                            animate="center"
+                            exit="exit"
+                            transition={{
+                                x: { type: "spring", stiffness: 300, damping: 30 },
+                                opacity: { duration: 0.2 }
+                            }}
+                            className="absolute inset-0 w-full h-full pointer-events-none bg-[#FDFBF7]"
+                        >
+                            <Image
+                                src={slide.bgImage}
+                                alt={slide.title}
+                                fill
+                                priority
+                                className="object-cover object-center"
+                            />
                         </motion.div>
                     </AnimatePresence>
                 </div>
 
-                {/* CENTER SPACER (Bottle Area) */}
-                <div className="hidden lg:block lg:col-span-7" />
+                {/* 2. NAVIGATION CONTROLS */}
+                
+                {/* Desktop Arrows (Centered vertically) */}
+                <button
+                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); prev(); }}
+                    className="absolute hidden md:flex left-4 top-1/2 -translate-y-1/2 z-30 w-10 h-10 rounded-full bg-white/80 backdrop-blur shadow-sm items-center justify-center text-[#2D3A3A] opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white cursor-pointer"
+                >
+                    <ChevronLeft className="w-5 h-5" />
+                </button>
+                <button
+                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); next(); }}
+                    className="absolute hidden md:flex right-4 top-1/2 -translate-y-1/2 z-30 w-10 h-10 rounded-full bg-white/80 backdrop-blur shadow-sm items-center justify-center text-[#2D3A3A] opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white cursor-pointer"
+                >
+                    <ChevronRight className="w-5 h-5" />
+                </button>
 
-            </div>
-
-            {/* 3. NAVIGATION & DESC (Desktop Only Position) */}
-            <div className="absolute bottom-10 right-6 md:right-12 z-30 flex flex-col items-end gap-6">
-
-                {/* Description */}
-                <AnimatePresence mode="wait">
-                    <motion.div
-                        key={slide.id}
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -20 }}
-                        className="hidden md:block max-w-xs text-left bg-white/30 backdrop-blur-md p-4 rounded-xl border border-white/20"
-                    >
-                        <p className={cn("text-xs leading-relaxed font-medium text-white")}>
-                            {slide.description}
-                        </p>
-                    </motion.div>
-                </AnimatePresence>
-
-                {/* Nav Arrows */}
-                <div className="flex gap-3">
+                {/* Mobile Arrows (Bottom Right Corner) */}
+                <div className="absolute md:hidden bottom-2 right-2 z-30 flex gap-2">
                     <button
-                        onClick={prev}
-                        aria-label="Left"
-                        className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-white/40 backdrop-blur-md flex items-center cursor-pointer justify-center hover:bg-white transition-all shadow-sm"
+                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); prev(); }}
+                        className="w-8 h-8 rounded-full bg-white/80 backdrop-blur shadow-sm flex items-center justify-center text-[#2D3A3A] hover:bg-white cursor-pointer"
                     >
-                        <ChevronLeft className="w-4 h-4 md:w-5 md:h-5 text-[#2D3A3A]" />
+                        <ChevronLeft className="w-4 h-4" />
                     </button>
                     <button
-                        onClick={next}
-                        aria-label="Right"
-                        className="w-10 cursor-pointer h-10 md:w-12 md:h-12 rounded-full text-white flex items-center justify-center hover:scale-105 transition-all shadow-md"
-                        style={{ backgroundColor: slide.accentColor }}
+                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); next(); }}
+                        className="w-8 h-8 rounded-full bg-white/80 backdrop-blur shadow-sm flex items-center justify-center text-[#2D3A3A] hover:bg-white cursor-pointer"
                     >
-                        <ChevronRight className="w-4 h-4 md:w-5 md:h-5" />
+                        <ChevronRight className="w-4 h-4" />
                     </button>
                 </div>
-            </div>
 
-            {/* 4. PROGRESS BAR */}
-            <div className="absolute bottom-0 left-0 h-1 md:h-1.5 bg-black/5 w-full z-30">
-                <motion.div
-                    key={current}
-                    initial={{ width: "0%" }}
-                    animate={{ width: "100%" }}
-                    transition={{ duration: 7, ease: "linear" }}
-                    className="h-full"
-                    style={{ backgroundColor: slide.accentColor }}
-                />
+                {/* Dot Navigation (Bottom Center) */}
+                <div className="absolute bottom-3 md:bottom-4 left-1/2 -translate-x-1/2 md:-translate-x-1/2 z-30 flex items-center gap-1.5 md:gap-2 mr-auto md:mr-0 pl-2 md:pl-0">
+                    {SLIDES.map((_, idx) => (
+                        <button
+                            key={idx}
+                            onClick={(e) => { 
+                                e.preventDefault(); e.stopPropagation(); 
+                                setDirection(idx > current ? 1 : -1);
+                                setCurrent(idx); 
+                            }}
+                            className={cn(
+                                "h-1.5 rounded-full transition-all duration-300 cursor-pointer shadow-sm",
+                                current === idx ? "w-4 md:w-6 bg-white" : "w-1.5 bg-white/50 hover:bg-white/80"
+                            )}
+                            aria-label={`Go to slide ${idx + 1}`}
+                        />
+                    ))}
+                </div>
             </div>
         </section>
-    )
+    );
 }

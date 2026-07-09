@@ -13,7 +13,7 @@ interface FeaturedProductsProps {
 
 export function FeaturedProducts({ products, stats = {} }: FeaturedProductsProps) {
     return (
-        <section className="relative py-24 lg:py-32 bg-[#FDFBF7] overflow-hidden">
+        <section className="relative py-12 lg:py-24 bg-[#FDFBF7] overflow-hidden">
             {/* Subtle Grain Texture for 2026 Premium feel */}
             <div className="absolute inset-0 z-0 opacity-[0.02] pointer-events-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
 
