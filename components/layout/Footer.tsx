@@ -228,15 +228,25 @@ export function Footer() {
                 </div>
 
                 {/* Bottom Bar */}
-                <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-                    <p className="text-xs text-center text-white/30 font-light">
-                        Ayuniv is a company of SlightJoy Healthcare © copyright 2026 Ayuniv
-                    </p>
-
-                    <div className="flex gap-8">
-                        <Link href="/privacy_page" className="text-xs text-white/30 hover:text-white transition-colors">Privacy Policy</Link>
-                        <Link href="/terms" className="text-xs text-white/30 hover:text-white transition-colors">Terms of Service</Link>
+                <div className="border-t border-white/10 pt-8 pb-4 flex flex-col lg:flex-row justify-between items-center gap-6 lg:gap-4">
+                    
+                    <div className="order-1 text-center lg:text-left">
+                        <p className="text-xs text-white/40 font-light">
+                            Ayuniv is a company of SlightJoy Healthcare © 2026
+                        </p>
                     </div>
+
+                    <div className="order-2 flex gap-6 lg:gap-8">
+                        <Link href="/privacy_page" className="text-xs text-white/40 hover:text-white transition-colors">Privacy Policy</Link>
+                        <Link href="/terms" className="text-xs text-white/40 hover:text-white transition-colors">Terms of Service</Link>
+                    </div>
+
+                    <div className="order-3 text-center lg:text-right">
+                        <p className="text-[11px] text-white/30 font-light uppercase tracking-wider">
+                            Designed & developed by <a href="https://dhonidev-ai.vercel.app/" target="_blank" rel="noopener noreferrer" className="text-white/70 hover:text-white font-medium transition-colors">DHONIDEV-AI</a>
+                        </p>
+                    </div>
+                    
                 </div>
             </div>
         </footer>
