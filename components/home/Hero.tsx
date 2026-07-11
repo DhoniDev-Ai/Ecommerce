@@ -12,21 +12,21 @@ const SLIDES = [
         id: 1,
         slug: "ayuniv-sea-buckthorn-Juice-300ml",
         title: "Sea Buckthorn",
-        bgImage: "/banners/Sea_bhukthron.png", 
+        bgImage: "/banners/Sea_bhukthron.png",
         accentColor: "#E67E22",
     },
     {
         id: 2,
         slug: "she-care-juice",
         title: "She Care",
-        bgImage: "/banners/She_Care.png", 
+        bgImage: "/banners/She_Care.png",
         accentColor: "#5A7A6A",
     },
     {
         id: 3,
         slug: "cholesterol-care-juice",
         title: "Heart Guard",
-        bgImage: "/banners/Cholestrol.png", 
+        bgImage: "/banners/Cholestrol.png",
         accentColor: "#8B5A2B",
     }
 ];
@@ -47,7 +47,7 @@ export function Hero() {
         setDirection(1);
         setCurrent((prev) => (prev + 1) % SLIDES.length);
     };
-    
+
     const prev = () => {
         setDirection(-1);
         setCurrent((prev) => (prev === 0 ? SLIDES.length - 1 : prev - 1));
@@ -80,8 +80,8 @@ export function Hero() {
     return (
         <section ref={ref} className="w-full bg-[#FDFBF7] pt-20 pb-4 md:pt-24 md:pb-8 px-4 sm:px-6 lg:px-8">
             {/* STRICT 16:9 Aspect Ratio Container */}
-            <div className="relative mx-auto max-w-[1400px] w-full rounded-2xl md:rounded-3xl overflow-hidden shadow-xl aspect-video bg-[#FDFBF7] group">
-                
+            <div className="relative mx-auto max-w-[1300px] w-full rounded-2xl md:rounded-3xl overflow-hidden shadow-xl aspect-video bg-[#FDFBF7] group">
+
                 {/* 1. CLICKABLE IMAGE LAYER */}
                 <Link href={`/products/${slide.slug}`} className="block absolute inset-0 z-10 cursor-pointer">
                     <span className="sr-only">View {slide.title}</span>
@@ -114,7 +114,7 @@ export function Hero() {
                 </div>
 
                 {/* 2. NAVIGATION CONTROLS */}
-                
+
                 {/* Desktop Arrows (Centered vertically) */}
                 <button
                     onClick={(e) => { e.preventDefault(); e.stopPropagation(); prev(); }}
@@ -150,10 +150,10 @@ export function Hero() {
                     {SLIDES.map((_, idx) => (
                         <button
                             key={idx}
-                            onClick={(e) => { 
-                                e.preventDefault(); e.stopPropagation(); 
+                            onClick={(e) => {
+                                e.preventDefault(); e.stopPropagation();
                                 setDirection(idx > current ? 1 : -1);
-                                setCurrent(idx); 
+                                setCurrent(idx);
                             }}
                             className={cn(
                                 "h-1.5 rounded-full transition-all duration-300 cursor-pointer shadow-sm",
